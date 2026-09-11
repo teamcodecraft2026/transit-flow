@@ -1,0 +1,5 @@
+[install]
+saveTextLockfile = true
+frozen-lockfile = false
+minimumReleaseAge = 86400
+minimumReleaseAgeExcludes = ["@lovable.dev/vite-tanstack-config", "@lovable.dev/mcp-js", "@lovable.dev/email-js", "@lovable.dev/webhooks-js"]

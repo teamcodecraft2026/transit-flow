@@ -1,0 +1,17 @@
+name = "public-transit"
+main = "./dist/server/index.mjs"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static client build (JS, CSS, images, favicon, robots.txt).
+# The Worker falls back to SSR for anything not found here.
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+
+[observability]
+enabled = true
+
+# Add secrets with `wrangler secret put NAME` — never commit them here.
+# [vars]
+# PUBLIC_SOMETHING = "value"
