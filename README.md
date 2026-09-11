@@ -387,7 +387,6 @@ Or simply push to GitHub — Cloudflare automatically deploys on every push to t
 #### Step 1 — Visit the Application
 Navigate to `https://pink-card-transit.teamcodecraft.workers.dev` in any browser (mobile or desktop).
 
->  Screenshot placeholder: `![Home Page](docs/images/screenshots/home.png)`
 
 #### Step 2 — Log In
 Click **Login** in the top-right navigation bar.
@@ -400,7 +399,6 @@ Click **Login** in the top-right navigation bar.
 
 You are now logged in. Your name and a **Logout** button appear in the navbar.
 
->  Screenshot placeholder: `![OTP Login](docs/images/screenshots/login-otp.png)`
 
 #### Step 3 — Book a Ticket
 Navigate to **Book** from the navbar.
@@ -416,8 +414,6 @@ Navigate to **Book** from the navbar.
   - Ticket ID, fare charged, status, and issue time
   - If you hold a Pink Card: a pink banner showing **"Pink Card Applied — ₹0 Fare"**
 
->  Screenshot placeholder: `![Book Ticket](docs/images/screenshots/book-ticket.png)`
->  Screenshot placeholder: `![QR Ticket](docs/images/screenshots/qr-ticket.png)`
 
 #### Step 4 — View Your Trips
 Navigate to **My Trips** from the navbar.
@@ -426,7 +422,6 @@ Navigate to **My Trips** from the navbar.
 - **Past** tab shows tickets with status `SCANNED` or `EXPIRED`
 - Click any QR code to enlarge it in a full-screen modal for easy scanning
 
->  Screenshot placeholder: `![My Trips](docs/images/screenshots/my-trips.png)`
 
 ---
 
@@ -456,8 +451,6 @@ Click **Pink Card** in the navbar, then click **Apply Now**.
 - If **eligible**: Green screen with Pink Card active confirmation + "Book a Free Ticket →" button
 - If **ineligible**: Red screen with specific reason and guidance
 
->  Screenshot placeholder: `![Pink Card Eligible](docs/images/screenshots/pink-card-eligible.png)`
->  Screenshot placeholder: `![Pink Card Ineligible](docs/images/screenshots/pink-card-ineligible.png)`
 
 #### Checking Status Later
 Click **Check Status** on the Pink Card page — if you have already applied, your result appears immediately without re-submitting.
@@ -499,8 +492,6 @@ Go to `/conductor` route or find the Conductor link.
 | ⚠️ Expired | Red | Ticket past validity window |
 | ❌ Invalid | Red | Ticket not found in database |
 
->  Screenshot placeholder: `![Conductor Scan Valid](docs/images/screenshots/conductor-valid.png)`
->  Screenshot placeholder: `![Conductor Already Used](docs/images/screenshots/conductor-used.png)`
 
 ---
 
@@ -533,9 +524,6 @@ The **AI Demand Forecast** section (powered by the ML backend) shows:
 - Predicted average and peak passenger load per route
 - Recommended number of buses
 - Estimated daily revenue and cost
-
->  Screenshot placeholder: `![Admin Dashboard](docs/images/screenshots/admin-dashboard.png)`
->  Screenshot placeholder: `![AI Forecast](docs/images/screenshots/admin-ai-forecast.png)`
 
 ---
 
