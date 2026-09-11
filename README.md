@@ -1,8 +1,7 @@
-# 🚌 Transit Flow — SmartBus Public Transit Platform
+# Transit Flow — SmartBus Public Transit Platform
 
 <div align="center">
 
-![SmartBus Banner](docs/images/banner.png)
 
 **A full-stack, AI-powered public bus ticketing system with zero-fare Pink Card support for women**
 
@@ -23,7 +22,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 1. [Project Overview](#-project-overview)
 2. [Key Features](#-key-features)
@@ -40,7 +39,7 @@
 
 ---
 
-## 🎯 Project Overview
+##  Project Overview
 
 Transit Flow is a **full-stack, production-deployed public bus ticketing platform** built for the state of West Bengal, India. It digitises the entire bus journey — from route discovery and ticket booking to conductor-side QR validation — while embedding an AI-powered demand forecasting engine and a government-linked zero-fare scheme for eligible women.
 
@@ -69,9 +68,9 @@ The platform is **fully deployed and publicly accessible**, bilingual (English a
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-### 🎫 Passenger Portal
+###  Passenger Portal
 - **OTP-based phone authentication** — no passwords, no email, login via 6-digit SMS OTP
 - **Route search** — search trips by origin and destination against live Supabase data
 - **Ticket booking** — one-tap booking with instant fare calculation
@@ -80,35 +79,35 @@ The platform is **fully deployed and publicly accessible**, bilingual (English a
 - **My Trips dashboard** — view all upcoming and past tickets with live status (Issued / Scanned / Expired)
 - **Pink Card zero-fare** — eligible passengers are automatically charged ₹0 at booking
 
-### 🌸 Pink Card System
+###  Pink Card System
 - **4-step eligibility application** — Aadhaar details, PAN details, residency proof, review
 - **PAN-linked income verification** — backend checks income record against threshold (₹2,50,000/year)
 - **Three-factor eligibility check** — gender (female), state residency, and income threshold
 - **Persistent result storage** — eligibility result saved locally so "Check Status" shows immediately on return
 - **Detailed rejection reasons** — users see exactly why they were rejected with guidance
 
-### 🚌 Conductor Portal
+###  Conductor Portal
 - **Separate conductor login** — role-based OTP auth, only users with `role = conductor` in database can access
 - **Camera-based QR scanning** — uses `html5-qrcode` to open the phone's rear camera and decode QR codes in real time
 - **Manual ticket ID fallback** — conductors can paste/type the full ticket UUID if camera is unavailable
 - **Instant validation feedback** — green (Valid), amber (Already Scanned), red (Expired/Invalid) result cards
-- **Pink Card detection** — scan result shows "🌸 Pink Card — Free Travel" for zero-fare tickets
+- **Pink Card detection** — scan result shows " Pink Card — Free Travel" for zero-fare tickets
 - **Recent scans log** — live session history of all scans with timestamps
 
-### 📊 Admin Dashboard
+###  Admin Dashboard
 - **Separate admin login** — `role = admin` OTP authentication
 - **Live revenue analytics** — total revenue, Pink Card discount cost, net estimate
 - **Route-wise breakdown table** — per-route revenue, tickets sold, free tickets, paid percentage bar
 - **Date range filtering** — Today / This Week / All Time
 - **AI Demand Forecast section** — powered by the ML backend, shows predicted passenger load, recommended buses per route, and estimated daily revenue/cost
 
-### 🤖 AI/ML Features
+###  AI/ML Features
 - **Gemini-powered chatbot** — floating assistant on all passenger pages, answers transit queries in English or Bengali
 - **Demand prediction model** — scikit-learn regression model predicts passenger load per route based on time, day, and historical data
 - **Fleet recommendation engine** — calculates how many buses each route needs based on predicted demand
 - **Admin forecast summary** — aggregated AI output showing estimated profit/loss across all routes
 
-### 🌐 Additional Features
+###  Additional Features
 - **Bilingual UI** — full English and Bengali (বাংলা) translation across all pages
 - **Responsive design** — works on mobile, tablet, and desktop
 - **Parallax hero animations** — smooth scroll-based parallax on landing pages
@@ -117,7 +116,7 @@ The platform is **fully deployed and publicly accessible**, bilingual (English a
 
 ---
 
-## 🛠 Tech Stack & Libraries
+##  Tech Stack & Libraries
 
 ### Frontend
 
@@ -170,7 +169,7 @@ The platform is **fully deployed and publicly accessible**, bilingual (English a
 
 ---
 
-## 🏗 System Architecture
+##  System Architecture
 
 ### High-Level Architecture
 
@@ -264,19 +263,9 @@ Passenger                    Backend                   Conductor
     │                            │    (valid/used/expired) │
 ```
 
-### System Architecture Diagram
-
-> 📌 Place your architecture diagram image here:
-> `![System Architecture](docs/images/architecture.png)`
-
-### Database Entity Relationship Diagram
-
-> 📌 Place your ER diagram image here:
-> `![ER Diagram](docs/images/er-diagram.png)`
-
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -330,7 +319,7 @@ VITE_SUPABASE_URL=https://welccusfyovxgpfplnlj.supabase.co/functions/v1
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
-> ⚠️ **Note:** The Supabase anon key is a public key designed to be used in browser code. It is safe to include in frontend environment variables.
+>  **Note:** The Supabase anon key is a public key designed to be used in browser code. It is safe to include in frontend environment variables.
 
 ---
 
@@ -373,7 +362,7 @@ uvicorn main:app --reload
 
 The AI/ML API will be available at `http://localhost:8000`
 
-> ✅ The live AI/ML API is already deployed at `https://bus-aiml.onrender.com` — local setup is only needed for development.
+>  The live AI/ML API is already deployed at `https://bus-aiml.onrender.com` — local setup is only needed for development.
 
 ---
 
@@ -391,14 +380,14 @@ Or simply push to GitHub — Cloudflare automatically deploys on every push to t
 
 ---
 
-## 📖 How to Use the Application
+##  How to Use the Application
 
-### 👤 As a Passenger
+###  As a Passenger
 
 #### Step 1 — Visit the Application
 Navigate to `https://pink-card-transit.teamcodecraft.workers.dev` in any browser (mobile or desktop).
 
-> 📌 Screenshot placeholder: `![Home Page](docs/images/screenshots/home.png)`
+>  Screenshot placeholder: `![Home Page](docs/images/screenshots/home.png)`
 
 #### Step 2 — Log In
 Click **Login** in the top-right navigation bar.
@@ -411,7 +400,7 @@ Click **Login** in the top-right navigation bar.
 
 You are now logged in. Your name and a **Logout** button appear in the navbar.
 
-> 📌 Screenshot placeholder: `![OTP Login](docs/images/screenshots/login-otp.png)`
+>  Screenshot placeholder: `![OTP Login](docs/images/screenshots/login-otp.png)`
 
 #### Step 3 — Book a Ticket
 Navigate to **Book** from the navbar.
@@ -427,8 +416,8 @@ Navigate to **Book** from the navbar.
   - Ticket ID, fare charged, status, and issue time
   - If you hold a Pink Card: a pink banner showing **"Pink Card Applied — ₹0 Fare"**
 
-> 📌 Screenshot placeholder: `![Book Ticket](docs/images/screenshots/book-ticket.png)`
-> 📌 Screenshot placeholder: `![QR Ticket](docs/images/screenshots/qr-ticket.png)`
+>  Screenshot placeholder: `![Book Ticket](docs/images/screenshots/book-ticket.png)`
+>  Screenshot placeholder: `![QR Ticket](docs/images/screenshots/qr-ticket.png)`
 
 #### Step 4 — View Your Trips
 Navigate to **My Trips** from the navbar.
@@ -437,11 +426,11 @@ Navigate to **My Trips** from the navbar.
 - **Past** tab shows tickets with status `SCANNED` or `EXPIRED`
 - Click any QR code to enlarge it in a full-screen modal for easy scanning
 
-> 📌 Screenshot placeholder: `![My Trips](docs/images/screenshots/my-trips.png)`
+>  Screenshot placeholder: `![My Trips](docs/images/screenshots/my-trips.png)`
 
 ---
 
-### 🌸 Applying for the Pink Card
+###  Applying for the Pink Card
 
 #### Step 1 — Navigate to Pink Card
 Click **Pink Card** in the navbar, then click **Apply Now**.
@@ -467,15 +456,15 @@ Click **Pink Card** in the navbar, then click **Apply Now**.
 - If **eligible**: Green screen with Pink Card active confirmation + "Book a Free Ticket →" button
 - If **ineligible**: Red screen with specific reason and guidance
 
-> 📌 Screenshot placeholder: `![Pink Card Eligible](docs/images/screenshots/pink-card-eligible.png)`
-> 📌 Screenshot placeholder: `![Pink Card Ineligible](docs/images/screenshots/pink-card-ineligible.png)`
+>  Screenshot placeholder: `![Pink Card Eligible](docs/images/screenshots/pink-card-eligible.png)`
+>  Screenshot placeholder: `![Pink Card Ineligible](docs/images/screenshots/pink-card-ineligible.png)`
 
 #### Checking Status Later
 Click **Check Status** on the Pink Card page — if you have already applied, your result appears immediately without re-submitting.
 
 ---
 
-### 🚌 As a Conductor
+###  As a Conductor
 
 #### Step 1 — Navigate to Conductor Portal
 Go to `/conductor` route or find the Conductor link.
@@ -486,7 +475,7 @@ Go to `/conductor` route or find the Conductor link.
 - Click **Send OTP** — the OTP appears in a yellow banner immediately
 - Enter the OTP and click **Verify**
 
-> ⚠️ Only phone numbers with `role = conductor` in the database can access the dashboard.
+>  Only phone numbers with `role = conductor` in the database can access the dashboard.
 
 #### Step 3 — Scan a Passenger Ticket
 
@@ -510,12 +499,12 @@ Go to `/conductor` route or find the Conductor link.
 | ⚠️ Expired | Red | Ticket past validity window |
 | ❌ Invalid | Red | Ticket not found in database |
 
-> 📌 Screenshot placeholder: `![Conductor Scan Valid](docs/images/screenshots/conductor-valid.png)`
-> 📌 Screenshot placeholder: `![Conductor Already Used](docs/images/screenshots/conductor-used.png)`
+>  Screenshot placeholder: `![Conductor Scan Valid](docs/images/screenshots/conductor-valid.png)`
+>  Screenshot placeholder: `![Conductor Already Used](docs/images/screenshots/conductor-used.png)`
 
 ---
 
-### 📊 As an Administrator
+###  As an Administrator
 
 #### Step 1 — Navigate to Admin Portal
 Go to `/admin` route.
@@ -545,12 +534,12 @@ The **AI Demand Forecast** section (powered by the ML backend) shows:
 - Recommended number of buses
 - Estimated daily revenue and cost
 
-> 📌 Screenshot placeholder: `![Admin Dashboard](docs/images/screenshots/admin-dashboard.png)`
-> 📌 Screenshot placeholder: `![AI Forecast](docs/images/screenshots/admin-ai-forecast.png)`
+>  Screenshot placeholder: `![Admin Dashboard](docs/images/screenshots/admin-dashboard.png)`
+>  Screenshot placeholder: `![AI Forecast](docs/images/screenshots/admin-ai-forecast.png)`
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
 All backend endpoints are Supabase Edge Functions deployed at:
 `https://welccusfyovxgpfplnlj.supabase.co/functions/v1/`
@@ -599,7 +588,7 @@ Content-Type: application/json
 
 ---
 
-## 🤖 AI/ML Module
+##  AI/ML Module
 
 The AI/ML backend is a standalone FastAPI service deployed on Render.com.
 
@@ -665,7 +654,7 @@ bus-aiml/
 
 ---
 
-## 📦 QR Code System
+##  QR Code System
 
 ### Problem with the Previous Approach
 
@@ -778,7 +767,7 @@ CREATE TABLE otp_codes (
 
 ---
 
-## ⚠️ Known Limitations & Future Scope
+##  Known Limitations & Future Scope
 
 ### Current Limitations
 
@@ -810,12 +799,11 @@ CREATE TABLE otp_codes (
 
 ---
 
-## 📚 References & Acknowledgements
+##  References & Acknowledgements
 
 ### Government Schemes
 
-- West Bengal Lakshmir Bhandar Scheme — income eligibility framework reference
-- West Bengal Free Bus Pass Scheme for Women — policy reference for Pink Card design
+- West Bengal Free Bus Pass Scheme for Women — policy reference for Pink Card design & income eligibility framework reference
 - Income Tax Department of India — PAN-linked income verification concept
 
 ### Libraries & Frameworks
@@ -840,7 +828,7 @@ We thank **Techno India University** and the organisers of **AI — UNLEASHED 20
 
 <div align="center">
 
-**Built with ❤️ by Team CodeCraft 2026**
+**Built with by Team CodeCraft 2026**
 
 Sayan Ghosh · Archisman Saha · Samanwita Mandal · Aditya Bikram Dhar · Mousumi Mandal
 
