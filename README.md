@@ -818,7 +818,7 @@ We thank **Techno India University** and the organisers of **AI — UNLEASHED 20
 
 **Built with by Team CodeCraft 2026**
 
-Sayan Ghosh · Archisman Saha · Samanwita Mandal · Aditya Bikram Dhar · Mousumi Mandal
+Sayan Ghosh · Archisman Saha · Samanwita Mandal · Aditya Bikram Dhar · Mousumi Mondal
 
 *Techno India University · AI — UNLEASHED 2026*
 
