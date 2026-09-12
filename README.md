@@ -18,7 +18,7 @@
 > **Event:** AI — UNLEASHED 2026
 > **Institution:** Techno India University
 > **Team:** CodeCraft 2026
-> **Team Members:** Sayan Ghosh · Archisman Saha · Samanwita Mandal · Aditya Bikram Dhar · Mousumi Mandal
+> **Team Members:** Sayan Ghosh · Archisman Saha · Samanwita Mandal · Aditya Bikram Dhar · Mousumi Mondal
 
 ---
 
