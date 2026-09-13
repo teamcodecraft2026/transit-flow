@@ -53,7 +53,6 @@ function BookPage() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
 
-  // Booking state
   const [booking, setBooking] = useState<string | null>(null);
   const [bookedTicket, setBookedTicket] = useState<TicketType | null>(null);
   const [bookError, setBookError] = useState<string | null>(null);
@@ -267,20 +266,17 @@ function BookPage() {
                           </Button>
                         </div>
                       </div>
-                      {/* Stops list */}
+                      {/* Stops list - no fares shown */}
                       {trip.stops && trip.stops.length > 0 && (
                         <div className="mt-4 border-t border-navy-line pt-4">
                           <p className="mb-3 font-sans text-[11px] uppercase tracking-wider text-ink-muted">
-                            Route Stops & Fares
+                            Route Stops
                           </p>
                           <div className="flex flex-wrap items-center gap-2">
                             {trip.stops.map((stop, idx) => (
                               <div key={stop.name} className="flex items-center gap-2">
                                 <div className="rounded-[8px] border border-navy-line bg-navy-field/50 px-3 py-1.5">
                                   <span className="font-sans text-[12px] text-ink">{stop.name}</span>
-                                  <span className="ml-2 font-sans text-[11px] font-medium text-rose-bright">
-                                    {stop.fare === 0 ? "Start" : `₹${stop.fare}`}
-                                  </span>
                                 </div>
                                 {idx < trip.stops.length - 1 && (
                                   <span className="text-[10px] text-ink-muted">→</span>
