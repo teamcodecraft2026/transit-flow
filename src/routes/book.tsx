@@ -48,6 +48,7 @@ function BookPage() {
   const { isAuthenticated, requireAuth, openAuth } = useAuth();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -65,7 +66,6 @@ function BookPage() {
     { icon: CreditCard, title: t("book.f3"), caption: t("book.f3sub") },
   ];
 
-  // Fetch all stops on mount
   useEffect(() => {
     fetchAllStops().then(setAllStops).catch(console.error);
   }, []);
@@ -76,7 +76,7 @@ function BookPage() {
     setLoading(true);
     setTrips([]);
     try {
-      const res = await searchTrips(from.trim(), to.trim());
+      const res = await searchTrips(from.trim(), to.trim(), date);
       setTrips(res.trips);
     } catch (err: unknown) {
       setSearchError(err instanceof Error ? err.message : "Search failed. Please try again.");
@@ -172,7 +172,8 @@ function BookPage() {
                     <Calendar className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />
                     <input
                       type="date"
-                      defaultValue={new Date().toISOString().split("T")[0]}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
                       className="min-w-0 flex-1 bg-transparent font-sans text-[13px] text-ink [color-scheme:dark] focus:outline-none"
                     />
                   </div>
