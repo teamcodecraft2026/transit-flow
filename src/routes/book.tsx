@@ -60,6 +60,9 @@ function BookPage() {
   const [bookError, setBookError] = useState<string | null>(null);
   const [pinkCardApplied, setPinkCardApplied] = useState(false);
 
+  // ✅ ADDED: ref for auto-scroll to results
+  const availableBusesRef = useRef<HTMLDivElement>(null);
+
   const features = [
     { icon: ShieldCheck, title: t("book.f1"), caption: t("book.f1sub") },
     { icon: Ticket, title: t("book.f2"), caption: t("book.f2sub") },
@@ -82,16 +85,16 @@ function BookPage() {
       setSearchError(err instanceof Error ? err.message : "Search failed. Please try again.");
     } finally {
       setLoading(false);
+      // ✅ ADDED: smooth scroll to results after search
+      availableBusesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
-  // ✅ UPDATED: added fare param
   async function handleBook(trip_id: string, fare: number) {
     requireAuth(async () => {
       setBookError(null);
       setBooking(trip_id);
       try {
-        // ✅ UPDATED: pass fare to bookTicket
         const res = await bookTicket(trip_id, fare);
         setBookedTicket(res.ticket);
         setPinkCardApplied(res.pink_card_applied);
@@ -224,7 +227,8 @@ function BookPage() {
           </Reveal>
 
           {/* Search results */}
-          <div className="mt-14">
+          {/* ✅ ADDED: ref attached here for scroll target */}
+          <div className="mt-14" ref={availableBusesRef}>
             <h2 className="font-display text-[26px] text-ink">{t("book.results")}</h2>
 
             {searchError ? (
@@ -267,7 +271,6 @@ function BookPage() {
                             variant="blue"
                             size="sm"
                             disabled={booking === trip.trip_id}
-                            // ✅ UPDATED: pass trip.base_fare to handleBook
                             onClick={() => handleBook(trip.trip_id, trip.base_fare)}
                           >
                             {booking === trip.trip_id ? (
