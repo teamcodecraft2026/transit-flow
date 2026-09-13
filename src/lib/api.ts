@@ -128,10 +128,11 @@ export interface BookTicketResponse {
   mock_payment: boolean;
 }
 
-export async function bookTicket(trip_id: string): Promise<BookTicketResponse> {
+// ✅ UPDATED: now accepts fare so book-ticket uses the correct stop-based fare
+export async function bookTicket(trip_id: string, fare: number): Promise<BookTicketResponse> {
   return request<BookTicketResponse>("/book-ticket", {
     method: "POST",
-    body: JSON.stringify({ trip_id }),
+    body: JSON.stringify({ trip_id, fare }),
   });
 }
 
@@ -237,6 +238,7 @@ export interface TicketHistoryResponse {
 export async function getTicketHistory(): Promise<TicketHistoryResponse> {
   return request<TicketHistoryResponse>("/ticket-history");
 }
+
 // ── 9. AI Chatbot ─────────────────────────────────────────────────────────────
 
 export interface ChatbotResponse {
@@ -256,6 +258,7 @@ export async function askChatbot(
   });
   return res.json();
 }
+
 // ── 10. Demand Prediction ─────────────────────────────────────────────────────
 
 export interface DemandResponse {
@@ -302,6 +305,7 @@ export async function getAIAdminSummary(): Promise<AIAdminSummary> {
   const res = await fetch("https://bus-aiml.onrender.com/admin/summary");
   return res.json();
 }
+
 // ── Fetch all stops ───────────────────────────────────────────────────────────
 export async function fetchAllStops(): Promise<string[]> {
   const res = await request<{ stops: string[] }>("/search-trips/stops", { auth: "anon" });
