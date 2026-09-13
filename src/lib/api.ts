@@ -300,3 +300,8 @@ export async function getAIAdminSummary(): Promise<AIAdminSummary> {
   const res = await fetch("https://bus-aiml.onrender.com/admin/summary");
   return res.json();
 }
+// ── Fetch all stops ───────────────────────────────────────────────────────────
+export async function fetchAllStops(): Promise<string[]> {
+  const res = await request<{ stops: string[] }>("/stops", { auth: "anon" });
+  return res.stops;
+}
