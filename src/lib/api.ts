@@ -202,9 +202,11 @@ export interface SearchTripsResponse {
 export async function searchTrips(
   origin?: string,
   destination?: string,
+  date?: string,
 ): Promise<SearchTripsResponse> {
   const params = new URLSearchParams();
   if (origin) params.set("origin", origin);
+  if (date) params.set("date", date);
   if (destination) params.set("destination", destination);
   return request<SearchTripsResponse>(`/search-trips?${params.toString()}`, {
     auth: "anon",
