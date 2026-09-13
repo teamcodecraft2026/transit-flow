@@ -302,6 +302,6 @@ export async function getAIAdminSummary(): Promise<AIAdminSummary> {
 }
 // ── Fetch all stops ───────────────────────────────────────────────────────────
 export async function fetchAllStops(): Promise<string[]> {
-  const res = await request<{ stops: string[] }>("/stops", { auth: "anon" });
+  const res = await request<{ stops: string[] }>("/search-trips/stops", { auth: "anon" });
   return res.stops;
 }
