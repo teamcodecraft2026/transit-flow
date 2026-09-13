@@ -104,15 +104,20 @@ export async function checkPinkCard(pan: string): Promise<PinkCardResponse> {
 
 // ── 4. Book Ticket ────────────────────────────────────────────────────────────
 
-export interface Ticket {
-  id: string;
-  user_id: string;
+export interface Stop {
+  name: string;
+  fare: number;
+}
+
+export interface Trip {
   trip_id: string;
-  fare_charged: number;
-  qr_payload: string;
-  status: "issued" | "scanned" | "expired";
-  issued_at: string;
-  scanned_at: string | null;
+  bus_number: string;
+  departure_time: string;
+  route_name: string;
+  origin: string;
+  destination: string;
+  base_fare: number;
+  stops: Stop[];
 }
 
 export interface BookTicketResponse {
