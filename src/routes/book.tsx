@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeftRight,
   Calendar,
@@ -21,7 +21,7 @@ import { StatBadgeStrip } from "@/components/StatBadgeStrip";
 import { QrCodeImage } from "@/components/QrCodeImage";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/auth/AuthProvider";
-import { searchTrips, bookTicket, type Trip, type Ticket as TicketType } from "@/lib/api";
+import { searchTrips, bookTicket, fetchAllStops, type Trip, type Ticket as TicketType } from "@/lib/api";
 
 export const Route = createFileRoute("/book")({
   head: () => ({
@@ -52,6 +52,7 @@ function BookPage() {
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+  const [allStops, setAllStops] = useState<string[]>([]);
 
   const [booking, setBooking] = useState<string | null>(null);
   const [bookedTicket, setBookedTicket] = useState<TicketType | null>(null);
@@ -63,6 +64,11 @@ function BookPage() {
     { icon: Ticket, title: t("book.f2"), caption: t("book.f2sub") },
     { icon: CreditCard, title: t("book.f3"), caption: t("book.f3sub") },
   ];
+
+  // Fetch all stops on mount
+  useEffect(() => {
+    fetchAllStops().then(setAllStops).catch(console.error);
+  }, []);
 
   async function handleSearch() {
     setSearchError(null);
@@ -130,11 +136,12 @@ function BookPage() {
             <div className="mt-12 overflow-hidden rounded-[18px] border border-navy-line bg-navy-field/70 p-5 backdrop-blur-md sm:p-7">
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_minmax(0,0.8fr)_auto] lg:items-end">
                 <Field label={t("book.from")}>
-                  <SelectRow
+                  <StopDropdown
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={from}
                     onChange={setFrom}
                     placeholder={t("book.fromPlaceholder")}
+                    stops={allStops}
                   />
                 </Field>
 
@@ -151,11 +158,12 @@ function BookPage() {
                 </button>
 
                 <Field label={t("book.to")}>
-                  <SelectRow
+                  <StopDropdown
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={to}
                     onChange={setTo}
                     placeholder={t("book.toPlaceholder")}
+                    stops={allStops}
                   />
                 </Field>
 
@@ -266,7 +274,6 @@ function BookPage() {
                           </Button>
                         </div>
                       </div>
-                      {/* Stops list - no fares shown */}
                       {trip.stops && trip.stops.length > 0 && (
                         <div className="mt-4 border-t border-navy-line pt-4">
                           <p className="mb-3 font-sans text-[11px] uppercase tracking-wider text-ink-muted">
@@ -297,7 +304,6 @@ function BookPage() {
         </div>
       </section>
 
-      {/* Booking success modal */}
       {bookedTicket && (
         <BookingSuccessModal
           ticket={bookedTicket}
@@ -398,27 +404,71 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function SelectRow({
+function StopDropdown({
   icon,
   value,
   onChange,
   placeholder,
+  stops,
 }: {
   icon: React.ReactNode;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  stops: string[];
 }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const filtered = stops.filter((s) =>
+    s.toLowerCase().includes(value.toLowerCase())
+  );
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
   return (
-    <div className="flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border border-navy-line bg-navy-field-alt px-3">
-      {icon}
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="min-w-0 flex-1 bg-transparent font-sans text-[13px] text-ink placeholder:text-ink-muted/80 focus:outline-none"
-      />
-      <ChevronDown className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.5} />
+    <div ref={ref} className="relative w-full min-w-0">
+      <div className="flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border border-navy-line bg-navy-field-alt px-3">
+        {icon}
+        <input
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder={placeholder}
+          className="min-w-0 flex-1 bg-transparent font-sans text-[13px] text-ink placeholder:text-ink-muted/80 focus:outline-none"
+        />
+        <ChevronDown className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.5} />
+      </div>
+
+      {open && filtered.length > 0 && (
+        <div className="absolute left-0 right-0 top-[52px] z-50 max-h-[200px] overflow-y-auto rounded-[10px] border border-navy-line bg-[rgba(10,18,42,0.97)] shadow-lg">
+          {filtered.map((stop) => (
+            <button
+              key={stop}
+              type="button"
+              onMouseDown={() => {
+                onChange(stop);
+                setOpen(false);
+              }}
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-left font-sans text-[13px] text-ink hover:bg-navy-accent/20"
+            >
+              <MapPin className="size-3 shrink-0 text-navy-icon" strokeWidth={1.5} />
+              {stop}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
