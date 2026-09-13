@@ -133,7 +133,7 @@ function BookPage() {
 
           {/* Search panel */}
           <Reveal delay={120}>
-            <div className="mt-12 overflow-hidden rounded-[18px] border border-navy-line bg-navy-field/70 p-5 backdrop-blur-md sm:p-7">
+            <div className="mt-12 overflow-visible rounded-[18px] border border-navy-line bg-navy-field/70 p-5 backdrop-blur-md sm:p-7">
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_minmax(0,0.8fr)_auto] lg:items-end">
                 <Field label={t("book.from")}>
                   <StopDropdown
