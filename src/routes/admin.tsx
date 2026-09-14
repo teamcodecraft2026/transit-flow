@@ -4,8 +4,10 @@ import { getAIAdminSummary, type AIAdminSummary } from "@/lib/api";
 import {
   Activity,
   AlertTriangle,
+  ArrowLeft,
   BarChart3,
   Bus,
+  Download,
   IndianRupee,
   Loader2,
   LogOut,
@@ -15,8 +17,9 @@ import {
   TrendingDown,
   TrendingUp,
   UserRound,
+  X,
 } from "lucide-react";
-import { sendOtp, verifyOtp, getAdminStats, type AdminStatsResponse } from "@/lib/api";
+import { sendOtp, verifyOtp, getAdminStats, getRoutePassengers, type AdminStatsResponse, type RoutePassenger, type RoutePassengersResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
@@ -303,6 +306,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
 
   async function fetchStats(r: Range) {
     setLoading(true);
@@ -327,7 +331,6 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         <div className="flex items-center gap-3">
           <img src="/logo.png" alt="Transit Flow Logo" className="h-8 w-auto object-contain" />
         </div>
-
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2 font-sans text-[13px] text-white/50">
             <UserRound className="size-4" strokeWidth={1.5} />
@@ -353,7 +356,6 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 Live data from Supabase · Last refreshed just now
               </p>
             </div>
-
             <div className="flex items-center gap-2">
               {(["today", "week", "all"] as Range[]).map((r) => (
                 <button
@@ -428,7 +430,6 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
               <div className="mt-6 rounded-[14px] border border-white/10 bg-white/[0.03] p-6">
                 <h2 className="font-sans text-[15px] font-semibold text-white">Revenue vs Estimated Cost</h2>
                 <div className="mt-4 flex items-end gap-8">
-                  {/* FIX: max now includes all three values so no bar can overflow */}
                   <BarItem
                     label="Revenue"
                     value={stats.total_revenue}
@@ -451,6 +452,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <p className="mt-4 font-sans text-[11.5px] text-white/30">{stats.cost_note}</p>
               </div>
 
+              {/* Revenue by Route table */}
               <div className="mt-6 rounded-[14px] border border-white/10 bg-white/[0.03] p-6">
                 <div className="flex items-center justify-between">
                   <h2 className="font-sans text-[15px] font-semibold text-white">Revenue by Route</h2>
@@ -464,7 +466,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-white/10">
-                        {["Route", "Revenue", "Tickets Sold", "Free Tickets", "Paid %"].map((h) => (
+                        {["Route", "Revenue", "Tickets Sold", "Free Tickets", "Paid %", ""].map((h) => (
                           <th key={h} className="pb-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40">
                             {h}
                           </th>
@@ -504,6 +506,15 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                                 </div>
                                 <span className="font-sans text-[12px] text-white/50">{paidPct}%</span>
                               </div>
+                            </td>
+                            <td className="py-4">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedRoute(row.route_name)}
+                                className="rounded-[6px] border border-indigo-500/50 bg-indigo-500/10 px-3 py-1 font-sans text-[11.5px] text-indigo-400 transition-colors hover:bg-indigo-500/20"
+                              >
+                                Details →
+                              </button>
                             </td>
                           </tr>
                         );
@@ -546,6 +557,286 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           ) : null}
         </div>
       </main>
+
+      {/* Route Details Slide-in Panel */}
+      {selectedRoute && (
+        <RouteDetailsPanel
+          routeName={selectedRoute}
+          range={range}
+          onClose={() => setSelectedRoute(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Route Details Slide-in Panel ─────────────────────────────────────────────
+
+function RouteDetailsPanel({
+  routeName,
+  range,
+  onClose,
+}: {
+  routeName: string;
+  range: Range;
+  onClose: () => void;
+}) {
+  const [data, setData] = useState<RoutePassengersResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"all" | "pink">("all");
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    getRoutePassengers(routeName, range)
+      .then(setData)
+      .catch((err: unknown) =>
+        setError(err instanceof Error ? err.message : "Failed to load passenger data.")
+      )
+      .finally(() => setLoading(false));
+  }, [routeName, range]);
+
+  const passengers = data?.passengers ?? [];
+  const displayed = tab === "pink"
+    ? passengers.filter((p) => p.is_pink_card)
+    : passengers;
+
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString("en-IN", {
+      day: "2-digit", month: "short", year: "numeric",
+    });
+  }
+
+  function formatTime(iso: string) {
+    return new Date(iso).toLocaleTimeString("en-IN", {
+      hour: "2-digit", minute: "2-digit", hour12: true,
+    });
+  }
+
+  function exportCSV() {
+    const headers = ["Passenger Name", "Phone", "Source", "Destination", "Bus", "Date", "Time", "Fare", "Type", "Status"];
+    const rows = displayed.map((p) => [
+      p.passenger_name,
+      p.passenger_phone,
+      p.origin,
+      p.destination,
+      p.bus_number,
+      p.issued_at ? formatDate(p.issued_at) : "—",
+      p.departure_time ? formatTime(p.departure_time) : "—",
+      p.is_pink_card ? "Free" : `₹${p.fare_charged}`,
+      p.is_pink_card ? "Pink Card" : "Paid",
+      p.status,
+    ]);
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${routeName.replace(/\s+/g, "_")}_passengers.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[4px]"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[900px] flex-col bg-[#0d0f1a] shadow-[−8px_0_40px_rgba(0,0,0,0.6)]">
+
+        {/* Panel Header */}
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-2 font-sans text-[13px] text-white/50 transition-colors hover:text-white"
+            >
+              <ArrowLeft className="size-4" strokeWidth={1.5} />
+              Back
+            </button>
+            <span className="text-white/20">|</span>
+            <h2 className="font-sans text-[16px] font-semibold text-white">{routeName}</h2>
+            <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 font-sans text-[11px] text-indigo-400">
+              {range === "today" ? "Today" : range === "week" ? "This Week" : "All Time"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-white/40 transition-colors hover:text-white"
+          >
+            <X className="size-5" strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {loading ? (
+            <div className="flex h-40 items-center justify-center">
+              <Loader2 className="size-7 animate-spin text-indigo-400" />
+            </div>
+          ) : error ? (
+            <div className="flex items-center gap-3 rounded-[10px] border border-red-500/30 bg-red-500/10 px-4 py-3">
+              <AlertTriangle className="size-5 text-red-400" strokeWidth={1.5} />
+              <p className="font-sans text-[13px] text-red-400">{error}</p>
+            </div>
+          ) : data ? (
+            <>
+              {/* Summary Stat Cards */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatMini
+                  label="Total Revenue"
+                  value={`₹${data.summary.total_revenue.toLocaleString("en-IN")}`}
+                  color="text-emerald-400"
+                />
+                <StatMini
+                  label="Total Passengers"
+                  value={data.summary.total_passengers.toString()}
+                  color="text-indigo-400"
+                />
+                <StatMini
+                  label="Pink Card"
+                  value={`🌸 ${data.summary.pink_card_count}`}
+                  color="text-rose-400"
+                />
+                <StatMini
+                  label="Paid"
+                  value={`💙 ${data.summary.paid_count}`}
+                  color="text-blue-400"
+                />
+              </div>
+
+              {/* Tabs + Export */}
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex gap-1 rounded-[8px] border border-white/10 bg-white/[0.03] p-1">
+                  {(["all", "pink"] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTab(t)}
+                      className={cn(
+                        "rounded-[6px] px-4 py-1.5 font-sans text-[12.5px] transition-colors",
+                        tab === t
+                          ? "bg-indigo-600 text-white"
+                          : "text-white/50 hover:text-white"
+                      )}
+                    >
+                      {t === "all" ? `All (${passengers.length})` : `🌸 Pink Card (${passengers.filter((p) => p.is_pink_card).length})`}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={exportCSV}
+                  className="flex items-center gap-2 rounded-[8px] border border-white/15 px-3 py-2 font-sans text-[12px] text-white/50 transition-colors hover:text-white"
+                >
+                  <Download className="size-3.5" strokeWidth={1.5} />
+                  Export CSV
+                </button>
+              </div>
+
+              {/* Passengers Table */}
+              <div className="mt-4 overflow-x-auto rounded-[10px] border border-white/10">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/[0.02]">
+                      {["Passenger", "Source → Dest", "Bus", "Date & Time", "Fare", "Type", "Status"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayed.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-12 text-center font-sans text-[13px] text-white/30">
+                          No passengers found.
+                        </td>
+                      </tr>
+                    ) : (
+                      displayed.map((p, i) => (
+                        <tr
+                          key={p.ticket_id}
+                          className={cn(
+                            "border-b border-white/[0.05] transition-colors hover:bg-white/[0.03]",
+                            i === displayed.length - 1 && "border-0"
+                          )}
+                        >
+                          <td className="px-4 py-3">
+                            <p className="font-sans text-[13px] font-medium text-white">{p.passenger_name}</p>
+                            <p className="font-sans text-[11px] text-white/40">{p.passenger_phone}</p>
+                          </td>
+                          <td className="px-4 py-3 font-sans text-[12.5px] text-white/70">
+                            {p.origin} → {p.destination}
+                          </td>
+                          <td className="px-4 py-3 font-sans text-[12.5px] text-white/70">
+                            {p.bus_number}
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="font-sans text-[12px] text-white/70">
+                              {p.issued_at ? formatDate(p.issued_at) : "—"}
+                            </p>
+                            <p className="font-sans text-[11px] text-white/40">
+                              {p.departure_time ? formatTime(p.departure_time) : "—"}
+                            </p>
+                          </td>
+                          <td className="px-4 py-3 font-sans text-[13px]">
+                            {p.is_pink_card ? (
+                              <span className="text-rose-400">Free</span>
+                            ) : (
+                              <span className="text-emerald-400">₹{p.fare_charged}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {p.is_pink_card ? (
+                              <span className="rounded-full bg-rose-500/20 px-2 py-0.5 font-sans text-[11px] text-rose-300">
+                                🌸 Pink Card
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-blue-500/20 px-2 py-0.5 font-sans text-[11px] text-blue-300">
+                                💙 Paid
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={cn(
+                              "rounded-full px-2 py-0.5 font-sans text-[11px] uppercase",
+                              p.status === "scanned"
+                                ? "bg-emerald-500/20 text-emerald-300"
+                                : p.status === "issued"
+                                  ? "bg-indigo-500/20 text-indigo-300"
+                                  : "bg-red-500/20 text-red-300"
+                            )}>
+                              {p.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Small stat card for panel ─────────────────────────────────────────────────
+
+function StatMini({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="rounded-[10px] border border-white/10 bg-white/[0.03] px-4 py-3">
+      <p className="font-sans text-[11px] text-white/40">{label}</p>
+      <p className={cn("mt-1 font-sans text-[20px] font-bold", color)}>{value}</p>
     </div>
   );
 }
