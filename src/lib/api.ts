@@ -311,3 +311,41 @@ export async function fetchAllStops(): Promise<string[]> {
   const res = await request<{ stops: string[] }>("/search-trips/stops", { auth: "anon" });
   return res.stops;
 }
+
+// ── 11. Route Passengers (Admin) ──────────────────────────────────────────────
+
+export interface RoutePassenger {
+  ticket_id: string;
+  passenger_name: string;
+  passenger_phone: string;
+  origin: string;
+  destination: string;
+  bus_number: string;
+  departure_time: string | null;
+  issued_at: string;
+  scanned_at: string | null;
+  fare_charged: number;
+  is_pink_card: boolean;
+  status: string;
+}
+
+export interface RoutePassengersResponse {
+  success: boolean;
+  route_name: string;
+  range: string;
+  summary: {
+    total_revenue: number;
+    total_passengers: number;
+    pink_card_count: number;
+    paid_count: number;
+  };
+  passengers: RoutePassenger[];
+}
+
+export async function getRoutePassengers(
+  route_name: string,
+  range: "today" | "week" | "all" = "all",
+): Promise<RoutePassengersResponse> {
+  const params = new URLSearchParams({ route_name, range });
+  return request<RoutePassengersResponse>(`/route-passengers?${params.toString()}`);
+}
