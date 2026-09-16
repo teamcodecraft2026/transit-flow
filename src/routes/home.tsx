@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Crown, MapPin, Navigation, RefreshCw, ShieldCheck } from "lucide-react";
-import heroImg from "@/assets/hero-bus-interior.jpg";
+import heroImg from "@/assets/hero-bus-futuristic.jpg";
 import womanImg from "@/assets/woman-boarding.jpg";
 import { PageShell } from "@/components/PageShell";
 import { SectionEyebrow } from "@/components/SectionEyebrow";
@@ -47,128 +47,213 @@ function Home() {
   );
 }
 
+/* ── Particle animation canvas ────────────────────────── */
+
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  colorIndex: number;
+}
+
+function HeroParticles() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef<{ x: number; y: number } | null>(null);
+  const rafRef = useRef<number>(0);
+  const particlesRef = useRef<Particle[]>([]);
+
+  // ss3 palette: cyan (#09f2f9) and magenta (#f870e6) with light & dark shades
+  const COLORS = [
+    "#09f2f9", // cyan bright
+    "#05b8be", // cyan dark
+    "#03d4da", // cyan mid
+    "#f870e6", // magenta bright
+    "#c245b2", // magenta dark
+    "#e055d0", // magenta mid
+    "#7df9fc", // cyan light
+    "#fb9ef3", // magenta light
+  ];
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let width = 0;
+    let height = 0;
+    const COUNT = 75;
+    const LINK_DIST = 155;
+    const SPEED = 0.55;
+    const REPULSE = 115;
+
+    function resize() {
+      if (!canvas) return;
+      width = canvas.offsetWidth;
+      height = canvas.offsetHeight;
+      canvas.width = width * devicePixelRatio;
+      canvas.height = height * devicePixelRatio;
+      ctx!.scale(devicePixelRatio, devicePixelRatio);
+      init();
+    }
+
+    function init() {
+      particlesRef.current = Array.from({ length: COUNT }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * SPEED * 2,
+        vy: (Math.random() - 0.5) * SPEED * 2,
+        radius: Math.random() * 2 + 1,
+        colorIndex: Math.floor(Math.random() * COLORS.length),
+      }));
+    }
+
+    function hexToRgb(hex: string): [number, number, number] {
+      const c = hex.replace("#", "");
+      return [
+        parseInt(c.substring(0, 2), 16),
+        parseInt(c.substring(2, 4), 16),
+        parseInt(c.substring(4, 6), 16),
+      ];
+    }
+
+    function draw() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+
+      const mouse = mouseRef.current;
+      const particles = particlesRef.current;
+
+      for (const p of particles) {
+        if (mouse) {
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < REPULSE && dist > 0) {
+            const force = (REPULSE - dist) / REPULSE;
+            p.vx += (dx / dist) * force * 0.6;
+            p.vy += (dy / dist) * force * 0.6;
+          }
+        }
+
+        const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        const maxSpd = SPEED * 3;
+        if (spd > maxSpd) {
+          p.vx = (p.vx / spd) * maxSpd;
+          p.vy = (p.vy / spd) * maxSpd;
+        }
+        p.vx *= 0.99;
+        p.vy *= 0.99;
+        if (Math.abs(p.vx) < SPEED * 0.3) p.vx += (Math.random() - 0.5) * SPEED * 0.2;
+        if (Math.abs(p.vy) < SPEED * 0.3) p.vy += (Math.random() - 0.5) * SPEED * 0.2;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) { p.x = 0; p.vx *= -1; }
+        if (p.x > width) { p.x = width; p.vx *= -1; }
+        if (p.y < 0) { p.y = 0; p.vy *= -1; }
+        if (p.y > height) { p.y = height; p.vy *= -1; }
+      }
+
+      // Draw links — blend colors between connected particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < LINK_DIST) {
+            const alpha = 0.5 * (1 - dist / LINK_DIST);
+            const [r1, g1, b1] = hexToRgb(COLORS[particles[i].colorIndex]);
+            const [r2, g2, b2] = hexToRgb(COLORS[particles[j].colorIndex]);
+            const r = Math.round((r1 + r2) / 2);
+            const g = Math.round((g1 + g2) / 2);
+            const b = Math.round((b1 + b2) / 2);
+
+            const grad = ctx.createLinearGradient(
+              particles[i].x, particles[i].y,
+              particles[j].x, particles[j].y
+            );
+            grad.addColorStop(0, `rgba(${r1},${g1},${b1},${alpha})`);
+            grad.addColorStop(1, `rgba(${r2},${g2},${b2},${alpha})`);
+
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 0.9;
+            ctx.stroke();
+
+            // Bright node glow at intersection point
+            if (dist < LINK_DIST * 0.4) {
+              const mx = (particles[i].x + particles[j].x) / 2;
+              const my = (particles[i].y + particles[j].y) / 2;
+              ctx.beginPath();
+              ctx.arc(mx, my, 1.2, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 1.5})`;
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      // Draw dots with glow
+      for (const p of particles) {
+        const [r, g, b] = hexToRgb(COLORS[p.colorIndex]);
+        // Outer glow
+        const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 4);
+        glow.addColorStop(0, `rgba(${r},${g},${b},0.35)`);
+        glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius * 4, 0, Math.PI * 2);
+        ctx.fillStyle = glow;
+        ctx.fill();
+        // Core dot
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},0.85)`;
+        ctx.fill();
+      }
+
+      rafRef.current = requestAnimationFrame(draw);
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      const rect = canvas!.getBoundingClientRect();
+      mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+    function onMouseLeave() {
+      mouseRef.current = null;
+    }
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    resize();
+    rafRef.current = requestAnimationFrame(draw);
+    canvas.addEventListener("mousemove", onMouseMove);
+    canvas.addEventListener("mouseleave", onMouseLeave);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      ro.disconnect();
+      canvas.removeEventListener("mousemove", onMouseMove);
+      canvas.removeEventListener("mouseleave", onMouseLeave);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-auto absolute inset-0 size-full"
+      aria-hidden
+    />
+  );
+}
+
 /* ── Hero with parallax ───────────────────────────────── */
-
-// function Hero() {
-//   const { t } = useI18n();
-//   const { requireAuth } = useAuth();
-//   const navigate = useNavigate();
-//   const title = t("home.title");
-//   const typed = useTypewriter(title, 700);
-
-//   const bgRef = useRef<HTMLDivElement>(null);
-//   const textRef = useRef<HTMLDivElement>(null);
-
-//   useEffect(() => {
-//     let rafId: number;
-//     let ticking = false;
-
-//     function onScroll() {
-//       if (ticking) return;
-//       ticking = true;
-//       rafId = requestAnimationFrame(() => {
-//         const y = window.scrollY;
-//         const vh = window.innerHeight;
-
-//         // Only apply parallax while hero is visible
-//         if (y > vh) {
-//           ticking = false;
-//           return;
-//         }
-
-//         if (bgRef.current) {
-//           const scale = Math.max(1, 1.08 - y * 0.00008);
-//           bgRef.current.style.transform = `translateY(${y * 0.4}px) scale(${scale})`;
-//         }
-
-//         if (textRef.current) {
-//           const opacity = Math.max(0, 1 - y / 500);
-//           textRef.current.style.transform = `translateY(${y * 0.15}px)`;
-//           textRef.current.style.opacity = `${opacity}`;
-//         }
-
-//         ticking = false;
-//       });
-//     }
-
-//     window.addEventListener("scroll", onScroll, { passive: true });
-//     return () => {
-//       window.removeEventListener("scroll", onScroll);
-//       cancelAnimationFrame(rafId);
-//     };
-//   }, []);
-
-//   return (
-//     <section
-//       className="relative -mt-[88px] flex min-h-[100svh] items-center"
-//       style={{ overflow: "hidden", isolation: "isolate" }}
-//     >
-//       {/* Parallax background — clipped strictly inside section */}
-//       <div
-//         ref={bgRef}
-//         className="absolute inset-0 will-change-transform"
-//         style={{ transformOrigin: "center top" }}
-//       >
-//         <img
-//           src={heroImg}
-//           alt="View down the aisle of a city bus at night"
-//           width={1920}
-//           height={1088}
-//           className="size-full object-cover"
-//         />
-//       </div>
-
-//       <div className="absolute inset-0 scrim-dark" />
-
-//       <div
-//         ref={textRef}
-//         className="relative z-10 mx-auto w-full max-w-[900px] px-6 pt-[88px] text-center will-change-transform"
-//       >
-//         <div style={{ animationDelay: "0ms", animationDuration: "150ms" }} className="anim-fade">
-//           <SectionEyebrow label={t("home.eyebrow")} />
-//         </div>
-
-//         <h1 className="mt-8 font-display text-[40px] leading-[1.05] text-ink sm:text-[56px] lg:text-[64px]">
-//           {typed}
-//           <span className="ml-0.5 inline-block w-px animate-pulse align-middle" />
-//         </h1>
-//         <p
-//           style={{ animationDelay: "900ms" }}
-//           className="anim-fade-up font-display text-[30px] italic leading-[1.1] text-ink sm:text-[40px] lg:text-[46px]"
-//         >
-//           {t("home.subtitle")}
-//         </p>
-
-//         <p
-//           style={{ animationDelay: "1000ms" }}
-//           className="anim-fade-up mx-auto mt-6 max-w-[620px] font-sans text-[14px] leading-relaxed text-ink/85 sm:text-[15px]"
-//         >
-//           {t("home.body")}
-//         </p>
-
-//         <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-//           <div style={{ animationDelay: "1100ms" }} className="anim-fade-up">
-//             <GlowBorderButton
-//               tone="gold"
-//               hero
-//               onClick={() => requireAuth(() => navigate({ to: "/book" }))}
-//             >
-//               {t("home.cta")}
-//             </GlowBorderButton>
-//           </div>
-//           <div style={{ animationDelay: "1180ms" }} className="anim-fade-up">
-//             <GlowBorderButton tone="gold" hero onClick={() => navigate({ to: "/pink-card" })}>
-//               {t("home.ctaSecondary")}
-//             </GlowBorderButton>
-//           </div>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-
-
 
 function Hero() {
   const { t } = useI18n();
@@ -187,13 +272,11 @@ function Hero() {
       rafId = requestAnimationFrame(() => {
         const y = window.scrollY;
 
-        // Background moves at 0.4x scroll speed + subtle scale
         if (bgRef.current) {
           const scale = 1.08 - y * 0.00008;
           bgRef.current.style.transform = `translateY(${y * 0.4}px) scale(${Math.max(1, scale)})`;
         }
 
-        // Text moves at 0.85x scroll speed
         if (textRef.current) {
           textRef.current.style.transform = `translateY(${y * 0.15}px)`;
           textRef.current.style.opacity = `${Math.max(0, 1 - y / 600)}`;
@@ -210,7 +293,7 @@ function Hero() {
 
   return (
     <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden">
-      {/* Parallax background */}
+      {/* Parallax background — futuristic bus */}
       <div
         ref={bgRef}
         className="absolute -inset-y-28 inset-x-0 will-change-transform"
@@ -218,16 +301,20 @@ function Hero() {
       >
         <img
           src={heroImg}
-          alt="View down the aisle of a city bus at night"
+          alt="Futuristic neon bus in a digital city"
           width={1920}
           height={1088}
           className="size-full object-cover"
         />
       </div>
 
-      <div className="absolute inset-0 scrim-dark" />
+      {/* Darker overlay so text stays readable over bright neon image */}
+      <div className="absolute inset-0 bg-black/60" />
 
-      {/* Text content moves slightly slower */}
+      {/* Cyan/magenta particle animation */}
+      <HeroParticles />
+
+      {/* Text content */}
       <div
         ref={textRef}
         className="relative z-10 mx-auto w-full max-w-[900px] px-6 pt-[88px] text-center will-change-transform"
@@ -256,30 +343,52 @@ function Hero() {
         </p>
 
         <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+          {/* Book Ticket — cyan neon style */}
           <div style={{ animationDelay: "1100ms" }} className="anim-fade-up">
-            <GlowBorderButton
-              tone="gold"
-              hero
+            <button
               onClick={() => requireAuth(() => navigate({ to: "/book" }))}
+              className="relative inline-flex items-center justify-center px-8 py-3.5 font-display text-[15px] font-semibold text-white rounded-[10px] overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, rgba(9,242,249,0.15) 0%, rgba(9,242,249,0.05) 100%)",
+                border: "1px solid rgba(9,242,249,0.7)",
+                boxShadow: "0 0 18px rgba(9,242,249,0.35), inset 0 0 18px rgba(9,242,249,0.05)",
+              }}
             >
-              {t("home.cta")}
-            </GlowBorderButton>
+              <span
+                className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                style={{ background: "linear-gradient(135deg, rgba(9,242,249,0.25), rgba(9,242,249,0.1))" }}
+              />
+              <span className="relative" style={{ textShadow: "0 0 12px rgba(9,242,249,0.8)" }}>
+                {t("home.cta")}
+              </span>
+            </button>
           </div>
+
+          {/* Get Pink Card — magenta neon style */}
           <div style={{ animationDelay: "1180ms" }} className="anim-fade-up">
-            <GlowBorderButton tone="gold" hero onClick={() => navigate({ to: "/pink-card" })}>
-              {t("home.ctaSecondary")}
-            </GlowBorderButton>
+            <button
+              onClick={() => navigate({ to: "/pink-card" })}
+              className="relative inline-flex items-center justify-center px-8 py-3.5 font-display text-[15px] font-semibold text-white rounded-[10px] overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, rgba(248,112,230,0.15) 0%, rgba(248,112,230,0.05) 100%)",
+                border: "1px solid rgba(248,112,230,0.7)",
+                boxShadow: "0 0 18px rgba(248,112,230,0.35), inset 0 0 18px rgba(248,112,230,0.05)",
+              }}
+            >
+              <span
+                className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                style={{ background: "linear-gradient(135deg, rgba(248,112,230,0.25), rgba(248,112,230,0.1))" }}
+              />
+              <span className="relative" style={{ textShadow: "0 0 12px rgba(248,112,230,0.8)" }}>
+                {t("home.ctaSecondary")}
+              </span>
+            </button>
           </div>
         </div>
       </div>
     </section>
   );
 }
-
-
-
-
-
 
 function useTypewriter(text: string, duration: number) {
   const [shown, setShown] = useState(text);
@@ -477,7 +586,6 @@ function PinkSpotlight() {
     const section = sectionRef.current;
     if (!section) return;
 
-    // Set initial hidden states
     if (textRef.current) {
       textRef.current.style.clipPath = "polygon(0 100%, 100% 100%, 100% 100%, 0 100%)";
       textRef.current.style.opacity = "0";
@@ -508,13 +616,10 @@ function PinkSpotlight() {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
 
-          // Reveal text block
           if (textRef.current) {
             textRef.current.style.clipPath = "polygon(0 0%, 100% 0%, 100% 100%, 0 100%)";
             textRef.current.style.opacity = "1";
           }
-
-          // Stagger cards
           if (cardsRef.current) {
             const cards = cardsRef.current.querySelectorAll<HTMLElement>("[data-card]");
             cards.forEach((card) => {
@@ -522,13 +627,9 @@ function PinkSpotlight() {
               card.style.transform = "translateY(0)";
             });
           }
-
-          // Sweep photo from right
           if (photoRef.current) {
             photoRef.current.style.clipPath = "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
           }
-
-          // Buttons fade in
           if (btnsRef.current) {
             btnsRef.current.style.opacity = "1";
             btnsRef.current.style.transform = "translateY(0)";
@@ -556,7 +657,6 @@ function PinkSpotlight() {
       className="relative grid overflow-hidden bg-canvas-alt lg:grid-cols-2"
     >
       <div className="relative z-10 flex flex-col justify-center px-6 py-[110px] lg:pl-[8vw] lg:pr-16">
-        {/* Text block — clip-path reveal from bottom */}
         <div ref={textRef}>
           <SectionEyebrow label={t("spot.eyebrow")} />
           <h2 className="mt-8 font-display text-[36px] leading-[1.15] text-ink sm:text-[44px]">
@@ -571,7 +671,6 @@ function PinkSpotlight() {
           </p>
         </div>
 
-        {/* Feature cards — stagger slide up */}
         <div
           ref={cardsRef}
           className="mt-10 grid divide-y divide-divider rounded-[16px] border border-white/10 bg-black/30 sm:grid-cols-3 sm:divide-x sm:divide-y-0"
@@ -585,7 +684,6 @@ function PinkSpotlight() {
           ))}
         </div>
 
-        {/* Buttons */}
         <div ref={btnsRef} className="mt-9 flex flex-wrap gap-4">
           <Button
             variant="pinkSolid"
@@ -606,7 +704,6 @@ function PinkSpotlight() {
         </div>
       </div>
 
-      {/* Photo — sweep in from right */}
       <div ref={photoRef} className="relative min-h-[420px] lg:min-h-full">
         <ParallaxLayer distance={50} className="-inset-y-16">
           <img
@@ -624,18 +721,8 @@ function PinkSpotlight() {
   );
 }
 
-
-
-
-
-
-
-
-
-
-
 // import { createFileRoute, useNavigate } from "@tanstack/react-router";
-// import { useEffect, useState } from "react";
+// import { useEffect, useRef, useState } from "react";
 // import { Crown, MapPin, Navigation, RefreshCw, ShieldCheck } from "lucide-react";
 // import heroImg from "@/assets/hero-bus-interior.jpg";
 // import womanImg from "@/assets/woman-boarding.jpg";
@@ -646,7 +733,6 @@ function PinkSpotlight() {
 // import { GlowBorderButton } from "@/components/GlowBorderButton";
 // import { TiltCard } from "@/components/TiltCard";
 // import { ParallaxLayer } from "@/components/ParallaxLayer";
-
 // import { QrFrame } from "@/components/QrFrame";
 // import { useI18n } from "@/i18n/LanguageProvider";
 // import { useAuth } from "@/auth/AuthProvider";
@@ -684,7 +770,128 @@ function PinkSpotlight() {
 //   );
 // }
 
-// /* ── Hero ─────────────────────────────────────────────── */
+// /* ── Hero with parallax ───────────────────────────────── */
+
+// // function Hero() {
+// //   const { t } = useI18n();
+// //   const { requireAuth } = useAuth();
+// //   const navigate = useNavigate();
+// //   const title = t("home.title");
+// //   const typed = useTypewriter(title, 700);
+
+// //   const bgRef = useRef<HTMLDivElement>(null);
+// //   const textRef = useRef<HTMLDivElement>(null);
+
+// //   useEffect(() => {
+// //     let rafId: number;
+// //     let ticking = false;
+
+// //     function onScroll() {
+// //       if (ticking) return;
+// //       ticking = true;
+// //       rafId = requestAnimationFrame(() => {
+// //         const y = window.scrollY;
+// //         const vh = window.innerHeight;
+
+// //         // Only apply parallax while hero is visible
+// //         if (y > vh) {
+// //           ticking = false;
+// //           return;
+// //         }
+
+// //         if (bgRef.current) {
+// //           const scale = Math.max(1, 1.08 - y * 0.00008);
+// //           bgRef.current.style.transform = `translateY(${y * 0.4}px) scale(${scale})`;
+// //         }
+
+// //         if (textRef.current) {
+// //           const opacity = Math.max(0, 1 - y / 500);
+// //           textRef.current.style.transform = `translateY(${y * 0.15}px)`;
+// //           textRef.current.style.opacity = `${opacity}`;
+// //         }
+
+// //         ticking = false;
+// //       });
+// //     }
+
+// //     window.addEventListener("scroll", onScroll, { passive: true });
+// //     return () => {
+// //       window.removeEventListener("scroll", onScroll);
+// //       cancelAnimationFrame(rafId);
+// //     };
+// //   }, []);
+
+// //   return (
+// //     <section
+// //       className="relative -mt-[88px] flex min-h-[100svh] items-center"
+// //       style={{ overflow: "hidden", isolation: "isolate" }}
+// //     >
+// //       {/* Parallax background — clipped strictly inside section */}
+// //       <div
+// //         ref={bgRef}
+// //         className="absolute inset-0 will-change-transform"
+// //         style={{ transformOrigin: "center top" }}
+// //       >
+// //         <img
+// //           src={heroImg}
+// //           alt="View down the aisle of a city bus at night"
+// //           width={1920}
+// //           height={1088}
+// //           className="size-full object-cover"
+// //         />
+// //       </div>
+
+// //       <div className="absolute inset-0 scrim-dark" />
+
+// //       <div
+// //         ref={textRef}
+// //         className="relative z-10 mx-auto w-full max-w-[900px] px-6 pt-[88px] text-center will-change-transform"
+// //       >
+// //         <div style={{ animationDelay: "0ms", animationDuration: "150ms" }} className="anim-fade">
+// //           <SectionEyebrow label={t("home.eyebrow")} />
+// //         </div>
+
+// //         <h1 className="mt-8 font-display text-[40px] leading-[1.05] text-ink sm:text-[56px] lg:text-[64px]">
+// //           {typed}
+// //           <span className="ml-0.5 inline-block w-px animate-pulse align-middle" />
+// //         </h1>
+// //         <p
+// //           style={{ animationDelay: "900ms" }}
+// //           className="anim-fade-up font-display text-[30px] italic leading-[1.1] text-ink sm:text-[40px] lg:text-[46px]"
+// //         >
+// //           {t("home.subtitle")}
+// //         </p>
+
+// //         <p
+// //           style={{ animationDelay: "1000ms" }}
+// //           className="anim-fade-up mx-auto mt-6 max-w-[620px] font-sans text-[14px] leading-relaxed text-ink/85 sm:text-[15px]"
+// //         >
+// //           {t("home.body")}
+// //         </p>
+
+// //         <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+// //           <div style={{ animationDelay: "1100ms" }} className="anim-fade-up">
+// //             <GlowBorderButton
+// //               tone="gold"
+// //               hero
+// //               onClick={() => requireAuth(() => navigate({ to: "/book" }))}
+// //             >
+// //               {t("home.cta")}
+// //             </GlowBorderButton>
+// //           </div>
+// //           <div style={{ animationDelay: "1180ms" }} className="anim-fade-up">
+// //             <GlowBorderButton tone="gold" hero onClick={() => navigate({ to: "/pink-card" })}>
+// //               {t("home.ctaSecondary")}
+// //             </GlowBorderButton>
+// //           </div>
+// //         </div>
+// //       </div>
+// //     </section>
+// //   );
+// // }
+
+
+
 
 // function Hero() {
 //   const { t } = useI18n();
@@ -693,9 +900,45 @@ function PinkSpotlight() {
 //   const title = t("home.title");
 //   const typed = useTypewriter(title, 700);
 
+//   const bgRef = useRef<HTMLDivElement>(null);
+//   const textRef = useRef<HTMLDivElement>(null);
+
+//   useEffect(() => {
+//     let rafId: number;
+
+//     function onScroll() {
+//       rafId = requestAnimationFrame(() => {
+//         const y = window.scrollY;
+
+//         // Background moves at 0.4x scroll speed + subtle scale
+//         if (bgRef.current) {
+//           const scale = 1.08 - y * 0.00008;
+//           bgRef.current.style.transform = `translateY(${y * 0.4}px) scale(${Math.max(1, scale)})`;
+//         }
+
+//         // Text moves at 0.85x scroll speed
+//         if (textRef.current) {
+//           textRef.current.style.transform = `translateY(${y * 0.15}px)`;
+//           textRef.current.style.opacity = `${Math.max(0, 1 - y / 600)}`;
+//         }
+//       });
+//     }
+
+//     window.addEventListener("scroll", onScroll, { passive: true });
+//     return () => {
+//       window.removeEventListener("scroll", onScroll);
+//       cancelAnimationFrame(rafId);
+//     };
+//   }, []);
+
 //   return (
 //     <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden">
-//       <ParallaxLayer distance={70} className="-inset-y-28">
+//       {/* Parallax background */}
+//       <div
+//         ref={bgRef}
+//         className="absolute -inset-y-28 inset-x-0 will-change-transform"
+//         style={{ transformOrigin: "center top" }}
+//       >
 //         <img
 //           src={heroImg}
 //           alt="View down the aisle of a city bus at night"
@@ -703,10 +946,16 @@ function PinkSpotlight() {
 //           height={1088}
 //           className="size-full object-cover"
 //         />
-//       </ParallaxLayer>
+//       </div>
+
 //       <div className="absolute inset-0 scrim-dark" />
 
-//       <div className="relative z-10 mx-auto w-full max-w-[900px] px-6 pt-[88px] text-center">
+//       {/* Text content moves slightly slower */}
+//       <div
+//         ref={textRef}
+//         className="relative z-10 mx-auto w-full max-w-[900px] px-6 pt-[88px] text-center will-change-transform"
+//         style={{ transition: "opacity 0.1s linear" }}
+//       >
 //         <div style={{ animationDelay: "0ms", animationDuration: "150ms" }} className="anim-fade">
 //           <SectionEyebrow label={t("home.eyebrow")} />
 //         </div>
@@ -749,6 +998,11 @@ function PinkSpotlight() {
 //     </section>
 //   );
 // }
+
+
+
+
+
 
 // function useTypewriter(text: string, duration: number) {
 //   const [shown, setShown] = useState(text);
@@ -806,14 +1060,14 @@ function PinkSpotlight() {
 //           {cards.map((c, i) => (
 //             <Reveal key={c.n} delay={i * 120} className="h-full">
 //               <TiltCard max={8}>
-//               <article className="glass-panel flex h-full min-h-[340px] flex-col p-8">
-//                 <p className="font-display text-[22px] text-rose-numeral">{c.n}</p>
-//                 <h3 className="mt-3 font-display text-[21px] text-ink">{c.title}</h3>
-//                 <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-ink-muted">
-//                   {c.body}
-//                 </p>
-//                 <div className="mt-6 flex-1">{c.mock}</div>
-//               </article>
+//                 <article className="glass-panel flex h-full min-h-[340px] flex-col p-8">
+//                   <p className="font-display text-[22px] text-rose-numeral">{c.n}</p>
+//                   <h3 className="mt-3 font-display text-[21px] text-ink">{c.title}</h3>
+//                   <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-ink-muted">
+//                     {c.body}
+//                   </p>
+//                   <div className="mt-6 flex-1">{c.mock}</div>
+//                 </article>
 //               </TiltCard>
 //             </Reveal>
 //           ))}
@@ -931,11 +1185,87 @@ function PinkSpotlight() {
 //   );
 // }
 
-// /* ── Pink Card spotlight ──────────────────────────────── */
+// /* ── Pink Card spotlight with clip-path reveal ────────── */
 
 // function PinkSpotlight() {
 //   const { t } = useI18n();
 //   const navigate = useNavigate();
+//   const sectionRef = useRef<HTMLElement>(null);
+//   const textRef = useRef<HTMLDivElement>(null);
+//   const cardsRef = useRef<HTMLDivElement>(null);
+//   const photoRef = useRef<HTMLDivElement>(null);
+//   const btnsRef = useRef<HTMLDivElement>(null);
+
+//   useEffect(() => {
+//     const section = sectionRef.current;
+//     if (!section) return;
+
+//     // Set initial hidden states
+//     if (textRef.current) {
+//       textRef.current.style.clipPath = "polygon(0 100%, 100% 100%, 100% 100%, 0 100%)";
+//       textRef.current.style.opacity = "0";
+//       textRef.current.style.transition =
+//         "clip-path 900ms cubic-bezier(0.25,0.46,0.45,0.94), opacity 600ms ease";
+//     }
+//     if (cardsRef.current) {
+//       const cards = cardsRef.current.querySelectorAll<HTMLElement>("[data-card]");
+//       cards.forEach((card, i) => {
+//         card.style.opacity = "0";
+//         card.style.transform = "translateY(24px)";
+//         card.style.transition = `opacity 600ms ease ${200 + i * 150}ms, transform 600ms cubic-bezier(0.25,0.46,0.45,0.94) ${200 + i * 150}ms`;
+//       });
+//     }
+//     if (photoRef.current) {
+//       photoRef.current.style.clipPath = "polygon(100% 0, 100% 0, 100% 100%, 100% 100%)";
+//       photoRef.current.style.transition =
+//         "clip-path 1100ms cubic-bezier(0.25,0.46,0.45,0.94) 200ms";
+//     }
+//     if (btnsRef.current) {
+//       btnsRef.current.style.opacity = "0";
+//       btnsRef.current.style.transform = "translateY(16px)";
+//       btnsRef.current.style.transition = "opacity 600ms ease 700ms, transform 600ms ease 700ms";
+//     }
+
+//     const observer = new IntersectionObserver(
+//       (entries) => {
+//         entries.forEach((entry) => {
+//           if (!entry.isIntersecting) return;
+
+//           // Reveal text block
+//           if (textRef.current) {
+//             textRef.current.style.clipPath = "polygon(0 0%, 100% 0%, 100% 100%, 0 100%)";
+//             textRef.current.style.opacity = "1";
+//           }
+
+//           // Stagger cards
+//           if (cardsRef.current) {
+//             const cards = cardsRef.current.querySelectorAll<HTMLElement>("[data-card]");
+//             cards.forEach((card) => {
+//               card.style.opacity = "1";
+//               card.style.transform = "translateY(0)";
+//             });
+//           }
+
+//           // Sweep photo from right
+//           if (photoRef.current) {
+//             photoRef.current.style.clipPath = "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
+//           }
+
+//           // Buttons fade in
+//           if (btnsRef.current) {
+//             btnsRef.current.style.opacity = "1";
+//             btnsRef.current.style.transform = "translateY(0)";
+//           }
+
+//           observer.disconnect();
+//         });
+//       },
+//       { threshold: 0.2 }
+//     );
+
+//     observer.observe(section);
+//     return () => observer.disconnect();
+//   }, []);
 
 //   const features = [
 //     { icon: Crown, title: t("spot.f1"), caption: t("spot.f1sub") },
@@ -944,9 +1274,13 @@ function PinkSpotlight() {
 //   ];
 
 //   return (
-//     <section className="relative grid overflow-hidden bg-canvas-alt lg:grid-cols-2">
+//     <section
+//       ref={sectionRef}
+//       className="relative grid overflow-hidden bg-canvas-alt lg:grid-cols-2"
+//     >
 //       <div className="relative z-10 flex flex-col justify-center px-6 py-[110px] lg:pl-[8vw] lg:pr-16">
-//         <Reveal>
+//         {/* Text block — clip-path reveal from bottom */}
+//         <div ref={textRef}>
 //           <SectionEyebrow label={t("spot.eyebrow")} />
 //           <h2 className="mt-8 font-display text-[36px] leading-[1.15] text-ink sm:text-[44px]">
 //             {t("spot.title")}
@@ -958,23 +1292,24 @@ function PinkSpotlight() {
 //           <p className="mt-6 max-w-[460px] font-sans text-[13.5px] leading-relaxed text-ink-muted">
 //             {t("spot.body")}
 //           </p>
-//         </Reveal>
+//         </div>
 
-//         <Reveal delay={120}>
-//           <div className="mt-10 grid divide-y divide-divider rounded-[16px] border border-white/10 bg-black/30 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-//             {features.map(({ icon: Icon, title, caption }) => (
-//               <div key={title} className="px-5 py-6">
-//                 <Icon className="size-4 text-rose-bright" strokeWidth={1.5} />
-//                 <p className="mt-3 font-display text-[15px] text-ink">{title}</p>
-//                 <p className="mt-1 font-sans text-[11px] leading-relaxed text-ink-muted">
-//                   {caption}
-//                 </p>
-//               </div>
-//             ))}
-//           </div>
-//         </Reveal>
+//         {/* Feature cards — stagger slide up */}
+//         <div
+//           ref={cardsRef}
+//           className="mt-10 grid divide-y divide-divider rounded-[16px] border border-white/10 bg-black/30 sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+//         >
+//           {features.map(({ icon: Icon, title, caption }) => (
+//             <div key={title} data-card className="px-5 py-6">
+//               <Icon className="size-4 text-rose-bright" strokeWidth={1.5} />
+//               <p className="mt-3 font-display text-[15px] text-ink">{title}</p>
+//               <p className="mt-1 font-sans text-[11px] leading-relaxed text-ink-muted">{caption}</p>
+//             </div>
+//           ))}
+//         </div>
 
-//         <Reveal delay={240} className="mt-9 flex flex-wrap gap-4">
+//         {/* Buttons */}
+//         <div ref={btnsRef} className="mt-9 flex flex-wrap gap-4">
 //           <Button
 //             variant="pinkSolid"
 //             size="md"
@@ -991,19 +1326,20 @@ function PinkSpotlight() {
 //           >
 //             {t("spot.cta2")}
 //           </Button>
-//         </Reveal>
+//         </div>
 //       </div>
 
-//       <div className="relative min-h-[420px] lg:min-h-full">
+//       {/* Photo — sweep in from right */}
+//       <div ref={photoRef} className="relative min-h-[420px] lg:min-h-full">
 //         <ParallaxLayer distance={50} className="-inset-y-16">
-//         <img
-//           src={womanImg}
-//           alt="A woman boarding a city bus at dusk"
-//           loading="lazy"
-//           width={1200}
-//           height={1408}
-//           className="size-full object-cover"
-//         />
+//           <img
+//             src={womanImg}
+//             alt="A woman boarding a city bus at dusk"
+//             loading="lazy"
+//             width={1200}
+//             height={1408}
+//             className="size-full object-cover"
+//           />
 //         </ParallaxLayer>
 //         <div className="absolute inset-0 bg-linear-to-r from-canvas-alt via-canvas-alt/30 to-transparent" />
 //       </div>
