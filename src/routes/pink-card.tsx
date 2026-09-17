@@ -44,6 +44,10 @@ export const Route = createFileRoute("/pink-card")({
   component: PinkCardPage,
 });
 
+// ── Module-level flag — survives StrictMode double-mount ──────────────────────
+// Set to true once the animation starts; never resets during the session.
+let revealHasRun = false;
+
 // ── Per-user key ──────────────────────────────────────────────────────────────
 
 function getPinkCardKey(): string {
@@ -70,41 +74,46 @@ function getSavedResult(): PinkCardResponse | null {
 
 type StatusScreen = "eligible" | "not-eligible" | "not-applied";
 
+// ── Three.js CDN loader ───────────────────────────────────────────────────────
+
+function useThreeJS(onReady: () => void) {
+  useEffect(() => {
+    if ((window as any).THREE) { onReady(); return; }
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    script.async = true;
+    script.onload = onReady;
+    document.head.appendChild(script);
+  }, []);
+}
+
 // ── 3D Reveal Effect ──────────────────────────────────────────────────────────
 
 function RevealEffect({ onDone }: { onDone: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const doneRef = useRef(false);
 
   useEffect(() => {
+    // StrictMode guard — only ever run once per session
+    if (revealHasRun) { onDone(); return; }
+    revealHasRun = true;
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       onDone();
       return;
     }
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) { onDone(); return; }
 
-    // ── Colour palette aligned to Pink Card page ──
-    const COLORS = [
-      0xe85d82, // rose
-      0xc13f66, // rose-deep
-      0xff2e76, // rose-glow
-      0xf870e6, // magenta
-      0xc245b2, // magenta dark
-      0xd0216d, // rose-card-a
-      0x920946, // rose-card-b
-      0xfb9ef3, // soft pink
-    ];
+    const THREE = (window as any).THREE;
+    if (!THREE) { onDone(); return; }
 
     const W = window.innerWidth;
     const H = window.innerHeight;
 
-    // ── Three.js bootstrap (loaded from CDN) ──
-    const THREE = (window as any).THREE;
-    if (!THREE) { onDone(); return; }
-
+    // alpha:true so the canvas is transparent — page shows through from frame 1
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setClearColor(0x000000, 0); // fully transparent background
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(W, H);
 
@@ -113,7 +122,7 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
 
     const scene = new THREE.Scene();
 
-    // ── Work out world dimensions ──
+    // World dimensions
     const vFOV = (75 * Math.PI) / 180;
     const wHeight = 2 * Math.tan(vFOV / 2) * 75;
     const wWidth = wHeight * (W / H);
@@ -122,21 +131,28 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
     const THICKNESS = 3;
     const nx = Math.round(wWidth / OBJ_SIZE) + 1;
     const ny = Math.round(wHeight / OBJ_SIZE) + 1;
-    const cx = nx / 2;
-    const cy = ny / 2;
+    const cxf = nx / 2;
+    const cyf = ny / 2;
 
-    scene.add(new THREE.AmbientLight(0x606060));
-    const pointLight = new THREE.PointLight(0xffffff, 1.2);
+    // Lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const pointLight = new THREE.PointLight(0xffffff, 1.0);
     pointLight.position.set(0, 0, 100);
     scene.add(pointLight);
+
+    // Single dark-rose color — no multi-color noise
+    const CUBE_COLOR = 0xb5405e;
 
     const geometry = new THREE.BoxGeometry(OBJ_SIZE, OBJ_SIZE, THICKNESS);
     const meshes: any[] = [];
 
     for (let i = 0; i < nx; i++) {
       for (let j = 0; j < ny; j++) {
-        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-        const mat = new THREE.MeshLambertMaterial({ color, transparent: true, opacity: 1 });
+        const mat = new THREE.MeshLambertMaterial({
+          color: CUBE_COLOR,
+          transparent: true,
+          opacity: 1,
+        });
         const mesh = new THREE.Mesh(geometry, mat);
         mesh.position.set(
           -wWidth / 2 + i * OBJ_SIZE,
@@ -146,26 +162,18 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
         scene.add(mesh);
         meshes.push(mesh);
 
-        // ── Center-outward delay: tiles near center reveal last ──
-        const di = Math.abs(i - cx);
-        const dj = Math.abs(j - cy);
+        // Center-outward delay: outer tiles fly first, center tiles fly last
+        const di = Math.abs(i - cxf);
+        const dj = Math.abs(j - cyf);
         const distFromCenter = Math.sqrt(di * di + dj * dj);
-        const maxDist = Math.sqrt(cx * cx + cy * cy);
-        // outer tiles start first (delay 0.2s), center tiles start last (delay 1.8s)
-        const delay = 0.2 + (distFromCenter / maxDist) * 1.6;
+        const maxDist = Math.sqrt(cxf * cxf + cyf * cyf);
+        const delay = 0.1 + (distFromCenter / maxDist) * 1.4;
 
-        // Random rotation axes
         const rx = (Math.random() - 0.5) * Math.PI * 2;
         const ry = (Math.random() - 0.5) * Math.PI * 2;
         const rz = (Math.random() - 0.5) * Math.PI * 2;
 
-        // Store tween targets on mesh for manual animation
-        (mesh as any)._anim = {
-          delay,
-          duration: 1.8,
-          rx, ry, rz,
-          startTime: -1,
-        };
+        (mesh as any)._anim = { delay, duration: 1.6, rx, ry, rz };
       }
     }
 
@@ -182,7 +190,7 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
       rafId = requestAnimationFrame(animate);
 
       if (startTime === null) startTime = ts;
-      const elapsed = (ts - startTime) / 1000; // seconds
+      const elapsed = (ts - startTime) / 1000;
 
       let allDone = true;
 
@@ -204,13 +212,11 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
 
       renderer.render(scene, camera);
 
-      // All tiles gone — call onDone
-      if (allDone && !doneRef.current) {
-        doneRef.current = true;
+      if (allDone) {
         finished = true;
-        setTimeout(() => {
-          onDone();
-        }, 120);
+        cancelAnimationFrame(rafId);
+        // Small pause so the last cube fully fades, then remove canvas
+        setTimeout(() => onDone(), 80);
       }
     }
 
@@ -230,27 +236,12 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
         inset: 0,
         width: "100%",
         height: "100%",
+        // Sits above the page but transparent background — page always visible behind
         zIndex: 9999,
         pointerEvents: "none",
       }}
     />
   );
-}
-
-// ── Three.js CDN loader ───────────────────────────────────────────────────────
-
-function useThreeJS(onReady: () => void) {
-  useEffect(() => {
-    if ((window as any).THREE) { onReady(); return; }
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-    script.async = true;
-    script.onload = onReady;
-    document.head.appendChild(script);
-    return () => {
-      // leave script in DOM — may be reused
-    };
-  }, []);
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -262,9 +253,9 @@ function PinkCardPage() {
   const [statusScreen, setStatusScreen] = useState<StatusScreen | null>(null);
   const [savedResult, setSavedResult] = useState<PinkCardResponse | null>(null);
 
-  // 3D reveal state
+  // If animation already ran this session, skip straight to revealed
   const [threeReady, setThreeReady] = useState(false);
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(revealHasRun);
 
   useThreeJS(() => setThreeReady(true));
 
@@ -298,7 +289,7 @@ function PinkCardPage() {
     });
   }
 
-  // ── Status result screens ─────────────────────────────────────────────────
+  // ── Status result screens — no reveal animation here ─────────────────────
 
   if (statusScreen) {
     return (
@@ -312,10 +303,8 @@ function PinkCardPage() {
             className="absolute inset-0 size-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-black/65" />
-
           <div className="relative z-10 w-full max-w-[500px] px-6 text-center">
 
-            {/* ── Not Applied ── */}
             {statusScreen === "not-applied" && (
               <>
                 <ClipboardList className="mx-auto size-16 text-ink-muted" strokeWidth={1.25} />
@@ -351,7 +340,6 @@ function PinkCardPage() {
               </>
             )}
 
-            {/* ── Eligible ── */}
             {statusScreen === "eligible" && savedResult && (
               <>
                 <CheckCircle2 className="mx-auto size-16 text-green-400" strokeWidth={1.5} />
@@ -377,7 +365,6 @@ function PinkCardPage() {
               </>
             )}
 
-            {/* ── Not Eligible ── */}
             {statusScreen === "not-eligible" && savedResult && (
               <>
                 <XCircle className="mx-auto size-16 text-destructive" strokeWidth={1.5} />
@@ -437,111 +424,102 @@ function PinkCardPage() {
 
   return (
     <>
-      {/* 3D reveal overlay — sits above everything, removed once done */}
+      {/* Canvas overlay — transparent background, page always visible beneath */}
       {threeReady && !revealed && (
         <RevealEffect onDone={() => setRevealed(true)} />
       )}
 
-      {/* Page content — visible underneath from the start (cubes cover it) */}
-      <div
-        style={{
-          opacity: revealed ? 1 : 0,
-          transition: "opacity 0.5s ease",
-          // Keep layout in place even while hidden so no layout shift
-          visibility: revealed ? "visible" : "hidden",
-        }}
-      >
-        <PageShell theme="rose" backHome>
-          <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden pt-[88px]">
-            <img
-              src={glowBg}
-              alt=""
-              width={1920}
-              height={1088}
-              className="absolute inset-0 size-full object-cover opacity-70"
-            />
-            <div className="absolute inset-0 bg-black/55" />
-            <div className="absolute inset-x-0 bottom-0 h-52 bg-linear-to-b from-transparent to-canvas" />
+      {/* Page is ALWAYS visible — opacity:1, no hide/show toggle */}
+      <PageShell theme="rose" backHome>
+        <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden pt-[88px]">
+          <img
+            src={glowBg}
+            alt=""
+            width={1920}
+            height={1088}
+            className="absolute inset-0 size-full object-cover opacity-70"
+          />
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-x-0 bottom-0 h-52 bg-linear-to-b from-transparent to-canvas" />
 
-            <div className="relative z-10 mx-auto grid w-full max-w-[1240px] items-center gap-16 px-6 py-24 lg:grid-cols-2">
-              <Reveal>
-                <h1 className="font-display text-[40px] leading-[1.12] text-ink sm:text-[52px]">
-                  {t("pc.title")}
-                  <br />
-                  {t("pc.title2")} <span className="text-rose">{t("pc.title2Accent")}</span>
-                </h1>
-                <span className="mt-5 block h-0.5 w-24 bg-rose" />
-                <p className="mt-7 max-w-[460px] font-sans text-[13.5px] leading-relaxed text-ink-muted">
-                  {t("pc.body")}
-                </p>
+          <div className="relative z-10 mx-auto grid w-full max-w-[1240px] items-center gap-16 px-6 py-24 lg:grid-cols-2">
+            <Reveal>
+              <h1 className="font-display text-[40px] leading-[1.12] text-ink sm:text-[52px]">
+                {t("pc.title")}
+                <br />
+                {t("pc.title2")} <span className="text-rose">{t("pc.title2Accent")}</span>
+              </h1>
+              <span className="mt-5 block h-0.5 w-24 bg-rose" />
+              <p className="mt-7 max-w-[460px] font-sans text-[13.5px] leading-relaxed text-ink-muted">
+                {t("pc.body")}
+              </p>
 
-                <div className="mt-9 flex flex-wrap gap-4">
-                  <Button
-                    variant="outline"
-                    size="md"
-                    className="font-display text-[15px] font-medium"
-                    onClick={handleApplyNow}
-                  >
-                    {t("pc.apply")}
-                  </Button>
-                  <Button
-                    variant="pinkSolid"
-                    size="md"
-                    className="font-display text-[15px] font-medium"
-                    onClick={handleCheckStatus}
-                  >
-                    {t("pc.status")}
-                  </Button>
-                </div>
-                <p className="mt-8 flex items-center gap-2 font-display text-[13px] text-ink-muted">
-                  <ShieldCheck className="size-4 text-rose" strokeWidth={1.5} />
-                  {t("pc.note")}
-                </p>
-              </Reveal>
-
-              <Reveal delay={150} className="flex justify-center">
-                <PinkCardRender />
-              </Reveal>
-            </div>
-          </section>
-
-          {/* Who can apply */}
-          <section className="relative overflow-hidden bg-canvas py-[130px]">
-            <div aria-hidden className="rose-glow absolute -left-32 bottom-0 size-[380px]" />
-            <div aria-hidden className="rose-glow absolute -right-32 top-0 size-[380px]" />
-
-            <div className="relative mx-auto max-w-[1040px] px-6 text-center">
-              <Reveal>
-                <h2 className="font-display text-[34px] text-ink sm:text-[42px]">
-                  {t("pc.whoTitle")}
-                </h2>
-                <span className="mx-auto mt-4 block h-0.5 w-28 bg-rose" />
-                <p className="mt-5 font-sans text-[13px] text-ink-muted">{t("pc.whoSub")}</p>
-              </Reveal>
-
-              <div className="relative mt-16 grid gap-12 sm:grid-cols-3">
-                <span
-                  aria-hidden
-                  className="absolute left-[16%] right-[16%] top-[34px] hidden h-px bg-rose/30 sm:block"
-                />
-                {checks.map(({ icon: Icon, title, body }, i) => (
-                  <Reveal key={title} delay={i * 120} className="relative flex flex-col items-center">
-                    <span className="flex size-[68px] items-center justify-center rounded-full border border-rose/60 bg-canvas">
-                      <Icon className="size-6 text-rose-bright" strokeWidth={1.5} />
-                    </span>
-                    <p className="mt-6 font-sans text-[12px] uppercase tracking-[0.16em] text-ink">
-                      {title}
-                    </p>
-                    <p className="mt-4 max-w-[220px] font-display text-[17px] leading-relaxed text-ink/85">
-                      {body}
-                    </p>
-                  </Reveal>
-                ))}
+              <div className="mt-9 flex flex-wrap gap-4">
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="font-display text-[15px] font-medium"
+                  onClick={handleApplyNow}
+                >
+                  {t("pc.apply")}
+                </Button>
+                <Button
+                  variant="pinkSolid"
+                  size="md"
+                  className="font-display text-[15px] font-medium"
+                  onClick={handleCheckStatus}
+                >
+                  {t("pc.status")}
+                </Button>
               </div>
+              <p className="mt-8 flex items-center gap-2 font-display text-[13px] text-ink-muted">
+                <ShieldCheck className="size-4 text-rose" strokeWidth={1.5} />
+                {t("pc.note")}
+              </p>
+            </Reveal>
+
+            <Reveal delay={150} className="flex justify-center">
+              <PinkCardRender />
+            </Reveal>
+          </div>
+        </section>
+
+        {/* Who can apply */}
+        <section className="relative overflow-hidden bg-canvas py-[130px]">
+          <div aria-hidden className="rose-glow absolute -left-32 bottom-0 size-[380px]" />
+          <div aria-hidden className="rose-glow absolute -right-32 top-0 size-[380px]" />
+
+          <div className="relative mx-auto max-w-[1040px] px-6 text-center">
+            <Reveal>
+              <h2 className="font-display text-[34px] text-ink sm:text-[42px]">
+                {t("pc.whoTitle")}
+              </h2>
+              <span className="mx-auto mt-4 block h-0.5 w-28 bg-rose" />
+              <p className="mt-5 font-sans text-[13px] text-ink-muted">{t("pc.whoSub")}</p>
+            </Reveal>
+
+            <div className="relative mt-16 grid gap-12 sm:grid-cols-3">
+              <span
+                aria-hidden
+                className="absolute left-[16%] right-[16%] top-[34px] hidden h-px bg-rose/30 sm:block"
+              />
+              {checks.map(({ icon: Icon, title, body }, i) => (
+                <Reveal key={title} delay={i * 120} className="relative flex flex-col items-center">
+                  <span className="flex size-[68px] items-center justify-center rounded-full border border-rose/60 bg-canvas">
+                    <Icon className="size-6 text-rose-bright" strokeWidth={1.5} />
+                  </span>
+                  <p className="mt-6 font-sans text-[12px] uppercase tracking-[0.16em] text-ink">
+                    {title}
+                  </p>
+                  <p className="mt-4 max-w-[220px] font-display text-[17px] leading-relaxed text-ink/85">
+                    {body}
+                  </p>
+                </Reveal>
+              ))}
             </div>
-          </section>
-        </PageShell>
-      </div>
+          </div>
+        </section>
+      </PageShell>
     </>
   );
 }
@@ -603,7 +581,6 @@ function PinkCardRender() {
     </div>
   );
 }
-
 // import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import {
 //   Bus,
