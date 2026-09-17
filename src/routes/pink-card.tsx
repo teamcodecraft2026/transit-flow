@@ -45,7 +45,6 @@ export const Route = createFileRoute("/pink-card")({
 });
 
 // ── Module-level flag — survives StrictMode double-mount ──────────────────────
-// Set to true once the animation starts; never resets during the session.
 let revealHasRun = false;
 
 // ── Per-user key ──────────────────────────────────────────────────────────────
@@ -93,7 +92,6 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // StrictMode guard — only ever run once per session
     if (revealHasRun) { onDone(); return; }
     revealHasRun = true;
 
@@ -111,9 +109,8 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
     const W = window.innerWidth;
     const H = window.innerHeight;
 
-    // alpha:true so the canvas is transparent — page shows through from frame 1
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setClearColor(0x000000, 0); // fully transparent background
+    renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(W, H);
 
@@ -122,27 +119,25 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
 
     const scene = new THREE.Scene();
 
-    // World dimensions
+    // World dimensions — exactly matching the reference
     const vFOV = (75 * Math.PI) / 180;
     const wHeight = 2 * Math.tan(vFOV / 2) * 75;
     const wWidth = wHeight * (W / H);
 
-    const OBJ_SIZE = 12;
+    // ── Matching original: objectWidth=12, objectThickness=3 ──
+    // But user wants smaller boxes so we use 8
+    const OBJ_SIZE = 8;
     const THICKNESS = 3;
     const nx = Math.round(wWidth / OBJ_SIZE) + 1;
     const ny = Math.round(wHeight / OBJ_SIZE) + 1;
-    const cxf = nx / 2;
-    const cyf = ny / 2;
 
-    // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const pointLight = new THREE.PointLight(0xffffff, 1.0);
-    pointLight.position.set(0, 0, 100);
+    // Lights — matching original
+    scene.add(new THREE.AmbientLight(0x808080)); // original ambientColor
+    const pointLight = new THREE.PointLight(0xffffff);
+    pointLight.position.z = 100;
     scene.add(pointLight);
 
-    // Single dark-rose color — no multi-color noise
     const CUBE_COLOR = 0xb5405e;
-
     const geometry = new THREE.BoxGeometry(OBJ_SIZE, OBJ_SIZE, THICKNESS);
     const meshes: any[] = [];
 
@@ -162,18 +157,25 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
         scene.add(mesh);
         meshes.push(mesh);
 
-        // Center-outward delay: outer tiles fly first, center tiles fly last
-        const di = Math.abs(i - cxf);
-        const dj = Math.abs(j - cyf);
-        const distFromCenter = Math.sqrt(di * di + dj * dj);
-        const maxDist = Math.sqrt(cxf * cxf + cyf * cyf);
-        const delay = 0.1 + (distFromCenter / maxDist) * 1.4;
+        // ── Exactly matching original JS: TMath.randFloat(1, 2) ──
+        const delay = 1 + Math.random() * 1;          // 1s–2s random
 
-        const rx = (Math.random() - 0.5) * Math.PI * 2;
-        const ry = (Math.random() - 0.5) * Math.PI * 2;
-        const rz = (Math.random() - 0.5) * Math.PI * 2;
+        // ── Original: rotation tween duration=2, position/opacity start at delay+0.5 ──
+        const rotDuration = 2.0;
+        const flyDelay = delay + 0.5;                 // fly starts 0.5s after rotation
+        const flyDuration = 2.0;
 
-        (mesh as any)._anim = { delay, duration: 1.6, rx, ry, rz };
+        const rx = (Math.random() - 0.5) * 2 * Math.PI;
+        const ry = (Math.random() - 0.5) * 2 * Math.PI;
+        const rz = (Math.random() - 0.5) * 2 * Math.PI;
+
+        (mesh as any)._anim = {
+          delay,
+          rotDuration,
+          flyDelay,
+          flyDuration,
+          rx, ry, rz,
+        };
       }
     }
 
@@ -181,8 +183,14 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
     let rafId: number;
     let finished = false;
 
-    function easeOut(t: number) {
-      return 1 - Math.pow(1 - t, 3);
+    // Original uses Power1.easeOut for position — that's a simple quadratic ease out
+    function easeOutQuad(t: number) {
+      return t * (2 - t);
+    }
+
+    // Linear for rotation (original TweenMax default is linear for rotation)
+    function linear(t: number) {
+      return t;
     }
 
     function animate(ts: number) {
@@ -196,18 +204,28 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
 
       for (const mesh of meshes) {
         const a = mesh._anim;
-        if (elapsed < a.delay) { allDone = false; continue; }
 
-        const t = Math.min((elapsed - a.delay) / a.duration, 1);
-        const te = easeOut(t);
+        // Rotation: starts at delay, duration rotDuration
+        if (elapsed >= a.delay) {
+          const tRot = Math.min((elapsed - a.delay) / a.rotDuration, 1);
+          mesh.rotation.x = a.rx * linear(tRot);
+          mesh.rotation.y = a.ry * linear(tRot);
+          mesh.rotation.z = a.rz * linear(tRot);
+          if (tRot < 1) allDone = false;
+        } else {
+          allDone = false;
+        }
 
-        mesh.rotation.x = a.rx * te;
-        mesh.rotation.y = a.ry * te;
-        mesh.rotation.z = a.rz * te;
-        mesh.position.z = 80 * te;
-        mesh.material.opacity = 1 - te;
-
-        if (t < 1) allDone = false;
+        // Position Z + opacity: starts at flyDelay, duration flyDuration
+        if (elapsed >= a.flyDelay) {
+          const tFly = Math.min((elapsed - a.flyDelay) / a.flyDuration, 1);
+          const te = easeOutQuad(tFly);
+          mesh.position.z = 80 * te;
+          mesh.material.opacity = 1 - tFly; // original: linear opacity fade
+          if (tFly < 1) allDone = false;
+        } else {
+          allDone = false;
+        }
       }
 
       renderer.render(scene, camera);
@@ -215,7 +233,6 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
       if (allDone) {
         finished = true;
         cancelAnimationFrame(rafId);
-        // Small pause so the last cube fully fades, then remove canvas
         setTimeout(() => onDone(), 80);
       }
     }
@@ -236,7 +253,6 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
         inset: 0,
         width: "100%",
         height: "100%",
-        // Sits above the page but transparent background — page always visible behind
         zIndex: 9999,
         pointerEvents: "none",
       }}
@@ -253,7 +269,6 @@ function PinkCardPage() {
   const [statusScreen, setStatusScreen] = useState<StatusScreen | null>(null);
   const [savedResult, setSavedResult] = useState<PinkCardResponse | null>(null);
 
-  // If animation already ran this session, skip straight to revealed
   const [threeReady, setThreeReady] = useState(false);
   const [revealed, setRevealed] = useState(revealHasRun);
 
@@ -288,8 +303,6 @@ function PinkCardPage() {
       }
     });
   }
-
-  // ── Status result screens — no reveal animation here ─────────────────────
 
   if (statusScreen) {
     return (
@@ -420,16 +433,12 @@ function PinkCardPage() {
     );
   }
 
-  // ── Main Pink Card page ───────────────────────────────────────────────────
-
   return (
     <>
-      {/* Canvas overlay — transparent background, page always visible beneath */}
       {threeReady && !revealed && (
         <RevealEffect onDone={() => setRevealed(true)} />
       )}
 
-      {/* Page is ALWAYS visible — opacity:1, no hide/show toggle */}
       <PageShell theme="rose" backHome>
         <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden pt-[88px]">
           <img
@@ -484,7 +493,6 @@ function PinkCardPage() {
           </div>
         </section>
 
-        {/* Who can apply */}
         <section className="relative overflow-hidden bg-canvas py-[130px]">
           <div aria-hidden className="rose-glow absolute -left-32 bottom-0 size-[380px]" />
           <div aria-hidden className="rose-glow absolute -right-32 top-0 size-[380px]" />
@@ -581,6 +589,8 @@ function PinkCardRender() {
     </div>
   );
 }
+
+
 // import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import {
 //   Bus,
