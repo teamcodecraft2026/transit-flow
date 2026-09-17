@@ -424,7 +424,7 @@ function PinkCardPage() {
             position: "fixed",
             inset: 0,
             zIndex: 9999,
-            backgroundColor: "#0b0a10",
+            backgroundColor: "#d4546e", // 0b0a10
             pointerEvents: "none",
           }}
         />
