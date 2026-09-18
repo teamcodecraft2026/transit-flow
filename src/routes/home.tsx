@@ -38,7 +38,6 @@ export const Route = createFileRoute("/home")({
 });
 
 function Home() {
-  // Inject smooth scroll globally once on mount
   useEffect(() => {
     const prev = document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = "smooth";
@@ -95,7 +94,6 @@ function HeroParticles() {
     let width = 0;
     let height = 0;
 
-    // Desktop gets more particles + thicker lines; mobile stays light
     const isDesktop = () => window.innerWidth >= 1024;
 
     function getConfig() {
@@ -180,7 +178,6 @@ function HeroParticles() {
         if (p.y > height) { p.y = height; p.vy *= -1; }
       }
 
-      // Draw links
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -220,7 +217,6 @@ function HeroParticles() {
         }
       }
 
-      // Draw dots with glow
       for (const p of particles) {
         const [r, g, b] = hexToRgb(COLORS[p.colorIndex]);
         const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 4);
@@ -271,7 +267,7 @@ function HeroParticles() {
   );
 }
 
-/* ── Hero with parallax ───────────────────────────────── */
+/* ── Hero ─────────────────────────────────────────────── */
 
 function Hero() {
   const { t } = useI18n();
@@ -280,24 +276,47 @@ function Hero() {
   const title = t("home.title");
   const typed = useTypewriter(title, 700);
 
+  const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let rafId: number;
 
     function onScroll() {
       rafId = requestAnimationFrame(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+
+        const vh = window.innerHeight;
         const y = window.scrollY;
 
+        // progress: 0 at top, 1 when hero fully scrolled past
+        const progress = Math.min(y / vh, 1);
+
+        // ── Background: parallax + subtle scale down ──
         if (bgRef.current) {
-          const scale = 1.08 - y * 0.00008;
-          bgRef.current.style.transform = `translateY(${y * 0.4}px) scale(${Math.max(1, scale)})`;
+          const translateY = y * 0.4;
+          const scale = Math.max(1, 1.08 - y * 0.00008);
+          // Also scale down slightly as user scrolls (1 → 0.96)
+          const scaleOut = 1 - progress * 0.04;
+          bgRef.current.style.transform =
+            `translateY(${translateY}px) scale(${Math.max(scale, scaleOut)})`;
         }
 
+        // ── Text: float up + fade out ──
         if (textRef.current) {
-          textRef.current.style.transform = `translateY(${y * 0.15}px)`;
-          textRef.current.style.opacity = `${Math.max(0, 1 - y / 600)}`;
+          const translateY = y * 0.15;
+          const opacity = Math.max(0, 1 - progress * 1.6);
+          textRef.current.style.transform = `translateY(${translateY}px)`;
+          textRef.current.style.opacity = `${opacity}`;
+        }
+
+        // ── Overlay: darken hero as user scrolls away ──
+        if (overlayRef.current) {
+          const extraDark = progress * 0.35;
+          overlayRef.current.style.backgroundColor = `rgba(0,0,0,${0.6 + extraDark})`;
         }
       });
     }
@@ -310,8 +329,11 @@ function Hero() {
   }, []);
 
   return (
-    <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden">
-      {/* Parallax background — futuristic bus */}
+    <section
+      ref={sectionRef}
+      className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden"
+    >
+      {/* Parallax background */}
       <div
         ref={bgRef}
         className="absolute -inset-y-28 inset-x-0 will-change-transform"
@@ -326,15 +348,20 @@ function Hero() {
         />
       </div>
 
-      <div className="absolute inset-0 bg-black/60" />
+      {/* Scroll-reactive overlay — darkens as you leave */}
+      <div
+        ref={overlayRef}
+        className="absolute inset-0 will-change-[background-color]"
+        style={{ backgroundColor: "rgba(0,0,0,0.60)" }}
+      />
 
       <HeroParticles />
 
-      {/* Text content */}
+      {/* Text */}
       <div
         ref={textRef}
         className="relative z-10 mx-auto w-full max-w-[900px] px-6 pt-[88px] text-center will-change-transform"
-        style={{ transition: "opacity 0.1s linear" }}
+        style={{ transition: "opacity 0.05s linear" }}
       >
         <div style={{ animationDelay: "0ms", animationDuration: "150ms" }} className="anim-fade">
           <SectionEyebrow label={t("home.eyebrow")} />
@@ -359,7 +386,6 @@ function Hero() {
         </p>
 
         <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-          {/* Book Ticket — cyan neon */}
           <div style={{ animationDelay: "1100ms" }} className="anim-fade-up">
             <button
               onClick={() => requireAuth(() => navigate({ to: "/book" }))}
@@ -380,7 +406,6 @@ function Hero() {
             </button>
           </div>
 
-          {/* Get Pink Card — magenta neon */}
           <div style={{ animationDelay: "1180ms" }} className="anim-fade-up">
             <button
               onClick={() => navigate({ to: "/pink-card" })}
@@ -402,6 +427,14 @@ function Hero() {
           </div>
         </div>
       </div>
+
+      {/* Bottom fade — hero dissolves into next section */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-48 pointer-events-none"
+        style={{
+          background: "linear-gradient(to bottom, transparent 0%, var(--color-canvas) 100%)",
+        }}
+      />
     </section>
   );
 }
@@ -428,10 +461,37 @@ function useTypewriter(text: string, duration: number) {
   return shown;
 }
 
-/* ── Four steps ───────────────────────────────────────── */
+/* ── Four Steps — slides up into view ────────────────── */
 
 function FourSteps() {
   const { t } = useI18n();
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    // Start slightly below, slide up as hero fades
+    section.style.transform = "translateY(40px)";
+    section.style.opacity = "0";
+    section.style.transition =
+      "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms ease";
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          section.style.transform = "translateY(0px)";
+          section.style.opacity = "1";
+          observer.disconnect();
+        });
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   const cards = [
     { n: "01", title: t("steps.1.title"), body: t("steps.1.body"), mock: <SearchMock /> },
@@ -441,7 +501,10 @@ function FourSteps() {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-canvas py-[120px]">
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden bg-canvas py-[120px] will-change-transform"
+    >
       <div aria-hidden className="rose-glow absolute -left-40 top-20 size-[420px]" />
       <div aria-hidden className="rose-glow absolute -right-40 bottom-0 size-[420px]" />
 
@@ -737,6 +800,8 @@ function PinkSpotlight() {
   );
 }
 
+
+
 // import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import { useEffect, useRef, useState } from "react";
 // import { Crown, MapPin, Navigation, RefreshCw, ShieldCheck } from "lucide-react";
@@ -777,6 +842,15 @@ function PinkSpotlight() {
 // });
 
 // function Home() {
+//   // Inject smooth scroll globally once on mount
+//   useEffect(() => {
+//     const prev = document.documentElement.style.scrollBehavior;
+//     document.documentElement.style.scrollBehavior = "smooth";
+//     return () => {
+//       document.documentElement.style.scrollBehavior = prev;
+//     };
+//   }, []);
+
 //   return (
 //     <PageShell theme="rose">
 //       <Hero />
@@ -803,16 +877,15 @@ function PinkSpotlight() {
 //   const rafRef = useRef<number>(0);
 //   const particlesRef = useRef<Particle[]>([]);
 
-//   // ss3 palette: cyan (#09f2f9) and magenta (#f870e6) with light & dark shades
 //   const COLORS = [
-//     "#09f2f9", // cyan bright
-//     "#05b8be", // cyan dark
-//     "#03d4da", // cyan mid
-//     "#f870e6", // magenta bright
-//     "#c245b2", // magenta dark
-//     "#e055d0", // magenta mid
-//     "#7df9fc", // cyan light
-//     "#fb9ef3", // magenta light
+//     "#09f2f9",
+//     "#05b8be",
+//     "#03d4da",
+//     "#f870e6",
+//     "#c245b2",
+//     "#e055d0",
+//     "#7df9fc",
+//     "#fb9ef3",
 //   ];
 
 //   useEffect(() => {
@@ -825,13 +898,26 @@ function PinkSpotlight() {
 
 //     let width = 0;
 //     let height = 0;
-//     const COUNT = 75;
-//     const LINK_DIST = 155;
-//     const SPEED = 0.55;
-//     const REPULSE = 115;
+
+//     // Desktop gets more particles + thicker lines; mobile stays light
+//     const isDesktop = () => window.innerWidth >= 1024;
+
+//     function getConfig() {
+//       const desktop = isDesktop();
+//       return {
+//         COUNT: desktop ? 105 : 60,
+//         LINK_DIST: desktop ? 165 : 140,
+//         LINE_WIDTH: desktop ? 1.8 : 0.9,
+//         SPEED: 0.55,
+//         REPULSE: desktop ? 130 : 100,
+//       };
+//     }
+
+//     let cfg = getConfig();
 
 //     function resize() {
 //       if (!canvas) return;
+//       cfg = getConfig();
 //       width = canvas.offsetWidth;
 //       height = canvas.offsetHeight;
 //       canvas.width = width * devicePixelRatio;
@@ -841,11 +927,11 @@ function PinkSpotlight() {
 //     }
 
 //     function init() {
-//       particlesRef.current = Array.from({ length: COUNT }, () => ({
+//       particlesRef.current = Array.from({ length: cfg.COUNT }, () => ({
 //         x: Math.random() * width,
 //         y: Math.random() * height,
-//         vx: (Math.random() - 0.5) * SPEED * 2,
-//         vy: (Math.random() - 0.5) * SPEED * 2,
+//         vx: (Math.random() - 0.5) * cfg.SPEED * 2,
+//         vy: (Math.random() - 0.5) * cfg.SPEED * 2,
 //         radius: Math.random() * 2 + 1,
 //         colorIndex: Math.floor(Math.random() * COLORS.length),
 //       }));
@@ -872,23 +958,23 @@ function PinkSpotlight() {
 //           const dx = p.x - mouse.x;
 //           const dy = p.y - mouse.y;
 //           const dist = Math.sqrt(dx * dx + dy * dy);
-//           if (dist < REPULSE && dist > 0) {
-//             const force = (REPULSE - dist) / REPULSE;
+//           if (dist < cfg.REPULSE && dist > 0) {
+//             const force = (cfg.REPULSE - dist) / cfg.REPULSE;
 //             p.vx += (dx / dist) * force * 0.6;
 //             p.vy += (dy / dist) * force * 0.6;
 //           }
 //         }
 
 //         const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-//         const maxSpd = SPEED * 3;
+//         const maxSpd = cfg.SPEED * 3;
 //         if (spd > maxSpd) {
 //           p.vx = (p.vx / spd) * maxSpd;
 //           p.vy = (p.vy / spd) * maxSpd;
 //         }
 //         p.vx *= 0.99;
 //         p.vy *= 0.99;
-//         if (Math.abs(p.vx) < SPEED * 0.3) p.vx += (Math.random() - 0.5) * SPEED * 0.2;
-//         if (Math.abs(p.vy) < SPEED * 0.3) p.vy += (Math.random() - 0.5) * SPEED * 0.2;
+//         if (Math.abs(p.vx) < cfg.SPEED * 0.3) p.vx += (Math.random() - 0.5) * cfg.SPEED * 0.2;
+//         if (Math.abs(p.vy) < cfg.SPEED * 0.3) p.vy += (Math.random() - 0.5) * cfg.SPEED * 0.2;
 
 //         p.x += p.vx;
 //         p.y += p.vy;
@@ -898,14 +984,14 @@ function PinkSpotlight() {
 //         if (p.y > height) { p.y = height; p.vy *= -1; }
 //       }
 
-//       // Draw links — blend colors between connected particles
+//       // Draw links
 //       for (let i = 0; i < particles.length; i++) {
 //         for (let j = i + 1; j < particles.length; j++) {
 //           const dx = particles[i].x - particles[j].x;
 //           const dy = particles[i].y - particles[j].y;
 //           const dist = Math.sqrt(dx * dx + dy * dy);
-//           if (dist < LINK_DIST) {
-//             const alpha = 0.5 * (1 - dist / LINK_DIST);
+//           if (dist < cfg.LINK_DIST) {
+//             const alpha = 0.6 * (1 - dist / cfg.LINK_DIST);
 //             const [r1, g1, b1] = hexToRgb(COLORS[particles[i].colorIndex]);
 //             const [r2, g2, b2] = hexToRgb(COLORS[particles[j].colorIndex]);
 //             const r = Math.round((r1 + r2) / 2);
@@ -923,16 +1009,15 @@ function PinkSpotlight() {
 //             ctx.moveTo(particles[i].x, particles[i].y);
 //             ctx.lineTo(particles[j].x, particles[j].y);
 //             ctx.strokeStyle = grad;
-//             ctx.lineWidth = 0.9;
+//             ctx.lineWidth = cfg.LINE_WIDTH;
 //             ctx.stroke();
 
-//             // Bright node glow at intersection point
-//             if (dist < LINK_DIST * 0.4) {
+//             if (dist < cfg.LINK_DIST * 0.4) {
 //               const mx = (particles[i].x + particles[j].x) / 2;
 //               const my = (particles[i].y + particles[j].y) / 2;
 //               ctx.beginPath();
-//               ctx.arc(mx, my, 1.2, 0, Math.PI * 2);
-//               ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 1.5})`;
+//               ctx.arc(mx, my, 1.5, 0, Math.PI * 2);
+//               ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 1.6})`;
 //               ctx.fill();
 //             }
 //           }
@@ -942,7 +1027,6 @@ function PinkSpotlight() {
 //       // Draw dots with glow
 //       for (const p of particles) {
 //         const [r, g, b] = hexToRgb(COLORS[p.colorIndex]);
-//         // Outer glow
 //         const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 4);
 //         glow.addColorStop(0, `rgba(${r},${g},${b},0.35)`);
 //         glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
@@ -950,7 +1034,6 @@ function PinkSpotlight() {
 //         ctx.arc(p.x, p.y, p.radius * 4, 0, Math.PI * 2);
 //         ctx.fillStyle = glow;
 //         ctx.fill();
-//         // Core dot
 //         ctx.beginPath();
 //         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
 //         ctx.fillStyle = `rgba(${r},${g},${b},0.85)`;
@@ -1047,10 +1130,8 @@ function PinkSpotlight() {
 //         />
 //       </div>
 
-//       {/* Darker overlay so text stays readable over bright neon image */}
 //       <div className="absolute inset-0 bg-black/60" />
 
-//       {/* Cyan/magenta particle animation */}
 //       <HeroParticles />
 
 //       {/* Text content */}
@@ -1082,7 +1163,7 @@ function PinkSpotlight() {
 //         </p>
 
 //         <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-//           {/* Book Ticket — cyan neon style */}
+//           {/* Book Ticket — cyan neon */}
 //           <div style={{ animationDelay: "1100ms" }} className="anim-fade-up">
 //             <button
 //               onClick={() => requireAuth(() => navigate({ to: "/book" }))}
@@ -1103,7 +1184,7 @@ function PinkSpotlight() {
 //             </button>
 //           </div>
 
-//           {/* Get Pink Card — magenta neon style */}
+//           {/* Get Pink Card — magenta neon */}
 //           <div style={{ animationDelay: "1180ms" }} className="anim-fade-up">
 //             <button
 //               onClick={() => navigate({ to: "/pink-card" })}
