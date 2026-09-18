@@ -461,6 +461,8 @@ function useTypewriter(text: string, duration: number) {
   return shown;
 }
 
+
+
 /* ── Four Steps — slides up into view ────────────────── */
 
 
