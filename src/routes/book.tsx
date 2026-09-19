@@ -61,7 +61,6 @@ function BookPage() {
   const [bookError, setBookError] = useState<string | null>(null);
   const [pinkCardApplied, setPinkCardApplied] = useState(false);
 
-  // ✅ ADDED: ref for auto-scroll to results
   const availableBusesRef = useRef<HTMLDivElement>(null);
 
   const features = [
@@ -95,16 +94,6 @@ function BookPage() {
       setSearchError(err instanceof Error ? err.message : "Search failed. Please try again.");
     } finally {
       setLoading(false);
-      availableBusesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }
-      const res = await searchTrips(from.trim(), to.trim(), date);
-      setTrips(res.trips);
-    } catch (err: unknown) {
-      setSearchError(err instanceof Error ? err.message : "Search failed. Please try again.");
-    } finally {
-      setLoading(false);
-      // ✅ ADDED: smooth scroll to results after search
       availableBusesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
@@ -163,9 +152,10 @@ function BookPage() {
                   <StopDropdown
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={from}
-                    onChange={setFrom}
+                    onChange={(v) => { setFrom(v); setFieldErrors(e => ({ ...e, from: false })); }}
                     placeholder={t("book.fromPlaceholder")}
                     stops={allStops}
+                    hasError={fieldErrors.from}
                   />
                 </Field>
 
@@ -185,9 +175,10 @@ function BookPage() {
                   <StopDropdown
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={to}
-                    onChange={setTo}
+                    onChange={(v) => { setTo(v); setFieldErrors(e => ({ ...e, to: false })); }}
                     placeholder={t("book.toPlaceholder")}
                     stops={allStops}
+                    hasError={fieldErrors.to}
                   />
                 </Field>
 
@@ -246,7 +237,6 @@ function BookPage() {
           </Reveal>
 
           {/* Search results */}
-          {/* ✅ ADDED: ref attached here for scroll target */}
           <div className="mt-14" ref={availableBusesRef}>
             <h2 className="font-display text-[26px] text-ink">{t("book.results")}</h2>
 
@@ -436,12 +426,14 @@ function StopDropdown({
   onChange,
   placeholder,
   stops,
+  hasError = false,
 }: {
   icon: React.ReactNode;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   stops: string[];
+  hasError?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -462,7 +454,7 @@ function StopDropdown({
 
   return (
     <div ref={ref} className="relative w-full min-w-0">
-            <div className={`flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border bg-navy-field-alt px-3 transition-colors ${hasError ? "border-rose-500 shadow-[0_0_0_2px_rgba(244,63,94,0.25)]" : "border-navy-line"}`}>
+      <div className={`flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border bg-navy-field-alt px-3 transition-colors ${hasError ? "border-rose-500 shadow-[0_0_0_2px_rgba(244,63,94,0.25)]" : "border-navy-line"}`}>
         {icon}
         <input
           value={value}
