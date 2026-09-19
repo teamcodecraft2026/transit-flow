@@ -52,6 +52,7 @@ function BookPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState({ from: false, to: false });
   const [searched, setSearched] = useState(false);
   const [allStops, setAllStops] = useState<string[]>([]);
 
@@ -74,19 +75,29 @@ function BookPage() {
   }, []);
 
   async function handleSearch() {
-    if (!from.trim() || !to.trim()) {
-      setSearchError("Please select both source and destination stops.");
-      return;
-    }
+    const errors = { from: !from.trim(), to: !to.trim() };
+    setFieldErrors(errors);
+    if (errors.from || errors.to) return;
     if (from.trim() === to.trim()) {
+      setFieldErrors({ from: true, to: true });
       setSearchError("Source and destination cannot be the same.");
       return;
     }
+    setFieldErrors({ from: false, to: false });
     setSearchError(null);
     setSearched(true);
     setLoading(true);
     setTrips([]);
     try {
+      const res = await searchTrips(from.trim(), to.trim(), date);
+      setTrips(res.trips);
+    } catch (err: unknown) {
+      setSearchError(err instanceof Error ? err.message : "Search failed. Please try again.");
+    } finally {
+      setLoading(false);
+      availableBusesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
       const res = await searchTrips(from.trim(), to.trim(), date);
       setTrips(res.trips);
     } catch (err: unknown) {
@@ -451,7 +462,7 @@ function StopDropdown({
 
   return (
     <div ref={ref} className="relative w-full min-w-0">
-            <div className="flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border border-navy-line bg-navy-field-alt px-3">
+            <div className={`flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border bg-navy-field-alt px-3 transition-colors ${hasError ? "border-rose-500 shadow-[0_0_0_2px_rgba(244,63,94,0.25)]" : "border-navy-line"}`}>
         {icon}
         <input
           value={value}
