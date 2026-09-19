@@ -74,6 +74,14 @@ function BookPage() {
   }, []);
 
   async function handleSearch() {
+    if (!from.trim() || !to.trim()) {
+      setSearchError("Please select both source and destination stops.");
+      return;
+    }
+    if (from.trim() === to.trim()) {
+      setSearchError("Source and destination cannot be the same.");
+      return;
+    }
     setSearchError(null);
     setSearched(true);
     setLoading(true);
