@@ -443,7 +443,7 @@ function StopDropdown({
 
   return (
     <div ref={ref} className="relative w-full min-w-0">
-      <div className="flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border border-navy-line bg-navy-field-alt px-3">
+            <div className="flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border border-navy-line bg-navy-field-alt px-3">
         {icon}
         <input
           value={value}
@@ -455,7 +455,22 @@ function StopDropdown({
           placeholder={placeholder}
           className="min-w-0 flex-1 bg-transparent font-sans text-[13px] text-ink placeholder:text-ink-muted/80 focus:outline-none"
         />
-        <ChevronDown className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.5} />
+        {value ? (
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onChange("");
+              setOpen(false);
+            }}
+            className="shrink-0 rounded-full p-0.5 text-ink-muted hover:text-ink transition-colors"
+            aria-label="Clear"
+          >
+            <X className="size-3.5" strokeWidth={1.5} />
+          </button>
+        ) : (
+          <ChevronDown className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.5} />
+        )}
       </div>
 
       {open && filtered.length > 0 && (
