@@ -1,5 +1,5 @@
-const BASE_URL = `https://${import.meta.env['VITE_SUPABASE_PROJECT_REF']}.supabase.co/functions/v1`;
-const ANON_KEY = import.meta.env['VITE_SUPABASE_ANON_KEY'] as string;
+const BASE_URL = `https://${import.meta.env["VITE_SUPABASE_PROJECT_REF"]}.supabase.co/functions/v1`;
+const ANON_KEY = import.meta.env["VITE_SUPABASE_ANON_KEY"] as string;
 
 function getSession(): string | null {
   return localStorage.getItem("pt.session");
@@ -242,11 +242,9 @@ export async function getRouteRevenue(): Promise<RevenueResponse> {
   return request<RevenueResponse>("/route-revenue");
 }
 
-
-
 //─── Pink Transit — API Client ───────────────────────────────────────────────
-Single source of truth for all Supabase Edge Function calls.
-Import from "@/lib/api" in every page.
+// Single source of truth for all Supabase Edge Function calls.
+// Import from "@/lib/api" in every page.
 
 // const BASE = "https://welccusfyovxgpfplnlj.supabase.co/functions/v1";
 // const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
