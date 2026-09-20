@@ -244,7 +244,7 @@ export async function getRouteRevenue(): Promise<RevenueResponse> {
 
 
 
-─── Pink Transit — API Client ───────────────────────────────────────────────
+//─── Pink Transit — API Client ───────────────────────────────────────────────
 Single source of truth for all Supabase Edge Function calls.
 Import from "@/lib/api" in every page.
 
