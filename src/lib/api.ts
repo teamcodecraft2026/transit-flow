@@ -23,11 +23,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// â”€â”€ 1. OTP auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ------ 1. OTP auth ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 export interface SendOtpResponse {
   message: string;
-  otp_code?: string; // demo only â€” shown on screen
+  otp_code?: string; // demo only --- shown on screen
 }
 
 export async function sendOtp(phone: string): Promise<SendOtpResponse> {
@@ -56,7 +56,7 @@ export async function verifyOtp(phone: string, otp: string): Promise<VerifyOtpRe
   });
 }
 
-// â”€â”€ 2. Tickets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ------ 2. Tickets ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 export interface Ticket {
   id: string;
@@ -110,7 +110,7 @@ export async function getTicketHistory(): Promise<TicketHistoryResponse> {
   return request<TicketHistoryResponse>("/ticket-history");
 }
 
-// â”€â”€ 3. Pink Card application (officer-review workflow) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ------ 3. Pink Card application (officer-review workflow) ---------------------------------------------------------------------
 
 export interface SubmitPinkCardApplicationPayload {
   full_name: string;
@@ -165,7 +165,7 @@ export async function getApplicationStatus(
   return request<ApplicationStatusResponse>(`/get-application-status?${params.toString()}`);
 }
 
-// â”€â”€ 4. Service Portal â€” Verifying Officer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ------ 4. Service Portal --- Verifying Officer ------------------------------------------------------------------------------------------------------------
 
 export interface OfficerApplication {
   id: string;
@@ -225,7 +225,7 @@ export async function officerDecideApplication(
   });
 }
 
-// â”€â”€ 5. Admin / analytics (existing) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ------ 5. Admin / analytics (existing) ---------------------------------------------------------------------------------------------------------------------------
 
 export interface RouteRevenue {
   route: string;
