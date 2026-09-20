@@ -2,89 +2,135 @@
 @source "../src";
 @import "tw-animate-css";
 
+/* ── Google Fonts — Syne + Nunito Sans + Instrument Serif ── */
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,300;1,6..12,400&family=Instrument+Serif:ital@0;1&display=swap");
+
 /*
  * Public Transit — design system.
- * Three accent themes share one near-black canvas + serif/sans pairing:
- *   Theme A "rose"       -> Role-select, Home, Pink Card
- *   Theme B "navy"       -> Book/Search, My Trips
- *   Theme C "periwinkle" -> Auth modal only
- * Never hardcode colors in components — use these tokens.
+ * Three accent themes share one near-black canvas.
+ *
+ * TYPOGRAPHY SYSTEM:
+ *   Display font  → Syne (800/700/600) — geometric, futuristic, poster-grade
+ *   Body/UI font  → Nunito Sans (300/400/500/600/700) — warm, dark-bg legible
+ *   Numeral/accent → Instrument Serif italic — editorial serif for 01/02/03/04
+ *
+ * TYPE SCALE:
+ *   --text-hero    : 72–96px  / Syne 800  / tracking -0.03em / lh 0.92
+ *   --text-h1      : 52–64px  / Syne 700  / tracking -0.02em / lh 1.0
+ *   --text-h2      : 36–44px  / Syne 700  / tracking  0em    / lh 1.05
+ *   --text-h3      : 20–24px  / Syne 600  / tracking  0em    / lh 1.1
+ *   --text-eyebrow : 11–12px  / Nunito Sans 700 / tracking +0.22em / uppercase
+ *   --text-lead    : 16–18px  / Nunito Sans 400 / tracking  0em    / lh 1.7
+ *   --text-body    : 13–15px  / Nunito Sans 400 / tracking  0em    / lh 1.65
+ *   --text-caption : 11–12px  / Nunito Sans 400 / tracking +0.01em / lh 1.5
+ *   --text-numeral : any size / Instrument Serif 400 italic / rose accent
+ *   --text-btn     : 14–15px  / Nunito Sans 700 / tracking +0.04em
+ *   --text-nav     : 14px     / Nunito Sans 600 / tracking +0.06em
+ *   --text-label   : 12–13px  / Nunito Sans 600 / tracking +0.02em
+ *   --text-tag     : 10–11px  / Nunito Sans 700 / tracking +0.12em / uppercase
  */
 
 @theme {
-  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
-  --font-sans: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* ── Font families ── */
+  --font-display: "Syne", system-ui, sans-serif;
+  --font-sans: "Nunito Sans", system-ui, sans-serif;
+  --font-numeral: "Instrument Serif", Georgia, serif;
 
-  /* Canvas + surfaces */
-  --color-canvas: #010009;
+  /* ── Type scale tokens ── */
+  --tracking-hero:    -0.03em;
+  --tracking-h1:      -0.02em;
+  --tracking-h2:      -0.01em;
+  --tracking-h3:       0em;
+  --tracking-eyebrow: +0.22em;
+  --tracking-btn:     +0.04em;
+  --tracking-nav:     +0.06em;
+  --tracking-label:   +0.02em;
+  --tracking-tag:     +0.12em;
+  --tracking-caption: +0.01em;
+
+  --leading-hero:   0.92;
+  --leading-h1:     1.0;
+  --leading-h2:     1.05;
+  --leading-h3:     1.1;
+  --leading-lead:   1.7;
+  --leading-body:   1.65;
+  --leading-caption:1.5;
+
+  /* ── Canvas + surfaces ── */
+  --color-canvas:     #010009;
   --color-canvas-alt: #05060b;
-  --color-surface: #14141c;
-  --color-hairline: rgba(255, 255, 255, 0.08);
-  --color-divider: rgba(255, 255, 255, 0.12);
+  --color-surface:    #14141c;
+  --color-hairline:   rgba(255, 255, 255, 0.08);
+  --color-divider:    rgba(255, 255, 255, 0.12);
 
-  /* Text */
-  --color-ink: #e8e6e2;
-  --color-ink-muted: #9b9894;
+  /* ── Text ── */
+  --color-ink:        #e8e6e2;
+  --color-ink-muted:  #9b9894;
 
-  /* Theme A — Rose */
-  --color-rose: #e85d82;
+  /* ── Theme A — Rose ── */
+  --color-rose:        #e85d82;
   --color-rose-bright: #ee5f84;
-  --color-rose-deep: #c13f66;
-  --color-rose-numeral: #c23760;
-  --color-rose-glow: #ff2e76;
+  --color-rose-deep:   #c13f66;
+  --color-rose-numeral:#c23760;
+  --color-rose-glow:   #ff2e76;
   --color-rose-card-a: #d0216d;
   --color-rose-card-b: #920946;
 
-  /* Theme B — Navy / bright blue */
-  --color-navy-accent: #1660de;
-  --color-navy-bright: #2e7bff;
-  --color-navy-field: #042054;
-  --color-navy-field-alt: #0a122a;
-  --color-navy-panel: #111725;
-  --color-navy-line: #1e3a6b;
-  --color-navy-icon: #4c86e8;
+  /* ── Theme B — Navy ── */
+  --color-navy-accent:   #1660de;
+  --color-navy-bright:   #2e7bff;
+  --color-navy-field:    #042054;
+  --color-navy-field-alt:#0a122a;
+  --color-navy-panel:    #111725;
+  --color-navy-line:     #1e3a6b;
+  --color-navy-icon:     #4c86e8;
 
-  /* Theme C — Periwinkle */
+  /* ── Theme C — Periwinkle ── */
   --color-peri: #5a7dc5;
 
-  /* Neutral buttons */
-  --color-cream: #c1b9a4;
+  /* ── Neutral buttons ── */
+  --color-cream:     #c1b9a4;
   --color-cream-ink: #282322;
 
-  /* Status */
+  /* ── Status ── */
   --color-status: #3ed598;
 
-  --radius-card: 18px;
+  /* ── Radii ── */
+  --radius-card:  18px;
   --radius-modal: 20px;
-  --radius-btn: 10px;
+  --radius-btn:   10px;
 
+  /* ── Easing ── */
   --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-micro: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-micro:    cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* shadcn compatibility layer (kept so ui/* primitives still resolve) */
+/* ── shadcn compatibility layer ── */
 @theme inline {
-  --color-background: var(--color-canvas);
-  --color-foreground: var(--color-ink);
-  --color-card: var(--color-surface);
-  --color-card-foreground: var(--color-ink);
-  --color-popover: var(--color-surface);
-  --color-popover-foreground: var(--color-ink);
-  --color-primary: var(--color-rose);
-  --color-primary-foreground: #ffffff;
-  --color-secondary: var(--color-surface);
-  --color-secondary-foreground: var(--color-ink);
-  --color-muted: var(--color-surface);
-  --color-muted-foreground: var(--color-ink-muted);
-  --color-accent: var(--color-surface);
-  --color-accent-foreground: var(--color-ink);
-  --color-destructive: #e0405f;
-  --color-destructive-foreground: #ffffff;
-  --color-border: var(--color-hairline);
-  --color-input: var(--color-hairline);
-  --color-ring: var(--color-rose);
+  --color-background:          var(--color-canvas);
+  --color-foreground:          var(--color-ink);
+  --color-card:                var(--color-surface);
+  --color-card-foreground:     var(--color-ink);
+  --color-popover:             var(--color-surface);
+  --color-popover-foreground:  var(--color-ink);
+  --color-primary:             var(--color-rose);
+  --color-primary-foreground:  #ffffff;
+  --color-secondary:           var(--color-surface);
+  --color-secondary-foreground:var(--color-ink);
+  --color-muted:               var(--color-surface);
+  --color-muted-foreground:    var(--color-ink-muted);
+  --color-accent:              var(--color-surface);
+  --color-accent-foreground:   var(--color-ink);
+  --color-destructive:         #e0405f;
+  --color-destructive-foreground:#ffffff;
+  --color-border:              var(--color-hairline);
+  --color-input:               var(--color-hairline);
+  --color-ring:                var(--color-rose);
 }
 
+/* ════════════════════════════════════════════════════════
+   BASE LAYER — explicit mapping for every element type
+   ════════════════════════════════════════════════════════ */
 @layer base {
   * {
     border-color: var(--color-hairline);
@@ -92,21 +138,122 @@
 
   html {
     background-color: var(--color-canvas);
+    /* Prevent font-size inflation on mobile */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
     background-color: var(--color-canvas);
     color: var(--color-ink);
+    /* ── Body: Nunito Sans 400, relaxed leading ── */
     font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 15px;
+    line-height: var(--leading-body);
+    letter-spacing: 0em;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-optical-sizing: auto;
   }
 
-  h1,
-  h2,
-  h3,
-  .font-display {
+  /* ── H1: Syne 700, tight tracking, near-1.0 leading ── */
+  h1 {
     font-family: var(--font-display);
+    font-weight: 700;
+    line-height: var(--leading-h1);
+    letter-spacing: var(--tracking-h1);
+    color: var(--color-ink);
+  }
+
+  /* ── H2: Syne 700, slightly looser ── */
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: var(--leading-h2);
+    letter-spacing: var(--tracking-h2);
+    color: var(--color-ink);
+  }
+
+  /* ── H3: Syne 600 ── */
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: var(--leading-h3);
+    letter-spacing: var(--tracking-h3);
+    color: var(--color-ink);
+  }
+
+  /* ── H4–H6: Syne 600, normal leading ── */
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0em;
+    color: var(--color-ink);
+  }
+
+  /* ── Paragraphs: Nunito Sans 400, comfortable leading ── */
+  p {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: var(--leading-body);
+    letter-spacing: 0em;
+  }
+
+  /* ── Anchors inherit sans ── */
+  a {
+    font-family: var(--font-sans);
     font-weight: 500;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* ── Buttons: Nunito Sans 700, tracked ── */
+  button {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: var(--tracking-btn);
+    font-size: 14px;
+  }
+
+  /* ── Form inputs/labels: Nunito Sans 500/600 ── */
+  input,
+  textarea,
+  select {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: var(--tracking-label);
+    line-height: 1.5;
+  }
+
+  label {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: var(--tracking-label);
+  }
+
+  /* ── Small / captions ── */
+  small,
+  .text-caption {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 11px;
+    line-height: var(--leading-caption);
+    letter-spacing: var(--tracking-caption);
+    color: var(--color-ink-muted);
+  }
+
+  /* ── Code ── */
+  code,
+  pre,
+  kbd {
+    font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+    font-size: 13px;
   }
 
   ::selection {
@@ -115,7 +262,174 @@
   }
 }
 
-/* ── Surfaces ─────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════
+   TYPOGRAPHY UTILITIES — explicit class-level mapping
+   ════════════════════════════════════════════════════════ */
+
+/* font-display class used throughout components */
+.font-display {
+  font-family: var(--font-display) !important;
+}
+
+/* font-sans class */
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
+/* font-numeral — Instrument Serif italic for 01/02/03/04 */
+.font-numeral {
+  font-family: var(--font-numeral) !important;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-rose-numeral);
+}
+
+/* ── Hero heading: Syne 800, poster-grade ── */
+.type-hero {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: var(--leading-hero);
+  letter-spacing: var(--tracking-hero);
+}
+
+/* ── Section eyebrow label ── */
+.type-eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* ── Lead paragraph ── */
+.type-lead {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: var(--leading-lead);
+  letter-spacing: 0em;
+  color: var(--color-ink);
+}
+
+/* ── Body copy ── */
+.type-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: var(--leading-body);
+  letter-spacing: 0em;
+}
+
+/* ── Button text ── */
+.type-btn {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: var(--tracking-btn);
+}
+
+/* ── Nav items ── */
+.type-nav {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: var(--tracking-nav);
+}
+
+/* ── Form labels ── */
+.type-label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* ── Tags / badges ── */
+.type-tag {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: var(--tracking-tag);
+  text-transform: uppercase;
+}
+
+/* ── Caption / footnote ── */
+.type-caption {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 11px;
+  line-height: var(--leading-caption);
+  letter-spacing: var(--tracking-caption);
+  color: var(--color-ink-muted);
+}
+
+/* ── Footer section headings ── */
+.type-footer-heading {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* ── Footer links ── */
+.type-footer-link {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: var(--color-ink-muted);
+  transition: color 180ms var(--ease-micro);
+
+  &:hover {
+    color: var(--color-ink);
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   TAILWIND FONT-FAMILY OVERRIDES
+   Force Tailwind's font-display/font-sans to our new fonts
+   ════════════════════════════════════════════════════════ */
+@layer utilities {
+  .font-display {
+    font-family: "Syne", system-ui, sans-serif !important;
+  }
+  .font-sans {
+    font-family: "Nunito Sans", system-ui, sans-serif !important;
+  }
+  .font-numeral {
+    font-family: "Instrument Serif", Georgia, serif !important;
+    font-style: italic;
+  }
+
+  /* Tracking utilities mapped to our scale */
+  .tracking-hero    { letter-spacing: var(--tracking-hero); }
+  .tracking-h1      { letter-spacing: var(--tracking-h1); }
+  .tracking-h2      { letter-spacing: var(--tracking-h2); }
+  .tracking-eyebrow { letter-spacing: var(--tracking-eyebrow); }
+  .tracking-btn     { letter-spacing: var(--tracking-btn); }
+  .tracking-nav     { letter-spacing: var(--tracking-nav); }
+  .tracking-label   { letter-spacing: var(--tracking-label); }
+  .tracking-tag     { letter-spacing: var(--tracking-tag); }
+
+  /* Leading utilities */
+  .leading-hero    { line-height: var(--leading-hero); }
+  .leading-h1      { line-height: var(--leading-h1); }
+  .leading-h2      { line-height: var(--leading-h2); }
+  .leading-h3      { line-height: var(--leading-h3); }
+  .leading-lead    { line-height: var(--leading-lead); }
+  .leading-body    { line-height: var(--leading-body); }
+  .leading-caption { line-height: var(--leading-caption); }
+}
+
+/* ════════════════════════════════════════════════════════
+   SURFACES
+   ════════════════════════════════════════════════════════ */
 @utility glass-panel {
   background-color: color-mix(in oklab, var(--color-surface) 88%, transparent);
   border: 1px solid var(--color-hairline);
@@ -151,104 +465,52 @@
   background: linear-gradient(135deg, var(--color-rose-card-a) 0%, var(--color-rose-card-b) 100%);
 }
 
-/* ── Motion ───────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════
+   MOTION
+   ════════════════════════════════════════════════════════ */
 @keyframes pt-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes pt-slide-left {
-  from {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes pt-scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes pt-float {
-  0%,
-  100% {
-    transform: translateY(-6px);
-  }
-  50% {
-    transform: translateY(6px);
-  }
+  0%, 100% { transform: translateY(-6px); }
+  50%       { transform: translateY(6px); }
 }
 
 @keyframes pt-pulse-glow {
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
 }
 
 @keyframes pt-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@utility anim-fade-up {
-  animation: pt-fade-up 400ms var(--ease-entrance) both;
-}
-
-@utility anim-slide-left {
-  animation: pt-slide-left 450ms var(--ease-entrance) both;
-}
-
-@utility anim-scale-in {
-  animation: pt-scale-in 250ms var(--ease-entrance) both;
-}
-
-@utility anim-fade {
-  animation: pt-fade 250ms ease-out both;
-}
-
-@utility anim-float {
-  animation: pt-float 4s ease-in-out infinite;
-}
-
-@utility anim-pulse-glow {
-  animation: pt-pulse-glow 3s ease-in-out infinite;
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes pt-spin {
-  to {
-    transform: translate(-50%, -50%) rotate(1turn);
-  }
+  to { transform: translate(-50%, -50%) rotate(1turn); }
 }
 
-@utility anim-spin-slow {
-  animation: pt-spin 4s linear infinite;
-}
+@utility anim-fade-up    { animation: pt-fade-up   400ms var(--ease-entrance) both; }
+@utility anim-slide-left { animation: pt-slide-left 450ms var(--ease-entrance) both; }
+@utility anim-scale-in   { animation: pt-scale-in  250ms var(--ease-entrance) both; }
+@utility anim-fade       { animation: pt-fade       250ms ease-out both; }
+@utility anim-float      { animation: pt-float      4s ease-in-out infinite; }
+@utility anim-pulse-glow { animation: pt-pulse-glow 3s  ease-in-out infinite; }
+@utility anim-spin-slow  { animation: pt-spin       4s  linear infinite; }
 
-/* Scroll reveal (IntersectionObserver toggles data-shown) */
+/* Scroll reveal */
 @utility reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -263,18 +525,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
 }
 
-/* ── Premium pass (additive only: shadows, blurs, transitions) ─────── */
-
-/* Glass edge: 1px inner gradient rim, no box-size change */
+/* ════════════════════════════════════════════════════════
+   PREMIUM SURFACE PASS
+   ════════════════════════════════════════════════════════ */
 @utility glass-edge {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -289,15 +549,9 @@
     0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
-/* Idle glow pulse for primary actions */
 @keyframes pt-btn-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-  50% {
-    box-shadow: 0 0 22px -6px currentColor;
-  }
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%       { box-shadow: 0 0 22px -6px currentColor; }
 }
 
 @utility btn-glow {
@@ -310,42 +564,31 @@
   }
 }
 
-/* Focus treatment for every form field */
 input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-primary) 45%, transparent),
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-primary) 45%, transparent),
     0 8px 24px -10px color-mix(in oklab, var(--color-primary) 70%, transparent);
   transition:
     border-color 180ms var(--ease-micro),
     box-shadow 180ms var(--ease-micro);
 }
 
-/* Interactive list rows */
 @utility row-interactive {
   transition:
     background-color 200ms var(--ease-micro),
     transform 200ms var(--ease-micro);
 
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.045);
-  }
+  &:hover { background-color: rgba(255, 255, 255, 0.045); }
 
-  & .row-arrow {
-    transition: transform 200ms var(--ease-micro);
-  }
-
-  &:hover .row-arrow {
-    transform: translateX(4px);
-  }
+  & .row-arrow { transition: transform 200ms var(--ease-micro); }
+  &:hover .row-arrow { transform: translateX(4px); }
 }
 
-/* Staggered fade-up for direct page sections */
 @utility stagger-rise {
-  & > * {
-    animation: pt-fade-up 500ms var(--ease-entrance) both;
-  }
+  & > * { animation: pt-fade-up 500ms var(--ease-entrance) both; }
   & > *:nth-child(1) { animation-delay: 0ms; }
   & > *:nth-child(2) { animation-delay: 100ms; }
   & > *:nth-child(3) { animation-delay: 200ms; }
