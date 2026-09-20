@@ -241,3 +241,5 @@ export interface RevenueResponse {
 export async function getRouteRevenue(): Promise<RevenueResponse> {
   return request<RevenueResponse>("/route-revenue");
 }
+
+// v2
