@@ -5,15 +5,16 @@ function getSession(): string | null {
   return localStorage.getItem("pt.session");
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, init: RequestInit & { auth?: "anon" } = {}): Promise<T> {
   const token = getSession();
+  const { auth, ...fetchInit } = init;
   const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
+    ...fetchInit,
     headers: {
       "Content-Type": "application/json",
       apikey: ANON_KEY,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(init.headers ?? {}),
+      ...(auth !== "anon" && token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(fetchInit.headers ?? {}),
     },
   });
   if (!res.ok) {
@@ -91,18 +92,21 @@ export async function bookTicket(payload: BookTicketPayload): Promise<BookTicket
 }
 
 export interface TicketHistoryItem {
-  id: string;
-  bus_number: string;
-  source: string;
+  ticket_id: string;
+  route_name: string;
+  origin: string;
   destination: string;
-  fare: number;
-  type: "paid" | "pink_card";
+  bus_number: string;
+  departure_time: string;
+  fare_charged: number;
   status: "issued" | "scanned" | "expired";
   issued_at: string;
+  scanned_at: string | null;
 }
 
 export interface TicketHistoryResponse {
   success: boolean;
+  count: number;
   tickets: TicketHistoryItem[];
 }
 
@@ -225,23 +229,166 @@ export async function officerDecideApplication(
   });
 }
 
-// 5. Admin / analytics
+// 5. Admin stats
 
 export interface RouteRevenue {
-  route: string;
+  route_name: string;
   revenue: number;
-  passenger_count: number;
+  tickets_sold: number;
+  free_tickets: number;
 }
 
-export interface RevenueResponse {
+export interface AdminStatsResponse {
   success: boolean;
-  routes: RouteRevenue[];
+  range: string;
+  total_revenue: number;
+  pink_card_discount_lost: number;
+  revenue_by_route: RouteRevenue[];
+  trip_count: number;
+  estimated_cost_per_trip: number;
+  estimated_cost: number;
+  net_estimate: number;
+  cost_note: string;
 }
 
-export async function getRouteRevenue(): Promise<RevenueResponse> {
-  return request<RevenueResponse>("/route-revenue");
+export async function getAdminStats(
+  range: "today" | "week" | "all" = "all",
+): Promise<AdminStatsResponse> {
+  return request<AdminStatsResponse>(`/admin-stats?range=${range}`);
 }
 
-// v2
+// 6. Route passengers
 
-// v2
+export interface RoutePassenger {
+  passenger_id: string;
+  passenger_name: string;
+  phone: string;
+  source: string;
+  destination: string;
+  bus_number: string;
+  fare: number;
+  type: "paid" | "pink_card";
+  status: "issued" | "scanned" | "expired";
+  issued_at: string;
+}
+
+export interface RoutePassengersResponse {
+  success: boolean;
+  route: string;
+  count: number;
+  passengers: RoutePassenger[];
+}
+
+export async function getRoutePassengers(
+  route: string,
+  range: "today" | "week" | "all" = "all",
+): Promise<RoutePassengersResponse> {
+  const params = new URLSearchParams({ route, range });
+  return request<RoutePassengersResponse>(`/route-passengers?${params.toString()}`);
+}
+
+// 7. Search trips
+
+export interface Trip {
+  trip_id: string;
+  bus_number: string;
+  departure_time: string;
+  route_name: string;
+  origin: string;
+  destination: string;
+  base_fare: number;
+}
+
+export interface SearchTripsResponse {
+  success: boolean;
+  count: number;
+  trips: Trip[];
+}
+
+export async function searchTrips(
+  origin?: string,
+  destination?: string,
+): Promise<SearchTripsResponse> {
+  const params = new URLSearchParams();
+  if (origin) params.set("origin", origin);
+  if (destination) params.set("destination", destination);
+  return request<SearchTripsResponse>(`/search-trips?${params.toString()}`, { auth: "anon" });
+}
+
+// 8. Fetch all stops
+
+export interface StopsResponse {
+  success: boolean;
+  stops: string[];
+}
+
+export async function fetchAllStops(): Promise<StopsResponse> {
+  return request<StopsResponse>("/fetch-stops", { auth: "anon" });
+}
+
+// 9. AI chatbot
+
+export interface ChatbotResponse {
+  response: string;
+  reason_code: string;
+  eligible: boolean;
+}
+
+export async function askChatbot(
+  message: string,
+  eligibility_context: object,
+): Promise<ChatbotResponse> {
+  const res = await fetch("https://bus-aiml.onrender.com/chatbot", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, eligibility_context }),
+  });
+  return res.json();
+}
+
+// 10. Demand prediction
+
+export interface DemandResponse {
+  route_id: string;
+  predicted_load: number;
+  is_peak_hour: boolean;
+  is_weekend: boolean;
+  confidence: number;
+}
+
+export async function predictDemand(
+  route_id: string,
+  time_of_day: string,
+  day_of_week: string,
+): Promise<DemandResponse> {
+  const res = await fetch("https://bus-aiml.onrender.com/predict-demand", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ route_id, time_of_day, day_of_week }),
+  });
+  return res.json();
+}
+
+// 11. AI admin summary
+
+export interface RouteStats {
+  route_id: string;
+  avg_predicted_load: number;
+  peak_predicted_load: number;
+  recommended_buses: number;
+  estimated_daily_revenue: number;
+  estimated_daily_cost: number;
+}
+
+export interface AIAdminSummary {
+  total_routes: number;
+  total_estimated_revenue: number;
+  total_estimated_cost: number;
+  estimated_profit: number;
+  route_stats: RouteStats[];
+}
+
+export async function getAIAdminSummary(): Promise<AIAdminSummary> {
+  const res = await fetch("https://bus-aiml.onrender.com/admin/summary");
+  return res.json();
+}
