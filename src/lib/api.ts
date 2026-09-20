@@ -392,3 +392,19 @@ export async function getAIAdminSummary(): Promise<AIAdminSummary> {
   const res = await fetch("https://bus-aiml.onrender.com/admin/summary");
   return res.json();
 }
+
+// 12. Scan ticket (conductor)
+
+export interface ScanTicketResponse {
+  success: boolean;
+  message: string;
+  ticket_id: string;
+  status: string;
+}
+
+export async function scanTicket(ticket_id: string): Promise<ScanTicketResponse> {
+  return request<ScanTicketResponse>("/scan-ticket", {
+    method: "POST",
+    body: JSON.stringify({ ticket_id }),
+  });
+}
