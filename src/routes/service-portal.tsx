@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/service-portal")({
   head: () => ({
     meta: [
-      { title: "Service Portal — Pink Card Verification" },
+      { title: "Service Portal  Pink Card Verification" },
       {
         name: "description",
         content: "Verifying Officer portal for reviewing Pink Card applications.",
@@ -44,7 +44,7 @@ const OTP_RESEND = 30;
 type Screen = "login" | "otp" | "dashboard";
 type Tab = "pending" | "checked";
 
-// ── Root flow ────────────────────────────────────────────────────────────────
+//  Root flow 
 
 function ServicePortalFlow() {
   const [screen, setScreen] = useState<Screen>("login");
@@ -91,7 +91,7 @@ function ServicePortalFlow() {
   );
 }
 
-// ── Login ────────────────────────────────────────────────────────────────────
+//  Login 
 
 function LoginScreen({
   phone,
@@ -144,7 +144,7 @@ function LoginScreen({
             Officer Sign in
           </h2>
           <p className="mt-1 font-sans text-[13px] text-white/50">
-            Use your registered officer phone number · OTP will appear on screen
+            Use your registered officer phone number  OTP will appear on screen
           </p>
 
           <div className="mt-6">
@@ -182,7 +182,7 @@ function LoginScreen({
             disabled={busy}
             className="mt-6 flex h-11 w-full items-center justify-center rounded-[10px] bg-rose-600 font-sans text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {busy ? <Loader2 className="size-4 animate-spin" /> : "Send OTP →"}
+            {busy ? <Loader2 className="size-4 animate-spin" /> : "Send OTP "}
           </button>
         </div>
 
@@ -194,7 +194,7 @@ function LoginScreen({
   );
 }
 
-// ── OTP ──────────────────────────────────────────────────────────────────────
+//  OTP 
 
 function OtpScreen({
   phone,
@@ -305,7 +305,7 @@ function OtpScreen({
             Verify OTP
           </h2>
           <p className="mt-1 font-sans text-[13px] text-white/50">
-            Sent to +91 {phone} ·{" "}
+            Sent to +91 {phone} {" "}
             <button
               type="button"
               onClick={onBack}
@@ -360,7 +360,7 @@ function OtpScreen({
             {busy ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
-              "Verify & Enter →"
+              "Verify & Enter "
             )}
           </button>
 
@@ -383,7 +383,7 @@ function OtpScreen({
   );
 }
 
-// ── Dashboard ────────────────────────────────────────────────────────────────
+//  Dashboard 
 
 function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
   const officerName =
@@ -544,7 +544,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                         className="py-16 text-center font-sans text-[13px] text-white/30"
                       >
                         {tab === "pending"
-                          ? "No pending applications — all caught up!"
+                          ? "No pending applications  all caught up!"
                           : "No checked applications yet."}
                       </td>
                     </tr>
@@ -607,7 +607,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                             )
                           ) : (
                             <span className="font-sans text-[12px] text-white/30">
-                              —
+                              
                             </span>
                           )}
                         </td>
@@ -666,7 +666,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-// ── Detail panel ─────────────────────────────────────────────────────────────
+//  Detail panel 
 
 function ApplicationDetailPanel({
   application,
@@ -780,22 +780,22 @@ function ApplicationDetailPanel({
             {app.source === "auto_match" ? (
               <>
                 <DetailRow label="PAN match" value="Found in income records" />
-                <DetailRow label="Gender" value={app.gender ?? "—"} />
+                <DetailRow label="Gender" value={app.gender ?? ""} />
                 <DetailRow
                   label="Annual Income"
-                  value={`₹${(app.annual_income ?? 0).toLocaleString("en-IN")}`}
+                  value={`${(app.annual_income ?? 0).toLocaleString("en-IN")}`}
                 />
                 <DetailRow
                   label="Threshold"
-                  value={`₹${app.threshold.toLocaleString("en-IN")}`}
+                  value={`${app.threshold.toLocaleString("en-IN")}`}
                 />
                 <DetailRow
                   label="System Decision"
-                  value={app.eligible ? "✓ Eligible" : "✗ Not eligible"}
+                  value={app.eligible ? " Eligible" : " Not eligible"}
                 />
                 <DetailRow
                   label="Reason"
-                  value={app.reason_message ?? "—"}
+                  value={app.reason_message ?? ""}
                 />
               </>
             ) : (
@@ -829,7 +829,7 @@ function ApplicationDetailPanel({
               </p>
               <label className="mb-4 block">
                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
-                  Annual Income (₹)
+                  Annual Income ()
                 </span>
                 <input
                   value={manualIncome}
@@ -849,7 +849,7 @@ function ApplicationDetailPanel({
                   value={manualReason}
                   onChange={(e) => setManualReason(e.target.value)}
                   rows={3}
-                  placeholder="e.g. Income verified manually at ₹1,80,000 — below threshold."
+                  placeholder="e.g. Income verified manually at 1,80,000  below threshold."
                   className="w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 py-2 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
                 />
               </label>
@@ -865,7 +865,7 @@ function ApplicationDetailPanel({
               <DetailRow
                 label="Final Status"
                 value={
-                  app.status === "eligible" ? "✓ Eligible" : "✗ Not eligible"
+                  app.status === "eligible" ? " Eligible" : " Not eligible"
                 }
               />
               {app.decided_at && (
@@ -877,7 +877,7 @@ function ApplicationDetailPanel({
               {app.manual_income != null && (
                 <DetailRow
                   label="Manual Income"
-                  value={`₹${app.manual_income.toLocaleString("en-IN")}`}
+                  value={`${app.manual_income.toLocaleString("en-IN")}`}
                 />
               )}
               {app.manual_reason && (
@@ -894,7 +894,7 @@ function ApplicationDetailPanel({
           )}
         </div>
 
-        {/* Action buttons — only shown for pending applications */}
+        {/* Action buttons  only shown for pending applications */}
         {!alreadyDecided && (
           <div className="flex gap-3 border-t border-white/10 px-6 py-4">
             {!isAutoIneligible && (
@@ -932,7 +932,7 @@ function ApplicationDetailPanel({
   );
 }
 
-// ── Detail row ────────────────────────────────────────────────────────────────
+//  Detail row 
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (

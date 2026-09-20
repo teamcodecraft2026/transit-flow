@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   CheckCircle2,
   ClipboardList,
@@ -20,7 +20,7 @@ import { useAuth } from "@/auth/AuthProvider";
 export const Route = createFileRoute("/pink-card")({
   head: () => ({
     meta: [
-      { title: "The Pink Card — Free Verified Bus Travel for Women | Public Transit" },
+      { title: "The Pink Card  Free Verified Bus Travel for Women | Public Transit" },
       {
         name: "description",
         content:
@@ -28,12 +28,12 @@ export const Route = createFileRoute("/pink-card")({
       },
       {
         property: "og:title",
-        content: "The Pink Card — Free Verified Bus Travel for Women",
+        content: "The Pink Card  Free Verified Bus Travel for Women",
       },
       {
         property: "og:description",
         content:
-          "Zero-fare bus travel for eligible women — encrypted, government-linked, verified in minutes.",
+          "Zero-fare bus travel for eligible women  encrypted, government-linked, verified in minutes.",
       },
     ],
   }),
@@ -225,7 +225,7 @@ function PinkCardPage() {
     requireAuth(() => {
       const appId = getPinkCardApplicationId();
       if (appId) {
-        // Already applied — send them back to the apply page
+        // Already applied  send them back to the apply page
         // which will resume polling/showing the result
         navigate({ to: "/pink-card-apply" });
         return;
@@ -272,14 +272,14 @@ function PinkCardPage() {
               <div className="flex items-start gap-3 py-2">
                 <IndianRupee className="mt-0.5 size-4 shrink-0 text-rose-400" strokeWidth={1.5} />
                 <p className="font-sans text-[13px] text-white/60">
-                  Annual family income below ₹2,50,000
+                  Annual family income below 2,50,000
                 </p>
               </div>
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Button variant="pinkSolid" size="lg"
                 onClick={() => navigate({ to: "/pink-card-apply" })}>
-                Apply Now →
+                Apply Now 
               </Button>
               <Button variant="outline" size="lg" onClick={() => setStatusScreen(null)}>
                 Back
@@ -518,7 +518,7 @@ function PinkCard3D() {
 // export const Route = createFileRoute("/pink-card")({
 //   head: () => ({
 //     meta: [
-//       { title: "The Pink Card — Free Verified Bus Travel for Women | Public Transit" },
+//       { title: "The Pink Card  Free Verified Bus Travel for Women | Public Transit" },
 //       {
 //         name: "description",
 //         content:
@@ -526,12 +526,12 @@ function PinkCard3D() {
 //       },
 //       {
 //         property: "og:title",
-//         content: "The Pink Card — Free Verified Bus Travel for Women",
+//         content: "The Pink Card  Free Verified Bus Travel for Women",
 //       },
 //       {
 //         property: "og:description",
 //         content:
-//           "Zero-fare bus travel for eligible women — encrypted, government-linked, verified in minutes.",
+//           "Zero-fare bus travel for eligible women  encrypted, government-linked, verified in minutes.",
 //       },
 //     ],
 //   }),
@@ -776,11 +776,11 @@ function PinkCard3D() {
 //                   </div>
 //                   <div className="flex items-start gap-3 py-2">
 //                     <IndianRupee className="mt-0.5 size-4 shrink-0 text-rose" strokeWidth={1.5} />
-//                     <p className="font-sans text-[13px] text-ink-muted">Annual family income below ₹2,50,000</p>
+//                     <p className="font-sans text-[13px] text-ink-muted">Annual family income below 2,50,000</p>
 //                   </div>
 //                 </div>
 //                 <div className="mt-8 flex flex-wrap justify-center gap-4">
-//                   <Button variant="pinkSolid" size="lg" onClick={() => navigate({ to: "/pink-card-apply" })}>Apply Now →</Button>
+//                   <Button variant="pinkSolid" size="lg" onClick={() => navigate({ to: "/pink-card-apply" })}>Apply Now </Button>
 //                   <Button variant="outline" size="lg" onClick={() => setStatusScreen(null)}>Back</Button>
 //                 </div>
 //               </>
@@ -788,18 +788,18 @@ function PinkCard3D() {
 //             {statusScreen === "eligible" && savedResult && (
 //               <>
 //                 <CheckCircle2 className="mx-auto size-16 text-green-400" strokeWidth={1.5} />
-//                 <h1 className="mt-5 font-display text-[34px] text-ink">You're Eligible! 🌸</h1>
+//                 <h1 className="mt-5 font-display text-[34px] text-ink">You're Eligible! </h1>
 //                 <p className="mt-3 font-sans text-[14px] text-ink-muted">
-//                   Your Pink Card is active. Your next ticket booking will automatically be <strong className="text-rose">₹0</strong>.
+//                   Your Pink Card is active. Your next ticket booking will automatically be <strong className="text-rose">0</strong>.
 //                 </p>
 //                 <div className="mt-6 rounded-[14px] border border-green-500/30 bg-green-500/10 p-5 text-left">
 //                   <Row label="PAN" value={savedResult.pan} />
-//                   <Row label="Annual Income" value={`₹${savedResult.annual_income.toLocaleString("en-IN")}`} />
-//                   <Row label="Threshold" value={`₹${savedResult.threshold.toLocaleString("en-IN")}`} />
+//                   <Row label="Annual Income" value={`${savedResult.annual_income.toLocaleString("en-IN")}`} />
+//                   <Row label="Threshold" value={`${savedResult.threshold.toLocaleString("en-IN")}`} />
 //                   <Row label="Reason" value={savedResult.reason_message} />
 //                 </div>
 //                 <div className="mt-8 flex flex-wrap justify-center gap-4">
-//                   <Button variant="pinkSolid" size="lg" onClick={() => navigate({ to: "/book" })}>Book a Free Ticket →</Button>
+//                   <Button variant="pinkSolid" size="lg" onClick={() => navigate({ to: "/book" })}>Book a Free Ticket </Button>
 //                   <Button variant="outline" size="lg" onClick={() => setStatusScreen(null)}>Back</Button>
 //                 </div>
 //               </>
@@ -813,7 +813,7 @@ function PinkCard3D() {
 //                   <Row label="PAN" value={savedResult.pan} />
 //                   <Row label="Reason Code" value={savedResult.reason_code} />
 //                   {savedResult.annual_income > 0 && (
-//                     <Row label="Annual Income" value={`₹${savedResult.annual_income.toLocaleString("en-IN")}`} />
+//                     <Row label="Annual Income" value={`${savedResult.annual_income.toLocaleString("en-IN")}`} />
 //                   )}
 //                 </div>
 //                 <div className="mt-5 rounded-[12px] border border-white/10 bg-white/5 p-4 text-left">
@@ -821,7 +821,7 @@ function PinkCard3D() {
 //                     <p className="font-sans text-[13px] text-ink-muted">The Pink Card scheme is available only to female applicants as per government guidelines.</p>
 //                   )}
 //                   {savedResult.reason_code === "INELIGIBLE_INCOME_HIGH" && (
-//                     <p className="font-sans text-[13px] text-ink-muted">Your annual income exceeds the ₹{savedResult.threshold.toLocaleString("en-IN")} threshold. You are ₹{Math.abs(savedResult.gap).toLocaleString("en-IN")} above the limit.</p>
+//                     <p className="font-sans text-[13px] text-ink-muted">Your annual income exceeds the {savedResult.threshold.toLocaleString("en-IN")} threshold. You are {Math.abs(savedResult.gap).toLocaleString("en-IN")} above the limit.</p>
 //                   )}
 //                   {savedResult.reason_code === "INELIGIBLE_NO_RECORD" && (
 //                     <p className="font-sans text-[13px] text-ink-muted">No income record was found for this PAN. Please check the PAN number or contact support.</p>
@@ -922,7 +922,7 @@ function PinkCard3D() {
 //   );
 // }
 
-// // ── 3D Pink Card with mouse tracking ─────────────────────────────────────────
+// //  3D Pink Card with mouse tracking 
 
 // function PinkCard3D() {
 //   const cardRef = useRef<HTMLDivElement>(null);

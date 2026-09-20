@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
@@ -47,7 +47,7 @@ const AADHAAR_RE = /^\d{12}$/;
 const PHONE_RE = /^[6-9]\d{9}$/;
 const PAN_RE = /^[A-Z]{5}\d{4}[A-Z]$/;
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+//  Types 
 
 type FormState = {
   fullName: string;
@@ -107,7 +107,7 @@ function PinkCardApplyPage() {
   const steps = [t("apply.s1"), t("apply.s2"), t("apply.s3"), t("apply.s4")];
   const titles = [t("apply.t1"), t("apply.t2"), t("apply.t3"), t("apply.t4")];
 
-  // ── Poll status once we have an application_id ────────────────────────────
+  //  Poll status once we have an application_id 
   useEffect(() => {
     if (!applicationId) return;
     let cancelled = false;
@@ -131,7 +131,7 @@ function PinkCardApplyPage() {
     return () => { cancelled = true; clearTimeout(timer); };
   }, [applicationId]);
 
-  // ── Per-step validation ───────────────────────────────────────────────────
+  //  Per-step validation 
   function validateStep(n: number): boolean {
     const errs: Partial<Record<string, string>> = {};
     if (n === 1) {
@@ -193,7 +193,7 @@ function PinkCardApplyPage() {
     setFieldErrors({});
   }
 
-  // ── "Application Submitted" / pending screen ──────────────────────────────
+  //  "Application Submitted" / pending screen 
   if (applicationId && (statusLoading || !appStatus || appStatus.status === "submitted")) {
     return (
       <PageShell theme="rose" backHome hideFooter>
@@ -214,7 +214,7 @@ function PinkCardApplyPage() {
             </div>
             <div className="mt-6 flex items-center justify-center gap-2 font-sans text-[12.5px] text-white/40">
               <Loader2 className="size-4 animate-spin" />
-              Checking for updates…
+              Checking for updates
             </div>
             <Button variant="outline" size="lg" className="mt-8 min-w-[200px]"
               onClick={() => navigate({ to: "/home" })}>
@@ -226,7 +226,7 @@ function PinkCardApplyPage() {
     );
   }
 
-  // ── Decided result screen ─────────────────────────────────────────────────
+  //  Decided result screen 
   if (applicationId && appStatus && appStatus.status !== "submitted") {
     const eligible = appStatus.status === "eligible";
     return (
@@ -239,22 +239,22 @@ function PinkCardApplyPage() {
             {eligible ? (
               <>
                 <CheckCircle2 className="mx-auto size-16 text-green-400" strokeWidth={1.5} />
-                <h1 className="mt-5 font-display text-[34px] text-white">You're Eligible! 🌸</h1>
+                <h1 className="mt-5 font-display text-[34px] text-white">You're Eligible! </h1>
                 <p className="mt-3 font-sans text-[14px] text-white/60">
                   Your Pink Card is now active. Your next ticket booking will automatically be{" "}
-                  <strong className="text-rose-400">₹0</strong>.
+                  <strong className="text-rose-400">0</strong>.
                 </p>
                 <div className="mt-6 rounded-[14px] border border-green-500/30 bg-green-500/10 p-5 text-left">
-                  <Row label="PAN" value={appStatus.pan ?? "—"} />
+                  <Row label="PAN" value={appStatus.pan ?? ""} />
                   <Row label="Annual Income"
-                    value={`₹${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`} />
+                    value={`${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`} />
                   <Row label="Threshold"
-                    value={`₹${(appStatus.threshold ?? 0).toLocaleString("en-IN")}`} />
-                  <Row label="Reason" value={appStatus.reason_message ?? "—"} />
+                    value={`${(appStatus.threshold ?? 0).toLocaleString("en-IN")}`} />
+                  <Row label="Reason" value={appStatus.reason_message ?? ""} />
                 </div>
                 <Button variant="pinkSolid" size="lg" className="mt-8 min-w-[200px]"
                   onClick={() => navigate({ to: "/book" })}>
-                  Book a Free Ticket →
+                  Book a Free Ticket 
                 </Button>
               </>
             ) : (
@@ -265,11 +265,11 @@ function PinkCardApplyPage() {
                   {appStatus.reason_message ?? "Your application was not approved."}
                 </p>
                 <div className="mt-6 rounded-[14px] border border-red-500/30 bg-red-500/10 p-5 text-left">
-                  <Row label="PAN" value={appStatus.pan ?? "—"} />
-                  <Row label="Reason Code" value={appStatus.reason_code ?? "—"} />
+                  <Row label="PAN" value={appStatus.pan ?? ""} />
+                  <Row label="Reason Code" value={appStatus.reason_code ?? ""} />
                   {(appStatus.annual_income ?? 0) > 0 && (
                     <Row label="Annual Income"
-                      value={`₹${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`} />
+                      value={`${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`} />
                   )}
                 </div>
                 <div className="mt-5 rounded-[12px] border border-white/10 bg-white/5 p-4 text-left">
@@ -281,8 +281,8 @@ function PinkCardApplyPage() {
                   )}
                   {appStatus.reason_code === "INELIGIBLE_INCOME_HIGH" && (
                     <p className="font-sans text-[13px] text-white/50">
-                      Your annual income exceeds the ₹{(appStatus.threshold ?? 0).toLocaleString("en-IN")}{" "}
-                      threshold by ₹{Math.abs(appStatus.gap ?? 0).toLocaleString("en-IN")}.
+                      Your annual income exceeds the {(appStatus.threshold ?? 0).toLocaleString("en-IN")}{" "}
+                      threshold by {Math.abs(appStatus.gap ?? 0).toLocaleString("en-IN")}.
                     </p>
                   )}
                   {appStatus.reason_code === "INELIGIBLE_NO_RECORD" && (
@@ -306,7 +306,7 @@ function PinkCardApplyPage() {
     );
   }
 
-  // ── 4-step form ───────────────────────────────────────────────────────────
+  //  4-step form 
   return (
     <PageShell theme="rose" backHome hideFooter>
       <section className="relative -mt-[88px] flex min-h-[100svh] items-start justify-center overflow-hidden pb-24 pt-[120px]">
@@ -368,7 +368,7 @@ function PinkCardApplyPage() {
                 )}
 
                 <div className={step > 1 ? "pt-8" : ""}>
-                  {/* ── Step 1 ── */}
+                  {/*  Step 1  */}
                   {step === 1 && (
                     <div className="space-y-5">
                       <TextField
@@ -411,7 +411,7 @@ function PinkCardApplyPage() {
                     </div>
                   )}
 
-                  {/* ── Step 2 ── */}
+                  {/*  Step 2  */}
                   {step === 2 && (
                     <div className="space-y-5">
                       <TextField
@@ -424,8 +424,8 @@ function PinkCardApplyPage() {
                         error={fieldErrors["pan"]}
                       />
                       <p className="font-sans text-[12px] text-white/40">
-                        Test PANs: <span className="text-rose-400">ABCDE1234F</span> (eligible female) ·{" "}
-                        <span className="text-rose-400">IJKLM9012N</span> (income too high) ·{" "}
+                        Test PANs: <span className="text-rose-400">ABCDE1234F</span> (eligible female) {" "}
+                        <span className="text-rose-400">IJKLM9012N</span> (income too high) {" "}
                         <span className="text-rose-400">NOPQR4567S</span> (male). Any other PAN goes
                         to the officer for manual review.
                       </p>
@@ -440,7 +440,7 @@ function PinkCardApplyPage() {
                     </div>
                   )}
 
-                  {/* ── Step 3 ── */}
+                  {/*  Step 3  */}
                   {step === 3 && (
                     <div className="space-y-5">
                       <div>
@@ -457,7 +457,7 @@ function PinkCardApplyPage() {
                             onChange={(e) => set("state", e.target.value)}
                             className="min-w-0 flex-1 bg-transparent font-display text-[15px] text-white focus:outline-none [&>option]:bg-[#0a0a14] [&>option]:text-white"
                           >
-                            <option value="">Select state…</option>
+                            <option value="">Select state</option>
                             {STATES.map((s) => (
                               <option key={s} value={s}>{s}</option>
                             ))}
@@ -481,34 +481,34 @@ function PinkCardApplyPage() {
                     </div>
                   )}
 
-                  {/* ── Step 4 — Review ── */}
+                  {/*  Step 4  Review  */}
                   {step === 4 && (
                     <div className="space-y-2">
                       <ReviewRow
                         icon={<UserRound className="size-7 text-rose-400" strokeWidth={1.5} />}
                         label={t("apply.fullName")}
-                        value={form.fullName || "—"}
+                        value={form.fullName || ""}
                         action={t("apply.edit")}
                         onEdit={() => setStep(1)}
                       />
                       <ReviewRow
                         icon={<CreditCard className="size-7 text-rose-400" strokeWidth={1.5} />}
                         label={t("apply.aadhaar")}
-                        value={form.aadhaar || "—"}
+                        value={form.aadhaar || ""}
                         action={t("apply.editUpload")}
                         onEdit={() => setStep(1)}
                       />
                       <ReviewRow
                         icon={<CreditCard className="size-7 text-rose-400" strokeWidth={1.5} />}
                         label={t("apply.pan")}
-                        value={form.pan || "—"}
+                        value={form.pan || ""}
                         action={t("apply.editUpload")}
                         onEdit={() => setStep(2)}
                       />
                       <ReviewRow
                         icon={<MapPin className="size-7 text-rose-400" strokeWidth={1.5} />}
                         label={t("apply.state")}
-                        value={form.state || "—"}
+                        value={form.state || ""}
                         action={t("apply.editUpload")}
                         onEdit={() => setStep(3)}
                       />
@@ -543,7 +543,7 @@ function PinkCardApplyPage() {
                       onClick={submit}
                       disabled={submitting}>
                       {submitting
-                        ? <><Loader2 className="mr-2 size-4 animate-spin" /> Submitting…</>
+                        ? <><Loader2 className="mr-2 size-4 animate-spin" /> Submitting</>
                         : t("apply.submit")}
                     </Button>
                   )}
@@ -557,7 +557,7 @@ function PinkCardApplyPage() {
   );
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+//  Sub-components 
 
 function TextField({
   label, icon, value, onChange, placeholder, inputMode, required, error,
@@ -657,7 +657,7 @@ function ReviewRow({
       <div className="shrink-0">{icon}</div>
       <div className="min-w-0 flex-1">
         <p className="font-display text-[15px] text-white">{label}</p>
-        <p className="font-sans text-[12px] text-white/40">{thumb ? "📎 " : ""}{value}</p>
+        <p className="font-sans text-[12px] text-white/40">{thumb ? " " : ""}{value}</p>
       </div>
       <button type="button" onClick={onEdit}
         className="shrink-0 font-sans text-[12px] text-rose-400 hover:underline">
@@ -694,16 +694,16 @@ function ReviewRow({
 // export const Route = createFileRoute("/pink-card-apply")({
 //   head: () => ({
 //     meta: [
-//       { title: "Apply for the Pink Card — 4-Step Verification | Public Transit" },
+//       { title: "Apply for the Pink Card  4-Step Verification | Public Transit" },
 //       {
 //         name: "description",
 //         content:
 //           "Complete the Pink Card application in four steps: Aadhaar details, PAN details, residency proof, and a final review before submitting.",
 //       },
-//       { property: "og:title", content: "Apply for the Pink Card — 4-Step Verification" },
+//       { property: "og:title", content: "Apply for the Pink Card  4-Step Verification" },
 //       {
 //         property: "og:description",
-//         content: "Aadhaar, PAN, residency and review — apply for zero-fare bus travel in minutes.",
+//         content: "Aadhaar, PAN, residency and review  apply for zero-fare bus travel in minutes.",
 //       },
 //       { property: "og:type", content: "website" },
 //       { name: "twitter:card", content: "summary_large_image" },
@@ -712,7 +712,7 @@ function ReviewRow({
 //   component: PinkCardApplyPage,
 // });
 
-// // ── Per-user key ──────────────────────────────────────────────────────────────
+// //  Per-user key 
 
 // function getPinkCardKey(): string {
 //   try {
@@ -725,7 +725,7 @@ function ReviewRow({
 //   return "pt.pinkCardResult.guest";
 // }
 
-// // ── Types ─────────────────────────────────────────────────────────────────────
+// //  Types 
 
 // type FormState = {
 //   fullName: string;
@@ -811,7 +811,7 @@ function ReviewRow({
 //     });
 //   }
 
-//   // ── Result screen ─────────────────────────────────────────────────────────
+//   //  Result screen 
 
 //   if (result) {
 //     return (
@@ -830,18 +830,18 @@ function ReviewRow({
 //             {result.eligible ? (
 //               <>
 //                 <CheckCircle2 className="mx-auto size-16 text-green-400" strokeWidth={1.5} />
-//                 <h1 className="mt-5 font-display text-[34px] text-ink">You're Eligible! 🌸</h1>
+//                 <h1 className="mt-5 font-display text-[34px] text-ink">You're Eligible! </h1>
 //                 <p className="mt-3 font-sans text-[14px] text-ink-muted">
 //                   Your Pink Card is now active. Your next ticket booking will automatically be{" "}
-//                   <strong className="text-rose">₹0</strong>.
+//                   <strong className="text-rose">0</strong>.
 //                 </p>
 //                 <div className="mt-6 rounded-[14px] border border-green-500/30 bg-green-500/10 p-5 text-left">
 //                   <Row label="PAN" value={result.pan} />
 //                   <Row
 //                     label="Annual Income"
-//                     value={`₹${result.annual_income.toLocaleString("en-IN")}`}
+//                     value={`${result.annual_income.toLocaleString("en-IN")}`}
 //                   />
-//                   <Row label="Threshold" value={`₹${result.threshold.toLocaleString("en-IN")}`} />
+//                   <Row label="Threshold" value={`${result.threshold.toLocaleString("en-IN")}`} />
 //                   <Row label="Reason" value={result.reason_message} />
 //                 </div>
 //                 <Button
@@ -850,7 +850,7 @@ function ReviewRow({
 //                   className="mt-8 min-w-[200px]"
 //                   onClick={() => navigate({ to: "/book" })}
 //                 >
-//                   Book a Free Ticket →
+//                   Book a Free Ticket 
 //                 </Button>
 //               </>
 //             ) : (
@@ -866,7 +866,7 @@ function ReviewRow({
 //                   {result.annual_income > 0 && (
 //                     <Row
 //                       label="Annual Income"
-//                       value={`₹${result.annual_income.toLocaleString("en-IN")}`}
+//                       value={`${result.annual_income.toLocaleString("en-IN")}`}
 //                     />
 //                   )}
 //                 </div>
@@ -879,8 +879,8 @@ function ReviewRow({
 //                   )}
 //                   {result.reason_code === "INELIGIBLE_INCOME_HIGH" && (
 //                     <p className="font-sans text-[13px] text-ink-muted">
-//                       Your annual income exceeds the ₹{result.threshold.toLocaleString("en-IN")}{" "}
-//                       threshold. You are ₹{Math.abs(result.gap).toLocaleString("en-IN")} above the
+//                       Your annual income exceeds the {result.threshold.toLocaleString("en-IN")}{" "}
+//                       threshold. You are {Math.abs(result.gap).toLocaleString("en-IN")} above the
 //                       limit.
 //                     </p>
 //                   )}
@@ -920,7 +920,7 @@ function ReviewRow({
 //     );
 //   }
 
-//   // ── 4-step form ───────────────────────────────────────────────────────────
+//   //  4-step form 
 
 //   return (
 //     <PageShell theme="rose" backHome hideFooter>
@@ -944,7 +944,7 @@ function ReviewRow({
 //             {/* Form card */}
 //             <div className="relative rounded-[18px] border border-rose/25 bg-black/45 p-6 sm:p-8">
 
-//               {/* Back arrow — shown on steps 2, 3, 4 */}
+//               {/* Back arrow  shown on steps 2, 3, 4 */}
 //               {step > 1 && (
 //                 <button
 //                   type="button"
@@ -1001,8 +1001,8 @@ function ReviewRow({
 //                       placeholder="ABCDE1234F"
 //                     />
 //                     <p className="font-sans text-[12px] text-ink-muted">
-//                       Test PANs: <span className="text-rose">ABCDE1234F</span> (eligible female) ·{" "}
-//                       <span className="text-rose">IJKLM9012N</span> (income too high) ·{" "}
+//                       Test PANs: <span className="text-rose">ABCDE1234F</span> (eligible female) {" "}
+//                       <span className="text-rose">IJKLM9012N</span> (income too high) {" "}
 //                       <span className="text-rose">NOPQR4567S</span> (male)
 //                     </p>
 //                     <Dropzone
@@ -1026,7 +1026,7 @@ function ReviewRow({
 //                           onChange={(e) => set("state", e.target.value)}
 //                           className="min-w-0 flex-1 bg-transparent font-display text-[15px] text-ink focus:outline-none [&>option]:bg-[#0a0a14] [&>option]:text-white"
 //                         >
-//                           <option value="">Select state…</option>
+//                           <option value="">Select state</option>
 //                           {STATES.map((s) => (
 //                             <option key={s} value={s}>
 //                               {s}
@@ -1053,14 +1053,14 @@ function ReviewRow({
 //                       <ReviewRow
 //                         icon={<UserRound className="size-7 text-rose-bright" strokeWidth={1.5} />}
 //                         label="Full Name"
-//                         value={form.fullName || "—"}
+//                         value={form.fullName || ""}
 //                         action={t("apply.editUpload")}
 //                         onEdit={() => setStep(1)}
 //                       />
 //                       <ReviewRow
 //                         icon={<CreditCard className="size-7 text-rose-bright" strokeWidth={1.5} />}
 //                         label="Aadhaar"
-//                         value={form.aadhaar || "—"}
+//                         value={form.aadhaar || ""}
 //                         thumb={form.aadhaarFile}
 //                         action={t("apply.editUpload")}
 //                         onEdit={() => setStep(1)}
@@ -1068,7 +1068,7 @@ function ReviewRow({
 //                       <ReviewRow
 //                         icon={<CreditCard className="size-7 text-rose-bright" strokeWidth={1.5} />}
 //                         label={t("apply.pan")}
-//                         value={form.pan || "—"}
+//                         value={form.pan || ""}
 //                         thumb={form.panFile}
 //                         action={t("apply.editUpload")}
 //                         onEdit={() => setStep(2)}
@@ -1076,7 +1076,7 @@ function ReviewRow({
 //                       <ReviewRow
 //                         icon={<MapPin className="size-7 text-rose-bright" strokeWidth={1.5} />}
 //                         label={t("apply.state")}
-//                         value={form.state || "—"}
+//                         value={form.state || ""}
 //                         action={t("apply.editUpload")}
 //                         onEdit={() => setStep(3)}
 //                       />
