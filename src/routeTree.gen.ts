@@ -10,16 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as ConductorRouteImport } from './routes/conductor'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as PinkCardRouteImport } from './routes/pink-card'
 import { Route as PinkCardApplyRouteImport } from './routes/pink-card-apply'
+import { Route as ServicePortalRouteImport } from './routes/service-portal'
 import { Route as TripsRouteImport } from './routes/trips'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -47,6 +54,11 @@ const PinkCardApplyRoute = PinkCardApplyRouteImport.update({
   path: '/pink-card-apply',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicePortalRoute = ServicePortalRouteImport.update({
+  id: '/service-portal',
+  path: '/service-portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TripsRoute = TripsRouteImport.update({
   id: '/trips',
   path: '/trips',
@@ -55,69 +67,83 @@ const TripsRoute = TripsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/book': typeof BookRoute
   '/conductor': typeof ConductorRoute
   '/home': typeof HomeRoute
   '/pink-card': typeof PinkCardRoute
   '/pink-card-apply': typeof PinkCardApplyRoute
+  '/service-portal': typeof ServicePortalRoute
   '/trips': typeof TripsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/book': typeof BookRoute
   '/conductor': typeof ConductorRoute
   '/home': typeof HomeRoute
   '/pink-card': typeof PinkCardRoute
   '/pink-card-apply': typeof PinkCardApplyRoute
+  '/service-portal': typeof ServicePortalRoute
   '/trips': typeof TripsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/book': typeof BookRoute
   '/conductor': typeof ConductorRoute
   '/home': typeof HomeRoute
   '/pink-card': typeof PinkCardRoute
   '/pink-card-apply': typeof PinkCardApplyRoute
+  '/service-portal': typeof ServicePortalRoute
   '/trips': typeof TripsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/book'
     | '/conductor'
     | '/home'
     | '/pink-card'
     | '/pink-card-apply'
+    | '/service-portal'
     | '/trips'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/book'
     | '/conductor'
     | '/home'
     | '/pink-card'
     | '/pink-card-apply'
+    | '/service-portal'
     | '/trips'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/book'
     | '/conductor'
     | '/home'
     | '/pink-card'
     | '/pink-card-apply'
+    | '/service-portal'
     | '/trips'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   BookRoute: typeof BookRoute
   ConductorRoute: typeof ConductorRoute
   HomeRoute: typeof HomeRoute
   PinkCardRoute: typeof PinkCardRoute
   PinkCardApplyRoute: typeof PinkCardApplyRoute
+  ServicePortalRoute: typeof ServicePortalRoute
   TripsRoute: typeof TripsRoute
 }
 
@@ -128,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book': {
@@ -165,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PinkCardApplyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/service-portal': {
+      id: '/service-portal'
+      path: '/service-portal'
+      fullPath: '/service-portal'
+      preLoaderRoute: typeof ServicePortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trips': {
       id: '/trips'
       path: '/trips'
@@ -177,11 +217,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   BookRoute: BookRoute,
   ConductorRoute: ConductorRoute,
   HomeRoute: HomeRoute,
   PinkCardRoute: PinkCardRoute,
   PinkCardApplyRoute: PinkCardApplyRoute,
+  ServicePortalRoute: ServicePortalRoute,
   TripsRoute: TripsRoute,
 }
 export const routeTree = rootRouteImport
