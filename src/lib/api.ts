@@ -1,5 +1,6 @@
 const BASE_URL = "https://welccusfyovxgpfplnlj.supabase.co/functions/v1";
-const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlbGNjdXNmeW92eGdwZnBsbmxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MzE4MzgsImV4cCI6MjEwMzUwNzgzOH0.2kf_gcHn0bapWkWOLEbU1yF_5ancGjSxDn1LVMwcr54";
 function getSession(): string | null {
   return localStorage.getItem("pt.session");
 }
