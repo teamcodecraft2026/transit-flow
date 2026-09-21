@@ -106,16 +106,12 @@ function BookPage() {
     }
   }
 
-  async function handleBook(trip: Trip) {
+  async function handleBook(trip_id: string, fare: number) {
     requireAuth(async () => {
       setBookError(null);
-      setBooking(trip.trip_id);
+      setBooking(trip_id);
       try {
-        const res = await bookTicket({
-          bus_id: trip.trip_id,
-          source: trip.origin,
-          destination: trip.destination,
-        });
+        const res = await bookTicket(trip_id, fare);
         setBookedTicket(res.ticket);
         setPinkCardApplied(res.pink_card_applied ?? res.ticket.type === "pink_card");
       } catch (err: unknown) {
@@ -300,7 +296,7 @@ function BookPage() {
                             variant="blue"
                             size="sm"
                             disabled={booking === trip.trip_id}
-                            onClick={() => handleBook(trip)}
+                            onClick={() => handleBook(trip.trip_id, trip.base_fare)}
                           >
                             {booking === trip.trip_id ? (
                               <Loader2 className="size-4 animate-spin" />

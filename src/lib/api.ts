@@ -76,21 +76,22 @@ export interface Ticket {
 }
 
 export interface BookTicketPayload {
-  bus_id: string;
-  source: string;
-  destination: string;
+  trip_id: string;
+  fare: number;
 }
 
 export interface BookTicketResponse {
   success: boolean;
   ticket: Ticket;
   pink_card_applied: boolean;
+  payment_status?: string;
+  mock_payment?: boolean;
 }
 
-export async function bookTicket(payload: BookTicketPayload): Promise<BookTicketResponse> {
+export async function bookTicket(trip_id: string, fare: number): Promise<BookTicketResponse> {
   return request<BookTicketResponse>("/book-ticket", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ trip_id, fare }),
   });
 }
 
