@@ -249,8 +249,6 @@ function OtpScreen({
       }
       localStorage.setItem(OFFICER_SESSION_KEY, res.token);
       localStorage.setItem(OFFICER_NAME_KEY, res.user.name ?? `Officer (${phone})`);
-      // Also update the main app session so API calls work
-      localStorage.setItem("pt.session", res.token);
       onVerified();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Incorrect OTP.");
@@ -365,9 +363,6 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
   async function fetchApplications(t: Tab) {
     setLoading(true);
     setError(null);
-    // Ensure the officer token is active for API calls
-    const token = localStorage.getItem(OFFICER_SESSION_KEY);
-    if (token) localStorage.setItem("pt.session", token);
     try {
       const res = await officerListApplications(t);
       setApplications(res.applications);

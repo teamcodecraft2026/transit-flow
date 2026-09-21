@@ -5,6 +5,10 @@ function getSession(): string | null {
   return localStorage.getItem("pt.session");
 }
 
+function getOfficerSession(): string | null {
+  return localStorage.getItem("pt.officerSession") ?? localStorage.getItem("pt.session");
+}
+
 async function request<T>(path: string, init: RequestInit & { auth?: "anon" } = {}): Promise<T> {
   const token = getSession();
   const { auth, ...fetchInit } = init;
@@ -209,7 +213,10 @@ export async function officerListApplications(
   status?: "pending" | "checked",
 ): Promise<OfficerListApplicationsResponse> {
   const params = status ? `?status=${status}` : "";
-  return request<OfficerListApplicationsResponse>(`/officer-list-applications${params}`);
+  const token = getOfficerSession();
+  return request<OfficerListApplicationsResponse>(`/officer-list-applications${params}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
 }
 
 export interface OfficerDecideApplicationPayload {
@@ -227,9 +234,11 @@ export interface OfficerDecideApplicationResponse {
 export async function officerDecideApplication(
   payload: OfficerDecideApplicationPayload,
 ): Promise<OfficerDecideApplicationResponse> {
+  const token = getOfficerSession();
   return request<OfficerDecideApplicationResponse>("/officer-decide-application", {
     method: "POST",
     body: JSON.stringify(payload),
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }
 
