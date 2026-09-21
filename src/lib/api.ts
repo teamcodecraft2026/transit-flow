@@ -1,6 +1,5 @@
-const BASE_URL = `https://${import.meta.env["VITE_SUPABASE_PROJECT_REF"]}.supabase.co/functions/v1`;
-const ANON_KEY = import.meta.env["VITE_SUPABASE_ANON_KEY"] as string;
-
+const BASE_URL = "https://welccusfyovxgpfplnlj.supabase.co/functions/v1";
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 function getSession(): string | null {
   return localStorage.getItem("pt.session");
 }
