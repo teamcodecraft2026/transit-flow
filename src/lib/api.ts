@@ -67,10 +67,12 @@ export interface Ticket {
   source: string;
   destination: string;
   fare: number;
+  fare_charged: number; // alias for fare, used by UI
   type: "paid" | "pink_card";
   status: "issued" | "scanned" | "expired";
   issued_at: string;
   qr_code?: string;
+  qr_payload: string; // QR code value for the QrCodeImage component
 }
 
 export interface BookTicketPayload {
@@ -82,6 +84,7 @@ export interface BookTicketPayload {
 export interface BookTicketResponse {
   success: boolean;
   ticket: Ticket;
+  pink_card_applied: boolean;
 }
 
 export async function bookTicket(payload: BookTicketPayload): Promise<BookTicketResponse> {
@@ -308,10 +311,12 @@ export interface SearchTripsResponse {
 export async function searchTrips(
   origin?: string,
   destination?: string,
+  date?: string,
 ): Promise<SearchTripsResponse> {
   const params = new URLSearchParams();
   if (origin) params.set("origin", origin);
   if (destination) params.set("destination", destination);
+  if (date) params.set("date", date);
   return request<SearchTripsResponse>(`/search-trips?${params.toString()}`, { auth: "anon" });
 }
 
@@ -323,7 +328,18 @@ export interface StopsResponse {
 }
 
 export async function fetchAllStops(): Promise<StopsResponse> {
-  return request<StopsResponse>("/fetch-stops", { auth: "anon" });
+  try {
+    return await request<StopsResponse>("/fetch-stops", { auth: "anon" });
+  } catch {
+    // fallback: extract unique stops from all trips
+    const res = await request<SearchTripsResponse>("/search-trips", { auth: "anon" });
+    const seen = new Set<string>();
+    res.trips.forEach((t) => {
+      seen.add(t.origin);
+      seen.add(t.destination);
+    });
+    return { success: true, stops: Array.from(seen).sort() };
+  }
 }
 
 // 9. AI chatbot
@@ -400,6 +416,11 @@ export interface ScanTicketResponse {
   message: string;
   ticket_id: string;
   status: string;
+  // fields used by conductor UI
+  scan_result: "valid" | "already_used" | "expired" | "invalid";
+  valid: boolean;
+  reason: string;
+  fare_charged: number;
 }
 
 export async function scanTicket(ticket_id: string): Promise<ScanTicketResponse> {
@@ -408,4 +429,3 @@ export async function scanTicket(ticket_id: string): Promise<ScanTicketResponse>
     body: JSON.stringify({ ticket_id }),
   });
 }
- 
