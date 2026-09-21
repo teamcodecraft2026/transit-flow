@@ -49,10 +49,10 @@ export interface VerifyOtpResponse {
   user: VerifyOtpUser;
 }
 
-export async function verifyOtp(phone: string, otp: string): Promise<VerifyOtpResponse> {
+export async function verifyOtp(phone: string, otp_code: string): Promise<VerifyOtpResponse> {
   return request<VerifyOtpResponse>("/verify-otp", {
     method: "POST",
-    body: JSON.stringify({ phone, otp }),
+    body: JSON.stringify({ phone, otp_code }),
   });
 }
 
