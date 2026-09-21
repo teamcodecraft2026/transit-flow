@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeftRight,
@@ -21,7 +21,13 @@ import { StatBadgeStrip } from "@/components/StatBadgeStrip";
 import { QrCodeImage } from "@/components/QrCodeImage";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/auth/AuthProvider";
-import { searchTrips, bookTicket, fetchAllStops, type Trip, type Ticket as TicketType } from "@/lib/api";
+import {
+  searchTrips,
+  bookTicket,
+  fetchAllStops,
+  type Trip,
+  type Ticket as TicketType,
+} from "@/lib/api";
 
 export const Route = createFileRoute("/book")({
   head: () => ({
@@ -70,7 +76,9 @@ function BookPage() {
   ];
 
   useEffect(() => {
-    fetchAllStops().then(setAllStops).catch(console.error);
+    fetchAllStops()
+      .then((res) => setAllStops(res.stops))
+      .catch(console.error);
   }, []);
 
   async function handleSearch() {
@@ -98,14 +106,18 @@ function BookPage() {
     }
   }
 
-  async function handleBook(trip_id: string, fare: number) {
+  async function handleBook(trip: Trip) {
     requireAuth(async () => {
       setBookError(null);
-      setBooking(trip_id);
+      setBooking(trip.trip_id);
       try {
-        const res = await bookTicket(trip_id, fare);
+        const res = await bookTicket({
+          bus_id: trip.trip_id,
+          source: trip.origin,
+          destination: trip.destination,
+        });
         setBookedTicket(res.ticket);
-        setPinkCardApplied(res.pink_card_applied);
+        setPinkCardApplied(res.pink_card_applied ?? res.ticket.type === "pink_card");
       } catch (err: unknown) {
         setBookError(err instanceof Error ? err.message : "Booking failed. Please try again.");
       } finally {
@@ -152,7 +164,10 @@ function BookPage() {
                   <StopDropdown
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={from}
-                    onChange={(v) => { setFrom(v); setFieldErrors(e => ({ ...e, from: false })); }}
+                    onChange={(v) => {
+                      setFrom(v);
+                      setFieldErrors((e) => ({ ...e, from: false }));
+                    }}
                     placeholder={t("book.fromPlaceholder")}
                     stops={allStops}
                     hasError={fieldErrors.from}
@@ -175,7 +190,10 @@ function BookPage() {
                   <StopDropdown
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={to}
-                    onChange={(v) => { setTo(v); setFieldErrors(e => ({ ...e, to: false })); }}
+                    onChange={(v) => {
+                      setTo(v);
+                      setFieldErrors((e) => ({ ...e, to: false }));
+                    }}
                     placeholder={t("book.toPlaceholder")}
                     stops={allStops}
                     hasError={fieldErrors.to}
@@ -275,12 +293,14 @@ function BookPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-5">
-                          <span className="font-display text-[20px] text-ink">₹{trip.base_fare}</span>
+                          <span className="font-display text-[20px] text-ink">
+                            ₹{trip.base_fare}
+                          </span>
                           <Button
                             variant="blue"
                             size="sm"
                             disabled={booking === trip.trip_id}
-                            onClick={() => handleBook(trip.trip_id, trip.base_fare)}
+                            onClick={() => handleBook(trip)}
                           >
                             {booking === trip.trip_id ? (
                               <Loader2 className="size-4 animate-spin" />
@@ -299,7 +319,9 @@ function BookPage() {
                             {trip.stops.map((stop, idx) => (
                               <div key={stop.name} className="flex items-center gap-2">
                                 <div className="rounded-[8px] border border-navy-line bg-navy-field/50 px-3 py-1.5">
-                                  <span className="font-sans text-[12px] text-ink">{stop.name}</span>
+                                  <span className="font-sans text-[12px] text-ink">
+                                    {stop.name}
+                                  </span>
                                 </div>
                                 {idx < trip.stops.length - 1 && (
                                   <span className="text-[10px] text-ink-muted">→</span>
@@ -438,9 +460,7 @@ function StopDropdown({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const filtered = stops.filter((s) =>
-    s.toLowerCase().includes(value.toLowerCase())
-  );
+  const filtered = stops.filter((s) => s.toLowerCase().includes(value.toLowerCase()));
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -454,7 +474,9 @@ function StopDropdown({
 
   return (
     <div ref={ref} className="relative w-full min-w-0">
-      <div className={`flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border bg-navy-field-alt px-3 transition-colors ${hasError ? "border-rose-500 shadow-[0_0_0_2px_rgba(244,63,94,0.25)]" : "border-navy-line"}`}>
+      <div
+        className={`flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border bg-navy-field-alt px-3 transition-colors ${hasError ? "border-rose-500 shadow-[0_0_0_2px_rgba(244,63,94,0.25)]" : "border-navy-line"}`}
+      >
         {icon}
         <input
           value={value}
