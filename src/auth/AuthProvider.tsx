@@ -1,4 +1,4 @@
-import {
+﻿import {
   createContext,
   useCallback,
   useContext,
@@ -69,9 +69,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    // Remove session token
     window.localStorage.removeItem(TOKEN_KEY);
+    // Clear all app-specific keys so no data leaks to next user
+    Object.keys(window.localStorage)
+      .filter((key) => key.startsWith("pt."))
+      .forEach((key) => window.localStorage.removeItem(key));
     setToken(null);
-    // TODO: wire to POST /auth/logout
   }, []);
 
   const value = useMemo(
