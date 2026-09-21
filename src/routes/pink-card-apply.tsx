@@ -129,8 +129,12 @@ function PinkCardApplyPage() {
         if (res.status === "submitted") {
           timer = setTimeout(poll, STATUS_POLL_INTERVAL_MS);
         }
-      } catch {
-        if (!cancelled) setStatusLoading(false);
+      } catch (err) {
+        if (!cancelled) {
+          setStatusLoading(false);
+          console.error("Status poll failed:", err);
+          timer = setTimeout(poll, STATUS_POLL_INTERVAL_MS);
+        }
       }
     }
 
