@@ -1,4 +1,4 @@
-const BASE_URL = "https://welccusfyovxgpfplnlj.supabase.co/functions/v1";
+﻿const BASE_URL = "https://welccusfyovxgpfplnlj.supabase.co/functions/v1";
 const ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlbGNjdXNmeW92eGdwZnBsbmxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MzE4MzgsImV4cCI6MjEwMzUwNzgzOH0.2kf_gcHn0bapWkWOLEbU1yF_5ancGjSxDn1LVMwcr54";
 function getSession(): string | null {
@@ -408,3 +408,4 @@ export async function scanTicket(ticket_id: string): Promise<ScanTicketResponse>
     body: JSON.stringify({ ticket_id }),
   });
 }
+ 
