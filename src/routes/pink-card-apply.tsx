@@ -30,7 +30,7 @@ export const Route = createFileRoute("/pink-card-apply")({
   component: PinkCardApplyPage,
 });
 
-const STATUS_POLL_INTERVAL_MS = 4000;
+const STATUS_POLL_INTERVAL_MS = 2000;
 
 function getPinkCardKey(): string {
   try {
@@ -39,7 +39,9 @@ function getPinkCardKey(): string {
       const user = JSON.parse(raw) as { id: string };
       if (user?.id) return `pt.pinkCardApplicationId.${user.id}`;
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return "pt.pinkCardApplicationId.guest";
 }
 
@@ -47,7 +49,7 @@ const AADHAAR_RE = /^\d{12}$/;
 const PHONE_RE = /^[6-9]\d{9}$/;
 const PAN_RE = /^[A-Z]{5}\d{4}[A-Z]$/;
 
-//  Types 
+//  Types
 
 type FormState = {
   fullName: string;
@@ -88,13 +90,18 @@ function PinkCardApplyPage() {
   const navigate = useNavigate();
 
   const savedApplicationId = (() => {
-    try { return localStorage.getItem(getPinkCardKey()); }
-    catch { return null; }
+    try {
+      return localStorage.getItem(getPinkCardKey());
+    } catch {
+      return null;
+    }
   })();
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>(EMPTY);
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormState | "state", string>>>({});
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof FormState | "state", string>>
+  >({});
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(savedApplicationId);
   const [appStatus, setAppStatus] = useState<ApplicationStatusResponse | null>(null);
@@ -107,7 +114,7 @@ function PinkCardApplyPage() {
   const steps = [t("apply.s1"), t("apply.s2"), t("apply.s3"), t("apply.s4")];
   const titles = [t("apply.t1"), t("apply.t2"), t("apply.t3"), t("apply.t4")];
 
-  //  Poll status once we have an application_id 
+  //  Poll status once we have an application_id
   useEffect(() => {
     if (!applicationId) return;
     let cancelled = false;
@@ -128,10 +135,13 @@ function PinkCardApplyPage() {
     }
 
     poll();
-    return () => { cancelled = true; clearTimeout(timer); };
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [applicationId]);
 
-  //  Per-step validation 
+  //  Per-step validation
   function validateStep(n: number): boolean {
     const errs: Partial<Record<string, string>> = {};
     if (n === 1) {
@@ -139,7 +149,8 @@ function PinkCardApplyPage() {
       if (!PHONE_RE.test(form.phone)) errs["phone"] = "Enter a valid 10-digit phone number.";
       if (!AADHAAR_RE.test(form.aadhaar)) errs["aadhaar"] = "Aadhaar must be exactly 12 digits.";
     } else if (n === 2) {
-      if (!PAN_RE.test(form.pan.toUpperCase())) errs["pan"] = "Enter a valid PAN (e.g. ABCDE1234F).";
+      if (!PAN_RE.test(form.pan.toUpperCase()))
+        errs["pan"] = "Enter a valid PAN (e.g. ABCDE1234F).";
     } else if (n === 3) {
       if (!form.state) errs["state"] = "Please select your state.";
     }
@@ -193,31 +204,59 @@ function PinkCardApplyPage() {
     setFieldErrors({});
   }
 
-  //  "Application Submitted" / pending screen 
+  //  "Application Submitted" / pending screen
   if (applicationId && (statusLoading || !appStatus || appStatus.status === "submitted")) {
     return (
       <PageShell theme="rose" backHome hideFooter>
         <section className="relative -mt-[88px] flex min-h-[100svh] items-center justify-center overflow-hidden pb-24 pt-[150px]">
-          <img src={navyBg} alt="" width={1920} height={1088}
-            className="absolute inset-0 size-full object-cover opacity-40" />
+          <img
+            src={navyBg}
+            alt=""
+            width={1920}
+            height={1088}
+            className="absolute inset-0 size-full object-cover opacity-40"
+          />
           <div className="absolute inset-0 bg-black/65" />
           <div className="relative z-10 w-full max-w-[500px] px-6 text-center">
             <Clock className="mx-auto size-16 text-rose-400" strokeWidth={1.5} />
             <h1 className="mt-5 font-display text-[34px] text-white">Application Submitted</h1>
             <p className="mt-3 font-sans text-[14px] text-white/60">
-              Your Pink Card application has been forwarded to a Verifying Officer for review.
-              This page will update automatically once a decision is made.
+              Your Pink Card application has been forwarded to a Verifying Officer for review. This
+              page will update automatically once a decision is made.
             </p>
             <div className="mt-6 rounded-[14px] border border-white/10 bg-white/[0.04] p-5 text-left">
               <Row label="Application ID" value={applicationId} />
               <Row label="Status" value="Pending officer review" />
             </div>
-            <div className="mt-6 flex items-center justify-center gap-2 font-sans text-[12.5px] text-white/40">
-              <Loader2 className="size-4 animate-spin" />
-              Checking for updates
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2 font-sans text-[12.5px] text-white/40">
+                <Loader2 className="size-4 animate-spin" />
+                Checking for updates every 2s
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  setStatusLoading(true);
+                  try {
+                    const res = await getApplicationStatus(applicationId!);
+                    setAppStatus(res);
+                  } catch {
+                    /* ignore */
+                  } finally {
+                    setStatusLoading(false);
+                  }
+                }}
+                className="font-sans text-[12px] text-rose-400 underline hover:text-rose-300"
+              >
+                Check now
+              </button>
             </div>
-            <Button variant="outline" size="lg" className="mt-8 min-w-[200px]"
-              onClick={() => navigate({ to: "/home" })}>
+            <Button
+              variant="outline"
+              size="lg"
+              className="mt-8 min-w-[200px]"
+              onClick={() => navigate({ to: "/home" })}
+            >
               Back to Home
             </Button>
           </div>
@@ -226,14 +265,19 @@ function PinkCardApplyPage() {
     );
   }
 
-  //  Decided result screen 
+  //  Decided result screen
   if (applicationId && appStatus && appStatus.status !== "submitted") {
     const eligible = appStatus.status === "eligible";
     return (
       <PageShell theme="rose" backHome hideFooter>
         <section className="relative -mt-[88px] flex min-h-[100svh] items-center justify-center overflow-hidden pb-24 pt-[150px]">
-          <img src={navyBg} alt="" width={1920} height={1088}
-            className="absolute inset-0 size-full object-cover opacity-40" />
+          <img
+            src={navyBg}
+            alt=""
+            width={1920}
+            height={1088}
+            className="absolute inset-0 size-full object-cover opacity-40"
+          />
           <div className="absolute inset-0 bg-black/65" />
           <div className="relative z-10 w-full max-w-[500px] px-6 text-center">
             {eligible ? (
@@ -246,15 +290,23 @@ function PinkCardApplyPage() {
                 </p>
                 <div className="mt-6 rounded-[14px] border border-green-500/30 bg-green-500/10 p-5 text-left">
                   <Row label="PAN" value={appStatus.pan ?? ""} />
-                  <Row label="Annual Income"
-                    value={`${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`} />
-                  <Row label="Threshold"
-                    value={`${(appStatus.threshold ?? 0).toLocaleString("en-IN")}`} />
+                  <Row
+                    label="Annual Income"
+                    value={`${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`}
+                  />
+                  <Row
+                    label="Threshold"
+                    value={`${(appStatus.threshold ?? 0).toLocaleString("en-IN")}`}
+                  />
                   <Row label="Reason" value={appStatus.reason_message ?? ""} />
                 </div>
-                <Button variant="pinkSolid" size="lg" className="mt-8 min-w-[200px]"
-                  onClick={() => navigate({ to: "/book" })}>
-                  Book a Free Ticket 
+                <Button
+                  variant="pinkSolid"
+                  size="lg"
+                  className="mt-8 min-w-[200px]"
+                  onClick={() => navigate({ to: "/book" })}
+                >
+                  Book a Free Ticket
                 </Button>
               </>
             ) : (
@@ -268,32 +320,37 @@ function PinkCardApplyPage() {
                   <Row label="PAN" value={appStatus.pan ?? ""} />
                   <Row label="Reason Code" value={appStatus.reason_code ?? ""} />
                   {(appStatus.annual_income ?? 0) > 0 && (
-                    <Row label="Annual Income"
-                      value={`${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`} />
+                    <Row
+                      label="Annual Income"
+                      value={`${(appStatus.annual_income ?? 0).toLocaleString("en-IN")}`}
+                    />
                   )}
                 </div>
                 <div className="mt-5 rounded-[12px] border border-white/10 bg-white/5 p-4 text-left">
                   {appStatus.reason_code === "INELIGIBLE_GENDER" && (
                     <p className="font-sans text-[13px] text-white/50">
-                      The Pink Card scheme is available only to female applicants as per
-                      government guidelines.
+                      The Pink Card scheme is available only to female applicants as per government
+                      guidelines.
                     </p>
                   )}
                   {appStatus.reason_code === "INELIGIBLE_INCOME_HIGH" && (
                     <p className="font-sans text-[13px] text-white/50">
-                      Your annual income exceeds the {(appStatus.threshold ?? 0).toLocaleString("en-IN")}{" "}
-                      threshold by {Math.abs(appStatus.gap ?? 0).toLocaleString("en-IN")}.
+                      Your annual income exceeds the{" "}
+                      {(appStatus.threshold ?? 0).toLocaleString("en-IN")} threshold by{" "}
+                      {Math.abs(appStatus.gap ?? 0).toLocaleString("en-IN")}.
                     </p>
                   )}
                   {appStatus.reason_code === "INELIGIBLE_NO_RECORD" && (
                     <p className="font-sans text-[13px] text-white/50">
-                      No income record was found for this PAN. A Verifying Officer reviewed
-                      your application manually.
+                      No income record was found for this PAN. A Verifying Officer reviewed your
+                      application manually.
                     </p>
                   )}
                 </div>
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
-                  <Button variant="outline" size="lg" onClick={startOver}>Apply Again</Button>
+                  <Button variant="outline" size="lg" onClick={startOver}>
+                    Apply Again
+                  </Button>
                   <Button variant="pinkSolid" size="lg" onClick={() => navigate({ to: "/home" })}>
                     Back to Home
                   </Button>
@@ -306,12 +363,17 @@ function PinkCardApplyPage() {
     );
   }
 
-  //  4-step form 
+  //  4-step form
   return (
     <PageShell theme="rose" backHome hideFooter>
       <section className="relative -mt-[88px] flex min-h-[100svh] items-start justify-center overflow-hidden pb-24 pt-[120px]">
-        <img src={navyBg} alt="" width={1920} height={1088}
-          className="absolute inset-0 size-full object-cover opacity-40" />
+        <img
+          src={navyBg}
+          alt=""
+          width={1920}
+          height={1088}
+          className="absolute inset-0 size-full object-cover opacity-40"
+        />
         <div className="absolute inset-0 bg-black/65" />
 
         <div className="relative z-10 flex w-full max-w-[900px] gap-10 px-6">
@@ -324,25 +386,34 @@ function PinkCardApplyPage() {
               return (
                 <div key={n} className="flex items-start gap-3 pb-8 last:pb-0">
                   <div className="flex flex-col items-center">
-                    <div className={cn(
-                      "flex size-9 items-center justify-center rounded-full font-display text-[15px] transition-colors",
-                      done ? "bg-rose-500 text-white"
-                        : active ? "bg-rose-500 text-white"
-                          : "border border-white/20 text-white/30",
-                    )}>
+                    <div
+                      className={cn(
+                        "flex size-9 items-center justify-center rounded-full font-display text-[15px] transition-colors",
+                        done
+                          ? "bg-rose-500 text-white"
+                          : active
+                            ? "bg-rose-500 text-white"
+                            : "border border-white/20 text-white/30",
+                      )}
+                    >
                       {done ? <CheckCircle2 className="size-4" strokeWidth={2} /> : n}
                     </div>
                     {i < steps.length - 1 && (
-                      <div className={cn(
-                        "mt-1 w-px flex-1 transition-colors",
-                        done ? "bg-rose-500/60" : "bg-white/10",
-                      )} style={{ height: 40 }} />
+                      <div
+                        className={cn(
+                          "mt-1 w-px flex-1 transition-colors",
+                          done ? "bg-rose-500/60" : "bg-white/10",
+                        )}
+                        style={{ height: 40 }}
+                      />
                     )}
                   </div>
-                  <span className={cn(
-                    "mt-1.5 font-sans text-[13px]",
-                    active ? "text-white" : done ? "text-rose-400" : "text-white/30",
-                  )}>
+                  <span
+                    className={cn(
+                      "mt-1.5 font-sans text-[13px]",
+                      active ? "text-white" : done ? "text-rose-400" : "text-white/30",
+                    )}
+                  >
                     {label}
                   </span>
                 </div>
@@ -360,8 +431,11 @@ function PinkCardApplyPage() {
 
               <div className="relative mt-6">
                 {step > 1 && (
-                  <button type="button" onClick={back}
-                    className="absolute left-0 top-0 flex items-center gap-1.5 font-sans text-[13px] text-white/40 transition-colors hover:text-white">
+                  <button
+                    type="button"
+                    onClick={back}
+                    className="absolute left-0 top-0 flex items-center gap-1.5 font-sans text-[13px] text-white/40 transition-colors hover:text-white"
+                  >
                     <ArrowLeft className="size-4" strokeWidth={1.75} />
                     Back
                   </button>
@@ -424,8 +498,8 @@ function PinkCardApplyPage() {
                         error={fieldErrors["pan"]}
                       />
                       <p className="font-sans text-[12px] text-white/40">
-                        Test PANs: <span className="text-rose-400">ABCDE1234F</span> (eligible female) {" "}
-                        <span className="text-rose-400">IJKLM9012N</span> (income too high) {" "}
+                        Test PANs: <span className="text-rose-400">ABCDE1234F</span> (eligible
+                        female) <span className="text-rose-400">IJKLM9012N</span> (income too high){" "}
                         <span className="text-rose-400">NOPQR4567S</span> (male). Any other PAN goes
                         to the officer for manual review.
                       </p>
@@ -447,10 +521,12 @@ function PinkCardApplyPage() {
                         <span className="mb-2 block font-display text-[15px] text-white/90">
                           {t("apply.state")} <span className="text-rose-400">*</span>
                         </span>
-                        <div className={cn(
-                          "flex h-12 items-center gap-3 rounded-[10px] border bg-white/[0.04] px-3",
-                          fieldErrors["state"] ? "border-red-500" : "border-rose-500/45",
-                        )}>
+                        <div
+                          className={cn(
+                            "flex h-12 items-center gap-3 rounded-[10px] border bg-white/[0.04] px-3",
+                            fieldErrors["state"] ? "border-red-500" : "border-rose-500/45",
+                          )}
+                        >
                           <MapPin className="size-5 shrink-0 text-rose-400" strokeWidth={1.5} />
                           <select
                             value={form.state}
@@ -459,7 +535,9 @@ function PinkCardApplyPage() {
                           >
                             <option value="">Select state</option>
                             {STATES.map((s) => (
-                              <option key={s} value={s}>{s}</option>
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
                             ))}
                           </select>
                           <ChevronDown className="size-4 text-white/40" strokeWidth={1.5} />
@@ -532,19 +610,29 @@ function PinkCardApplyPage() {
                 {/* Navigation button */}
                 <div className="mt-9 flex justify-center">
                   {step < 4 ? (
-                    <Button variant="outlineRose" size="lg"
+                    <Button
+                      variant="outlineRose"
+                      size="lg"
                       className="min-w-[220px] font-display text-[15px] font-medium"
-                      onClick={next}>
+                      onClick={next}
+                    >
                       {t("apply.continue")}
                     </Button>
                   ) : (
-                    <Button variant="pinkSolid" size="lg"
+                    <Button
+                      variant="pinkSolid"
+                      size="lg"
                       className="min-w-[220px] font-display text-[15px] font-medium"
                       onClick={submit}
-                      disabled={submitting}>
-                      {submitting
-                        ? <><Loader2 className="mr-2 size-4 animate-spin" /> Submitting</>
-                        : t("apply.submit")}
+                      disabled={submitting}
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="mr-2 size-4 animate-spin" /> Submitting
+                        </>
+                      ) : (
+                        t("apply.submit")
+                      )}
                     </Button>
                   )}
                 </div>
@@ -557,10 +645,17 @@ function PinkCardApplyPage() {
   );
 }
 
-//  Sub-components 
+//  Sub-components
 
 function TextField({
-  label, icon, value, onChange, placeholder, inputMode, required, error,
+  label,
+  icon,
+  value,
+  onChange,
+  placeholder,
+  inputMode,
+  required,
+  error,
 }: {
   label: string;
   icon: ReactNode;
@@ -574,12 +669,15 @@ function TextField({
   return (
     <label className="block">
       <span className="mb-2 block font-display text-[15px] text-white/90">
-        {label}{required && <span className="ml-1 text-rose-400">*</span>}
+        {label}
+        {required && <span className="ml-1 text-rose-400">*</span>}
       </span>
-      <div className={cn(
-        "flex h-12 items-center gap-3 rounded-[10px] border bg-white/[0.04] px-3",
-        error ? "border-red-500" : "border-rose-500/45",
-      )}>
+      <div
+        className={cn(
+          "flex h-12 items-center gap-3 rounded-[10px] border bg-white/[0.04] px-3",
+          error ? "border-red-500" : "border-rose-500/45",
+        )}
+      >
         <span className="shrink-0 text-rose-400">{icon}</span>
         <input
           value={value}
@@ -595,7 +693,9 @@ function TextField({
 }
 
 function Dropzone({
-  file, onFile, className,
+  file,
+  onFile,
+  className,
 }: {
   file: string | null;
   onFile: (name: string) => void;
@@ -615,7 +715,9 @@ function Dropzone({
         type="file"
         accept=".jpg,.jpeg,.png,.pdf"
         className="hidden"
-        onChange={(e) => { if (e.target.files?.[0]) onFile(e.target.files[0].name); }}
+        onChange={(e) => {
+          if (e.target.files?.[0]) onFile(e.target.files[0].name);
+        }}
       />
       {file ? (
         <>
@@ -643,7 +745,12 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 function ReviewRow({
-  icon, label, value, thumb, action, onEdit,
+  icon,
+  label,
+  value,
+  thumb,
+  action,
+  onEdit,
 }: {
   icon: ReactNode;
   label: string;
@@ -657,16 +764,21 @@ function ReviewRow({
       <div className="shrink-0">{icon}</div>
       <div className="min-w-0 flex-1">
         <p className="font-display text-[15px] text-white">{label}</p>
-        <p className="font-sans text-[12px] text-white/40">{thumb ? " " : ""}{value}</p>
+        <p className="font-sans text-[12px] text-white/40">
+          {thumb ? " " : ""}
+          {value}
+        </p>
       </div>
-      <button type="button" onClick={onEdit}
-        className="shrink-0 font-sans text-[12px] text-rose-400 hover:underline">
+      <button
+        type="button"
+        onClick={onEdit}
+        className="shrink-0 font-sans text-[12px] text-rose-400 hover:underline"
+      >
         {action}
       </button>
     </div>
   );
 }
-
 
 // import { createFileRoute, useNavigate } from "@tanstack/react-router";
 // import { useRef, useState, type ReactNode } from "react";
@@ -712,7 +824,7 @@ function ReviewRow({
 //   component: PinkCardApplyPage,
 // });
 
-// //  Per-user key 
+// //  Per-user key
 
 // function getPinkCardKey(): string {
 //   try {
@@ -725,7 +837,7 @@ function ReviewRow({
 //   return "pt.pinkCardResult.guest";
 // }
 
-// //  Types 
+// //  Types
 
 // type FormState = {
 //   fullName: string;
@@ -811,7 +923,7 @@ function ReviewRow({
 //     });
 //   }
 
-//   //  Result screen 
+//   //  Result screen
 
 //   if (result) {
 //     return (
@@ -850,7 +962,7 @@ function ReviewRow({
 //                   className="mt-8 min-w-[200px]"
 //                   onClick={() => navigate({ to: "/book" })}
 //                 >
-//                   Book a Free Ticket 
+//                   Book a Free Ticket
 //                 </Button>
 //               </>
 //             ) : (
@@ -920,7 +1032,7 @@ function ReviewRow({
 //     );
 //   }
 
-//   //  4-step form 
+//   //  4-step form
 
 //   return (
 //     <PageShell theme="rose" backHome hideFooter>
