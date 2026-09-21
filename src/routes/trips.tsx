@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bus, Loader2, Ticket, X } from "lucide-react";
 import navyBg from "@/assets/night-street-navy.jpg";
@@ -12,13 +12,13 @@ import { QrCodeImage } from "@/components/QrCodeImage";
 export const Route = createFileRoute("/trips")({
   head: () => ({
     meta: [
-      { title: "My Trips — Upcoming & Past Journeys | Public Transit" },
+      { title: "My Trips  Upcoming & Past Journeys | Public Transit" },
       {
         name: "description",
         content:
           "View your upcoming and past bus journeys, open QR tickets, and see which trips travelled zero-fare on the Pink Card.",
       },
-      { property: "og:title", content: "My Trips — Upcoming & Past Journeys | Public Transit" },
+      { property: "og:title", content: "My Trips  Upcoming & Past Journeys | Public Transit" },
       {
         property: "og:description",
         content: "Every booking in one place, with instant access to your QR tickets.",
@@ -38,7 +38,11 @@ function TripsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setTickets([]); // ← clear on logout so previous user's trips never show
+      setError(null);
+      return;
+    }
     setLoading(true);
     setError(null);
     getTicketHistory()
@@ -160,10 +164,10 @@ function TripsPage() {
                         <div>
                           <p className="font-display text-[18px] text-ink">{ticket.route_name}</p>
                           <p className="mt-1 font-sans text-[13px] text-ink-muted">
-                            {ticket.origin} → {ticket.destination}
+                            {ticket.origin} {ticket.destination}
                           </p>
                           <p className="mt-0.5 font-sans text-[12px] text-ink-muted">
-                            Bus {ticket.bus_number} · {formatDate(ticket.departure_time)} ·{" "}
+                            Bus {ticket.bus_number} {formatDate(ticket.departure_time)}{" "}
                             {formatTime(ticket.departure_time)}
                           </p>
                         </div>
@@ -177,7 +181,7 @@ function TripsPage() {
                                 : "border border-navy-bright/70 text-ink",
                             )}
                           >
-                            {ticket.fare_charged === 0 ? "🌸 Free" : `₹${ticket.fare_charged}`}
+                            {ticket.fare_charged === 0 ? " Free" : `${ticket.fare_charged}`}
                           </span>
                           <span
                             className={cn(
@@ -249,7 +253,7 @@ function TripsPage() {
 
             <p className="font-display text-[18px] text-ink">{expandedTicket.route_name}</p>
             <p className="mt-1 font-sans text-[12px] text-ink-muted">
-              {expandedTicket.origin} → {expandedTicket.destination}
+              {expandedTicket.origin} {expandedTicket.destination}
             </p>
 
             <div className="mt-5 flex justify-center">
@@ -269,7 +273,7 @@ function TripsPage() {
 
             {expandedTicket.fare_charged === 0 && (
               <span className="mt-3 inline-block rounded-full bg-rose-glow px-4 py-1 font-sans text-[12px] font-semibold text-white">
-                🌸 Pink Card — Free Travel
+                Pink Card Free Travel
               </span>
             )}
           </div>
@@ -278,8 +282,6 @@ function TripsPage() {
     </PageShell>
   );
 }
-
-
 
 // import { createFileRoute } from "@tanstack/react-router";
 // import { useEffect, useState } from "react";
@@ -294,13 +296,13 @@ function TripsPage() {
 // export const Route = createFileRoute("/trips")({
 //   head: () => ({
 //     meta: [
-//       { title: "My Trips — Upcoming & Past Journeys | Public Transit" },
+//       { title: "My Trips  Upcoming & Past Journeys | Public Transit" },
 //       {
 //         name: "description",
 //         content:
 //           "View your upcoming and past bus journeys, open QR tickets, and see which trips travelled zero-fare on the Pink Card.",
 //       },
-//       { property: "og:title", content: "My Trips — Upcoming & Past Journeys | Public Transit" },
+//       { property: "og:title", content: "My Trips  Upcoming & Past Journeys | Public Transit" },
 //       {
 //         property: "og:description",
 //         content: "Every booking in one place, with instant access to your QR tickets.",
@@ -433,10 +435,10 @@ function TripsPage() {
 //                         <div>
 //                           <p className="font-display text-[18px] text-ink">{ticket.route_name}</p>
 //                           <p className="mt-1 font-sans text-[13px] text-ink-muted">
-//                             {ticket.origin} → {ticket.destination}
+//                             {ticket.origin}  {ticket.destination}
 //                           </p>
 //                           <p className="mt-0.5 font-sans text-[12px] text-ink-muted">
-//                             Bus {ticket.bus_number} · {formatDate(ticket.departure_time)} ·{" "}
+//                             Bus {ticket.bus_number}  {formatDate(ticket.departure_time)} {" "}
 //                             {formatTime(ticket.departure_time)}
 //                           </p>
 //                         </div>
@@ -450,7 +452,7 @@ function TripsPage() {
 //                                 : "border border-navy-bright/70 text-ink",
 //                             )}
 //                           >
-//                             {ticket.fare_charged === 0 ? "🌸 Free" : `₹${ticket.fare_charged}`}
+//                             {ticket.fare_charged === 0 ? " Free" : `${ticket.fare_charged}`}
 //                           </span>
 //                           <span
 //                             className={cn(
