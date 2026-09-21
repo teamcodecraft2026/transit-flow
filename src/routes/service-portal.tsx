@@ -40,12 +40,12 @@ export const Route = createFileRoute("/service-portal")({
 const PHONE_RE = /^[6-9]\d{9}$/;
 const OFFICER_SESSION_KEY = "pt.officerSession";
 const OFFICER_NAME_KEY = "pt.officerName";
-const OTP_RESEND = 30;
+const OTP_RESEND = 31;
 
 type Screen = "login" | "otp" | "dashboard";
 type Tab = "pending" | "checked";
 
-//  Root flow 
+//  Root flow
 
 function ServicePortalFlow() {
   const [screen, setScreen] = useState<Screen>("login");
@@ -92,7 +92,7 @@ function ServicePortalFlow() {
   );
 }
 
-//  Login 
+//  Login
 
 function LoginScreen({
   phone,
@@ -134,24 +134,18 @@ function LoginScreen({
             <p className="font-sans text-[11px] uppercase tracking-widest text-white/40">
               State Transit Department
             </p>
-            <h1 className="font-sans text-[18px] font-semibold text-white">
-              Service Portal
-            </h1>
+            <h1 className="font-sans text-[18px] font-semibold text-white">Service Portal</h1>
           </div>
         </div>
 
         <div className="rounded-[16px] border border-white/10 bg-white/[0.04] p-7">
-          <h2 className="font-sans text-[22px] font-semibold text-white">
-            Officer Sign in
-          </h2>
+          <h2 className="font-sans text-[22px] font-semibold text-white">Officer Sign in</h2>
           <p className="mt-1 font-sans text-[13px] text-white/50">
-            Use your registered officer phone number  OTP will appear on screen
+            Use your registered officer phone number OTP will appear on screen
           </p>
 
           <div className="mt-6">
-            <label className="mb-2 block font-sans text-[12px] text-white/60">
-              Phone number
-            </label>
+            <label className="mb-2 block font-sans text-[12px] text-white/60">Phone number</label>
             <div className="flex items-center rounded-[10px] border border-white/15 bg-white/[0.05]">
               <span className="flex items-center gap-2 border-r border-white/10 px-3 font-sans text-[13px] text-white/50">
                 <Phone className="size-3.5" strokeWidth={1.5} />
@@ -159,9 +153,7 @@ function LoginScreen({
               </span>
               <input
                 value={phone}
-                onChange={(e) =>
-                  setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
-                }
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                 onKeyDown={(e) => e.key === "Enter" && send()}
                 inputMode="numeric"
                 maxLength={10}
@@ -195,7 +187,7 @@ function LoginScreen({
   );
 }
 
-//  OTP 
+//  OTP
 
 function OtpScreen({
   phone,
@@ -216,10 +208,7 @@ function OtpScreen({
   const refs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
-    const id = setInterval(
-      () => setResendIn((v) => (v > 0 ? v - 1 : 0)),
-      1000,
-    );
+    const id = setInterval(() => setResendIn((v) => (v > 0 ? v - 1 : 0)), 1000);
     return () => clearInterval(id);
   }, []);
 
@@ -259,10 +248,7 @@ function OtpScreen({
         return;
       }
       localStorage.setItem(OFFICER_SESSION_KEY, res.token);
-      localStorage.setItem(
-        OFFICER_NAME_KEY,
-        res.user.name ?? `Officer (${phone})`,
-      );
+      localStorage.setItem(OFFICER_NAME_KEY, res.user.name ?? `Officer (${phone})`);
       // Also update the main app session so API calls work
       localStorage.setItem("pt.session", res.token);
       onVerified();
@@ -295,23 +281,15 @@ function OtpScreen({
             <p className="font-sans text-[11px] uppercase tracking-widest text-white/40">
               State Transit Department
             </p>
-            <h1 className="font-sans text-[18px] font-semibold text-white">
-              Service Portal
-            </h1>
+            <h1 className="font-sans text-[18px] font-semibold text-white">Service Portal</h1>
           </div>
         </div>
 
         <div className="rounded-[16px] border border-white/10 bg-white/[0.04] p-7">
-          <h2 className="font-sans text-[22px] font-semibold text-white">
-            Verify OTP
-          </h2>
+          <h2 className="font-sans text-[22px] font-semibold text-white">Verify OTP</h2>
           <p className="mt-1 font-sans text-[13px] text-white/50">
-            Sent to +91 {phone} {" "}
-            <button
-              type="button"
-              onClick={onBack}
-              className="text-rose-400 hover:underline"
-            >
+            Sent to +91 {phone}{" "}
+            <button type="button" onClick={onBack} className="text-rose-400 hover:underline">
               change
             </button>
           </p>
@@ -319,8 +297,7 @@ function OtpScreen({
           {mockOtp && (
             <div className="mt-4 rounded-[8px] border border-yellow-400/30 bg-yellow-400/10 px-3 py-2">
               <p className="font-sans text-[12px] text-yellow-300">
-                Demo OTP:{" "}
-                <span className="font-bold tracking-widest">{mockOtp}</span>
+                Demo OTP: <span className="font-bold tracking-widest">{mockOtp}</span>
               </p>
             </div>
           )}
@@ -337,8 +314,7 @@ function OtpScreen({
                 value={digit}
                 onChange={(e) => setAt(i, e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Backspace" && !otp[i] && i > 0)
-                    refs.current[i - 1]?.focus();
+                  if (e.key === "Backspace" && !otp[i] && i > 0) refs.current[i - 1]?.focus();
                   if (e.key === "Enter") verify();
                 }}
                 className="h-12 w-full rounded-[8px] border border-white/15 bg-white/[0.05] text-center font-sans text-[18px] text-white focus:border-rose-500 focus:outline-none"
@@ -358,22 +334,14 @@ function OtpScreen({
             disabled={busy}
             className="mt-5 flex h-11 w-full items-center justify-center rounded-[10px] bg-rose-600 font-sans text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {busy ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              "Verify & Enter "
-            )}
+            {busy ? <Loader2 className="size-4 animate-spin" /> : "Verify & Enter "}
           </button>
 
           <p className="mt-4 text-center font-sans text-[12px] text-white/40">
             {resendIn > 0 ? (
               `Resend in ${resendIn}s`
             ) : (
-              <button
-                type="button"
-                onClick={resend}
-                className="text-rose-400 hover:underline"
-              >
+              <button type="button" onClick={resend} className="text-rose-400 hover:underline">
                 Resend OTP
               </button>
             )}
@@ -384,11 +352,10 @@ function OtpScreen({
   );
 }
 
-//  Dashboard 
+//  Dashboard
 
 function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
-  const officerName =
-    localStorage.getItem(OFFICER_NAME_KEY) ?? "Verifying Officer";
+  const officerName = localStorage.getItem(OFFICER_NAME_KEY) ?? "Verifying Officer";
   const [tab, setTab] = useState<Tab>("pending");
   const [applications, setApplications] = useState<OfficerApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -405,9 +372,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
       const res = await officerListApplications(t);
       setApplications(res.applications);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load applications.",
-      );
+      setError(err instanceof Error ? err.message : "Failed to load applications.");
     } finally {
       setLoading(false);
     }
@@ -431,12 +396,8 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
             <ShieldCheck className="size-4" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="font-sans text-[13px] font-semibold text-white">
-              Service Portal
-            </p>
-            <p className="font-sans text-[11px] text-white/40">
-              Pink Card Verification
-            </p>
+            <p className="font-sans text-[13px] font-semibold text-white">Service Portal</p>
+            <p className="font-sans text-[11px] text-white/40">Pink Card Verification</p>
           </div>
         </div>
         <div className="flex items-center gap-5">
@@ -461,9 +422,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
           {/* Title row */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="font-sans text-[26px] font-bold text-white">
-                Pink Card Applications
-              </h1>
+              <h1 className="font-sans text-[26px] font-bold text-white">Pink Card Applications</h1>
               <p className="mt-0.5 font-sans text-[13px] text-white/40">
                 Review citizen applications and approve or deny eligibility
               </p>
@@ -478,9 +437,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                     onClick={() => setTab(t)}
                     className={cn(
                       "rounded-[6px] px-4 py-1.5 font-sans text-[13px] capitalize transition-colors",
-                      tab === t
-                        ? "bg-rose-600 text-white"
-                        : "text-white/50 hover:text-white",
+                      tab === t ? "bg-rose-600 text-white" : "text-white/50 hover:text-white",
                     )}
                   >
                     {t}
@@ -493,10 +450,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                 onClick={() => fetchApplications(tab)}
                 className="flex size-9 items-center justify-center rounded-[8px] border border-white/15 text-white/50 transition-colors hover:text-white"
               >
-                <RefreshCw
-                  className={cn("size-4", loading && "animate-spin")}
-                  strokeWidth={1.5}
-                />
+                <RefreshCw className={cn("size-4", loading && "animate-spin")} strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -519,22 +473,16 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/[0.02]">
-                    {[
-                      "Applicant",
-                      "PAN",
-                      "State",
-                      "Source",
-                      "System Check",
-                      "Status",
-                      "",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="px-4 py-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40"
-                      >
-                        {h}
-                      </th>
-                    ))}
+                    {["Applicant", "PAN", "State", "Source", "System Check", "Status", ""].map(
+                      (h) => (
+                        <th
+                          key={h}
+                          className="px-4 py-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40"
+                        >
+                          {h}
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -563,13 +511,9 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                           <p className="font-sans text-[13px] font-medium text-white">
                             {app.full_name}
                           </p>
-                          <p className="font-sans text-[11px] text-white/40">
-                            {app.phone}
-                          </p>
+                          <p className="font-sans text-[11px] text-white/40">{app.phone}</p>
                         </td>
-                        <td className="px-4 py-3 font-sans text-[13px] text-white/70">
-                          {app.pan}
-                        </td>
+                        <td className="px-4 py-3 font-sans text-[13px] text-white/70">{app.pan}</td>
                         <td className="px-4 py-3 font-sans text-[13px] text-white/70">
                           {app.state}
                         </td>
@@ -582,34 +526,24 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                                 : "bg-amber-500/20 text-amber-300",
                             )}
                           >
-                            {app.source === "auto_match"
-                              ? "PAN matched"
-                              : "Manual review"}
+                            {app.source === "auto_match" ? "PAN matched" : "Manual review"}
                           </span>
                         </td>
                         <td className="px-4 py-3">
                           {app.source === "auto_match" ? (
                             app.eligible ? (
                               <span className="flex items-center gap-1 font-sans text-[12px] text-emerald-400">
-                                <CheckCircle2
-                                  className="size-3.5"
-                                  strokeWidth={1.5}
-                                />
+                                <CheckCircle2 className="size-3.5" strokeWidth={1.5} />
                                 Eligible
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 font-sans text-[12px] text-red-400">
-                                <XCircle
-                                  className="size-3.5"
-                                  strokeWidth={1.5}
-                                />
+                                <XCircle className="size-3.5" strokeWidth={1.5} />
                                 Not eligible
                               </span>
                             )
                           ) : (
-                            <span className="font-sans text-[12px] text-white/30">
-                              
-                            </span>
+                            <span className="font-sans text-[12px] text-white/30"></span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -667,7 +601,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-//  Detail panel 
+//  Detail panel
 
 function ApplicationDetailPanel({
   application,
@@ -679,17 +613,14 @@ function ApplicationDetailPanel({
   onDecided: (updated: OfficerApplication) => void;
 }) {
   const app = application;
-  const isAutoIneligible =
-    app.source === "auto_match" && app.eligible === false;
+  const isAutoIneligible = app.source === "auto_match" && app.eligible === false;
   const isManual = app.source === "manual";
   const alreadyDecided = app.status !== "submitted";
 
   const [manualIncome, setManualIncome] = useState(
     app.manual_income != null ? String(app.manual_income) : "",
   );
-  const [manualReason, setManualReason] = useState(
-    app.manual_reason ?? "",
-  );
+  const [manualReason, setManualReason] = useState(app.manual_reason ?? "");
   const [busy, setBusy] = useState<"approve" | "deny" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -697,10 +628,7 @@ function ApplicationDetailPanel({
     setError(null);
 
     if (isManual) {
-      if (
-        decision === "approve" &&
-        (!manualIncome.trim() || Number.isNaN(Number(manualIncome)))
-      ) {
+      if (decision === "approve" && (!manualIncome.trim() || Number.isNaN(Number(manualIncome)))) {
         setError("Enter a valid annual income to approve.");
         return;
       }
@@ -723,9 +651,7 @@ function ApplicationDetailPanel({
       const res = await officerDecideApplication(payload);
       onDecided(res.application);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Failed to record decision.",
-      );
+      setError(err instanceof Error ? err.message : "Failed to record decision.");
     } finally {
       setBusy(null);
     }
@@ -734,18 +660,13 @@ function ApplicationDetailPanel({
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[3px]"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[3px]" onClick={onClose} />
 
       {/* Slide-in panel */}
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[520px] flex-col bg-[#0d0f1a] shadow-[-8px_0_40px_rgba(0,0,0,0.6)]">
         {/* Panel header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
-          <h2 className="font-sans text-[16px] font-semibold text-white">
-            Application Detail
-          </h2>
+          <h2 className="font-sans text-[16px] font-semibold text-white">Application Detail</h2>
           <button
             type="button"
             onClick={onClose}
@@ -767,10 +688,7 @@ function ApplicationDetailPanel({
             <DetailRow label="Aadhaar" value={app.aadhaar} />
             <DetailRow label="PAN" value={app.pan} />
             <DetailRow label="State" value={app.state} />
-            <DetailRow
-              label="Submitted"
-              value={new Date(app.checked_at).toLocaleString("en-IN")}
-            />
+            <DetailRow label="Submitted" value={new Date(app.checked_at).toLocaleString("en-IN")} />
           </div>
 
           {/* System check */}
@@ -786,23 +704,16 @@ function ApplicationDetailPanel({
                   label="Annual Income"
                   value={`${(app.annual_income ?? 0).toLocaleString("en-IN")}`}
                 />
-                <DetailRow
-                  label="Threshold"
-                  value={`${app.threshold.toLocaleString("en-IN")}`}
-                />
+                <DetailRow label="Threshold" value={`${app.threshold.toLocaleString("en-IN")}`} />
                 <DetailRow
                   label="System Decision"
                   value={app.eligible ? " Eligible" : " Not eligible"}
                 />
-                <DetailRow
-                  label="Reason"
-                  value={app.reason_message ?? ""}
-                />
+                <DetailRow label="Reason" value={app.reason_message ?? ""} />
               </>
             ) : (
               <p className="font-sans text-[13px] text-amber-300">
-                No income record found for this PAN. Enter income and reason
-                below before deciding.
+                No income record found for this PAN. Enter income and reason below before deciding.
               </p>
             )}
           </div>
@@ -810,14 +721,10 @@ function ApplicationDetailPanel({
           {/* Auto-ineligible warning */}
           {isAutoIneligible && !alreadyDecided && (
             <div className="flex items-start gap-3 rounded-[10px] border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-              <AlertTriangle
-                className="mt-0.5 size-5 shrink-0 text-amber-400"
-                strokeWidth={1.5}
-              />
+              <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-400" strokeWidth={1.5} />
               <p className="font-sans text-[12.5px] text-amber-300">
-                This PAN matched income records and was found ineligible by the
-                system. Only <strong>Deny</strong> is available for this
-                application.
+                This PAN matched income records and was found ineligible by the system. Only{" "}
+                <strong>Deny</strong> is available for this application.
               </p>
             </div>
           )}
@@ -834,9 +741,7 @@ function ApplicationDetailPanel({
                 </span>
                 <input
                   value={manualIncome}
-                  onChange={(e) =>
-                    setManualIncome(e.target.value.replace(/[^\d]/g, ""))
-                  }
+                  onChange={(e) => setManualIncome(e.target.value.replace(/[^\d]/g, ""))}
                   inputMode="numeric"
                   placeholder="e.g. 180000"
                   className="h-10 w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
@@ -865,9 +770,7 @@ function ApplicationDetailPanel({
               </p>
               <DetailRow
                 label="Final Status"
-                value={
-                  app.status === "eligible" ? " Eligible" : " Not eligible"
-                }
+                value={app.status === "eligible" ? " Eligible" : " Not eligible"}
               />
               {app.decided_at && (
                 <DetailRow
@@ -881,9 +784,7 @@ function ApplicationDetailPanel({
                   value={`${app.manual_income.toLocaleString("en-IN")}`}
                 />
               )}
-              {app.manual_reason && (
-                <DetailRow label="Manual Reason" value={app.manual_reason} />
-              )}
+              {app.manual_reason && <DetailRow label="Manual Reason" value={app.manual_reason} />}
             </div>
           )}
 
@@ -933,19 +834,13 @@ function ApplicationDetailPanel({
   );
 }
 
-//  Detail row 
+//  Detail row
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] py-2.5 last:border-0">
-      <span className="shrink-0 font-sans text-[12px] text-white/40">
-        {label}
-      </span>
-      <span className="text-right font-sans text-[13px] text-white">
-        {value}
-      </span>
+      <span className="shrink-0 font-sans text-[12px] text-white/40">{label}</span>
+      <span className="text-right font-sans text-[13px] text-white">{value}</span>
     </div>
   );
 }
-
- 
