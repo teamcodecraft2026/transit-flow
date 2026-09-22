@@ -14,7 +14,6 @@ const TOKEN_KEY = "pt.session";
 type AuthContextValue = {
   token: string | null;
   isAuthenticated: boolean;
-  /** Opens the auth modal. `onSuccess` runs once verification succeeds. */
   requireAuth: (onSuccess?: () => void) => void;
   openAuth: (mode?: "login" | "signup") => void;
   closeAuth: () => void;
@@ -69,11 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    // Remove session token
+    // Only clear passenger-specific keys — never touch officer/admin sessions
     window.localStorage.removeItem(TOKEN_KEY);
-    // Clear all app-specific keys so no data leaks to next user
     Object.keys(window.localStorage)
-      .filter((key) => key.startsWith("pt."))
+      .filter((key) => key.startsWith("pt.pinkCardApplicationId."))
       .forEach((key) => window.localStorage.removeItem(key));
     setToken(null);
   }, []);

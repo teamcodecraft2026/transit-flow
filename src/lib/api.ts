@@ -1,12 +1,18 @@
 ﻿const BASE_URL = "https://welccusfyovxgpfplnlj.supabase.co/functions/v1";
 const ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlbGNjdXNmeW92eGdwZnBsbmxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MzE4MzgsImV4cCI6MjEwMzUwNzgzOH0.2kf_gcHn0bapWkWOLEbU1yF_5ancGjSxDn1LVMwcr54";
+
+// Each role reads its own namespaced key — never share pt.session
 function getSession(): string | null {
   return localStorage.getItem("pt.session");
 }
 
 function getOfficerSession(): string | null {
-  return localStorage.getItem("pt.officerSession") ?? localStorage.getItem("pt.session");
+  return localStorage.getItem("pt.officerSession");
+}
+
+function getAdminSession(): string | null {
+  return localStorage.getItem("pt.adminSession");
 }
 
 async function request<T>(path: string, init: RequestInit & { auth?: "anon" } = {}): Promise<T> {
@@ -71,12 +77,12 @@ export interface Ticket {
   source: string;
   destination: string;
   fare: number;
-  fare_charged: number; // alias for fare, used by UI
+  fare_charged: number;
   type: "paid" | "pink_card";
   status: "issued" | "scanned" | "expired";
   issued_at: string;
   qr_code?: string;
-  qr_payload: string; // QR code value for the QrCodeImage component
+  qr_payload: string;
 }
 
 export interface BookTicketPayload {
@@ -177,7 +183,7 @@ export async function getApplicationStatus(
   return request<ApplicationStatusResponse>(`/get-application-status?${params.toString()}`);
 }
 
-// 4. Service Portal
+// 4. Service Portal — uses pt.officerSession directly
 
 export interface OfficerApplication {
   id: string;
@@ -242,7 +248,7 @@ export async function officerDecideApplication(
   });
 }
 
-// 5. Admin stats
+// 5. Admin stats — uses pt.adminSession directly
 
 export interface RouteRevenue {
   route_name: string;
@@ -267,10 +273,13 @@ export interface AdminStatsResponse {
 export async function getAdminStats(
   range: "today" | "week" | "all" = "all",
 ): Promise<AdminStatsResponse> {
-  return request<AdminStatsResponse>(`/admin-stats?range=${range}`);
+  const token = getAdminSession();
+  return request<AdminStatsResponse>(`/admin-stats?range=${range}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
 }
 
-// 6. Route passengers
+// 6. Route passengers — uses pt.adminSession directly
 
 export interface RoutePassenger {
   passenger_id: string;
@@ -297,7 +306,10 @@ export async function getRoutePassengers(
   range: "today" | "week" | "all" = "all",
 ): Promise<RoutePassengersResponse> {
   const params = new URLSearchParams({ route, range });
-  return request<RoutePassengersResponse>(`/route-passengers?${params.toString()}`);
+  const token = getAdminSession();
+  return request<RoutePassengersResponse>(`/route-passengers?${params.toString()}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
 }
 
 // 7. Search trips
@@ -341,7 +353,6 @@ export async function fetchAllStops(): Promise<StopsResponse> {
   try {
     return await request<StopsResponse>("/fetch-stops", { auth: "anon" });
   } catch {
-    // fallback: extract unique stops from all trips
     const res = await request<SearchTripsResponse>("/search-trips", { auth: "anon" });
     const seen = new Set<string>();
     res.trips.forEach((t) => {
@@ -426,7 +437,6 @@ export interface ScanTicketResponse {
   message: string;
   ticket_id: string;
   status: string;
-  // fields used by conductor UI
   scan_result: "valid" | "already_used" | "expired" | "invalid";
   valid: boolean;
   reason: string;
