@@ -157,7 +157,7 @@ function LoginScreen({
                 onKeyDown={(e) => e.key === "Enter" && send()}
                 inputMode="numeric"
                 maxLength={10}
-                placeholder="9888888888"
+                placeholder="8888888888"
                 className="h-11 flex-1 bg-transparent px-3 font-sans text-[14px] text-white placeholder:text-white/25 focus:outline-none"
               />
             </div>
@@ -240,7 +240,7 @@ function OtpScreen({
     setBusy(true);
     try {
       const res = await verifyOtp(phone, code);
-      if (res.user.role !== "officer" && res.user.role !== "admin") {
+      if (res.user.role !== "officer") {
         setError(
           "This account does not have Verifying Officer access. Contact your administrator.",
         );
