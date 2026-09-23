@@ -174,6 +174,8 @@ export interface ApplicationStatusResponse {
   reason_code?: PinkCardReasonCode;
   reason_message?: string;
   decided_at?: string;
+  manual_income?: number | null;
+  manual_reason?: string | null;
 }
 
 export async function getApplicationStatus(
