@@ -45,6 +45,16 @@ const OTP_RESEND = 31;
 type Screen = "login" | "otp" | "dashboard";
 type Tab = "pending" | "checked";
 
+const REASON_OPTIONS = [
+  { code: "ELIGIBLE_INCOME_GENDER", label: "Eligible — Income & Gender criteria met" },
+  { code: "INELIGIBLE_GENDER", label: "Not Eligible — Gender criteria not met" },
+  { code: "INELIGIBLE_INCOME_HIGH", label: "Not Eligible — Income above threshold" },
+  { code: "INELIGIBLE_STATE", label: "Not Eligible — State criteria not met" },
+  { code: "OTHER", label: "Other (type manually)" },
+] as const;
+
+type ReasonCode = (typeof REASON_OPTIONS)[number]["code"];
+
 //  Root flow
 
 function ServicePortalFlow() {
@@ -175,7 +185,7 @@ function LoginScreen({
             disabled={busy}
             className="mt-6 flex h-11 w-full items-center justify-center rounded-[10px] bg-rose-600 font-sans text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {busy ? <Loader2 className="size-4 animate-spin" /> : "Send OTP "}
+            {busy ? <Loader2 className="size-4 animate-spin" /> : "Send OTP →"}
           </button>
         </div>
 
@@ -332,7 +342,7 @@ function OtpScreen({
             disabled={busy}
             className="mt-5 flex h-11 w-full items-center justify-center rounded-[10px] bg-rose-600 font-sans text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {busy ? <Loader2 className="size-4 animate-spin" /> : "Verify & Enter "}
+            {busy ? <Loader2 className="size-4 animate-spin" /> : "Verify & Enter →"}
           </button>
 
           <p className="mt-4 text-center font-sans text-[12px] text-white/40">
@@ -414,7 +424,6 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
       {/* Main */}
       <main className="flex-1 px-6 py-8">
         <div className="mx-auto max-w-[1100px]">
-          {/* Title row */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="font-sans text-[26px] font-bold text-white">Pink Card Applications</h1>
@@ -423,7 +432,6 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* Tabs */}
               <div className="flex gap-1 rounded-[8px] border border-white/10 bg-white/[0.03] p-1">
                 {(["pending", "checked"] as Tab[]).map((t) => (
                   <button
@@ -439,7 +447,6 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                   </button>
                 ))}
               </div>
-              {/* Refresh */}
               <button
                 type="button"
                 onClick={() => fetchApplications(tab)}
@@ -450,7 +457,6 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="mt-6 flex items-center gap-3 rounded-[10px] border border-red-500/30 bg-red-500/10 px-4 py-3">
               <AlertTriangle className="size-5 text-red-400" strokeWidth={1.5} />
@@ -458,7 +464,6 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
             </div>
           )}
 
-          {/* Table */}
           {loading && applications.length === 0 ? (
             <div className="mt-20 flex justify-center">
               <Loader2 className="size-8 animate-spin text-rose-400" />
@@ -488,7 +493,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                         className="py-16 text-center font-sans text-[13px] text-white/30"
                       >
                         {tab === "pending"
-                          ? "No pending applications  all caught up!"
+                          ? "No pending applications — all caught up!"
                           : "No checked applications yet."}
                       </td>
                     </tr>
@@ -538,7 +543,7 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
                               </span>
                             )
                           ) : (
-                            <span className="font-sans text-[12px] text-white/30"></span>
+                            <span className="font-sans text-[12px] text-white/30">—</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -584,7 +589,6 @@ function ServiceDashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </main>
 
-      {/* Detail panel */}
       {selected && (
         <ApplicationDetailPanel
           application={selected}
@@ -612,23 +616,46 @@ function ApplicationDetailPanel({
   const isManual = app.source === "manual";
   const alreadyDecided = app.status !== "submitted";
 
+  const [manualGender, setManualGender] = useState<"Male" | "Female" | "">(
+    (app.manual_gender as "Male" | "Female" | "") ?? "",
+  );
   const [manualIncome, setManualIncome] = useState(
     app.manual_income != null ? String(app.manual_income) : "",
   );
-  const [manualReason, setManualReason] = useState(app.manual_reason ?? "");
+  const [reasonCode, setReasonCode] = useState<ReasonCode | "">(
+    app.manual_reason
+      ? (REASON_OPTIONS.find((r) => r.code === app.manual_reason)?.code ?? "OTHER")
+      : "",
+  );
+  const [customReason, setCustomReason] = useState(
+    app.manual_reason && !REASON_OPTIONS.find((r) => r.code === app.manual_reason)
+      ? app.manual_reason
+      : "",
+  );
   const [busy, setBusy] = useState<"approve" | "deny" | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // The final reason string sent to backend
+  const finalReason = reasonCode === "OTHER" ? customReason.trim() : reasonCode;
 
   async function decide(decision: "approve" | "deny") {
     setError(null);
 
     if (isManual) {
-      if (decision === "approve" && (!manualIncome.trim() || Number.isNaN(Number(manualIncome)))) {
-        setError("Enter a valid annual income to approve.");
+      if (!manualGender) {
+        setError("Select a gender before deciding.");
         return;
       }
-      if (!manualReason.trim()) {
-        setError("Enter a reason before deciding.");
+      if (!manualIncome.trim() || Number.isNaN(Number(manualIncome))) {
+        setError("Enter a valid annual income before deciding.");
+        return;
+      }
+      if (!reasonCode) {
+        setError("Select a reason before deciding.");
+        return;
+      }
+      if (reasonCode === "OTHER" && !customReason.trim()) {
+        setError("Type a reason in the text field.");
         return;
       }
     }
@@ -640,8 +667,9 @@ function ApplicationDetailPanel({
         decision,
       };
       if (isManual) {
-        if (manualIncome) payload.manual_income = Number(manualIncome);
-        if (manualReason) payload.manual_reason = manualReason.trim();
+        payload.manual_gender = manualGender as "Male" | "Female";
+        payload.manual_income = Number(manualIncome);
+        payload.manual_reason = finalReason;
       }
       const res = await officerDecideApplication(payload);
       onDecided(res.application);
@@ -654,10 +682,8 @@ function ApplicationDetailPanel({
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[3px]" onClick={onClose} />
 
-      {/* Slide-in panel */}
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[520px] flex-col bg-[#0d0f1a] shadow-[-8px_0_40px_rgba(0,0,0,0.6)]">
         {/* Panel header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
@@ -672,7 +698,7 @@ function ApplicationDetailPanel({
         </div>
 
         {/* Panel body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 px-6 py-6">
           {/* Citizen details */}
           <div className="rounded-[12px] border border-white/10 bg-white/[0.03] p-5">
             <p className="mb-3 font-sans text-[11px] uppercase tracking-wide text-white/40">
@@ -697,18 +723,18 @@ function ApplicationDetailPanel({
                 <DetailRow label="Gender" value={app.gender ?? ""} />
                 <DetailRow
                   label="Annual Income"
-                  value={`${(app.annual_income ?? 0).toLocaleString("en-IN")}`}
+                  value={`₹${(app.annual_income ?? 0).toLocaleString("en-IN")}`}
                 />
-                <DetailRow label="Threshold" value={`${app.threshold.toLocaleString("en-IN")}`} />
+                <DetailRow label="Threshold" value={`₹${app.threshold.toLocaleString("en-IN")}`} />
                 <DetailRow
                   label="System Decision"
-                  value={app.eligible ? " Eligible" : " Not eligible"}
+                  value={app.eligible ? "✓ Eligible" : "✗ Not eligible"}
                 />
                 <DetailRow label="Reason" value={app.reason_message ?? ""} />
               </>
             ) : (
               <p className="font-sans text-[13px] text-amber-300">
-                No income record found for this PAN. Enter income and reason below before deciding.
+                No income record found for this PAN. Enter details below before deciding.
               </p>
             )}
           </div>
@@ -724,15 +750,35 @@ function ApplicationDetailPanel({
             </div>
           )}
 
-          {/* Manual entry fields */}
+          {/* Manual entry fields — only for manual source, pending only */}
           {isManual && !alreadyDecided && (
-            <div className="rounded-[12px] border border-white/10 bg-white/[0.03] p-5">
-              <p className="mb-3 font-sans text-[11px] uppercase tracking-wide text-white/40">
-                Manual Entry
+            <div className="rounded-[12px] border border-amber-500/20 bg-amber-500/5 p-5">
+              <p className="mb-4 font-sans text-[11px] uppercase tracking-wide text-amber-400">
+                Manual Entry Required
               </p>
+
+              {/* Gender dropdown */}
               <label className="mb-4 block">
                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
-                  Annual Income ()
+                  Gender <span className="text-rose-400">*</span>
+                </span>
+                <select
+                  value={manualGender}
+                  onChange={(e) => setManualGender(e.target.value as "Male" | "Female" | "")}
+                  className="h-10 w-full rounded-[8px] border border-white/15 bg-[#0d0f1a] px-3 font-sans text-[13px] text-white focus:border-rose-500 focus:outline-none"
+                >
+                  <option value="" disabled>
+                    Select gender
+                  </option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </label>
+
+              {/* Annual Income */}
+              <label className="mb-4 block">
+                <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+                  Annual Income (₹) <span className="text-rose-400">*</span>
                 </span>
                 <input
                   value={manualIncome}
@@ -742,18 +788,43 @@ function ApplicationDetailPanel({
                   className="h-10 w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
                 />
               </label>
-              <label className="block">
+
+              {/* Reason dropdown */}
+              <label className="mb-3 block">
                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
-                  Reason for Decision
+                  Reason for Decision <span className="text-rose-400">*</span>
                 </span>
-                <textarea
-                  value={manualReason}
-                  onChange={(e) => setManualReason(e.target.value)}
-                  rows={3}
-                  placeholder="e.g. Income verified manually at 1,80,000  below threshold."
-                  className="w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 py-2 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
-                />
+                <select
+                  value={reasonCode}
+                  onChange={(e) => setReasonCode(e.target.value as ReasonCode | "")}
+                  className="h-10 w-full rounded-[8px] border border-white/15 bg-[#0d0f1a] px-3 font-sans text-[13px] text-white focus:border-rose-500 focus:outline-none"
+                >
+                  <option value="" disabled>
+                    Select reason
+                  </option>
+                  {REASON_OPTIONS.map((r) => (
+                    <option key={r.code} value={r.code}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
               </label>
+
+              {/* Custom reason textarea — only shown when OTHER is selected */}
+              {reasonCode === "OTHER" && (
+                <label className="block">
+                  <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+                    Custom Reason <span className="text-rose-400">*</span>
+                  </span>
+                  <textarea
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                    rows={3}
+                    placeholder="Describe the reason for your decision..."
+                    className="w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 py-2 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
+                  />
+                </label>
+              )}
             </div>
           )}
 
@@ -765,7 +836,7 @@ function ApplicationDetailPanel({
               </p>
               <DetailRow
                 label="Final Status"
-                value={app.status === "eligible" ? " Eligible" : " Not eligible"}
+                value={app.status === "eligible" ? "✓ Eligible" : "✗ Not eligible"}
               />
               {app.decided_at && (
                 <DetailRow
@@ -773,13 +844,14 @@ function ApplicationDetailPanel({
                   value={new Date(app.decided_at).toLocaleString("en-IN")}
                 />
               )}
+              {app.manual_gender && <DetailRow label="Gender" value={app.manual_gender} />}
               {app.manual_income != null && (
                 <DetailRow
-                  label="Manual Income"
-                  value={`${app.manual_income.toLocaleString("en-IN")}`}
+                  label="Annual Income"
+                  value={`₹${app.manual_income.toLocaleString("en-IN")}`}
                 />
               )}
-              {app.manual_reason && <DetailRow label="Manual Reason" value={app.manual_reason} />}
+              {app.manual_reason && <DetailRow label="Reason" value={app.manual_reason} />}
             </div>
           )}
 
@@ -791,7 +863,7 @@ function ApplicationDetailPanel({
           )}
         </div>
 
-        {/* Action buttons  only shown for pending applications */}
+        {/* Action buttons */}
         {!alreadyDecided && (
           <div className="flex gap-3 border-t border-white/10 px-6 py-4">
             {!isAutoIneligible && (

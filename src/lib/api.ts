@@ -202,6 +202,7 @@ export interface OfficerApplication {
   gap: number | null;
   reason_code: PinkCardReasonCode | null;
   reason_message: string | null;
+  manual_gender: string | null;
   manual_income: number | null;
   manual_reason: string | null;
   decided_by: string | null;
@@ -228,6 +229,7 @@ export async function officerListApplications(
 export interface OfficerDecideApplicationPayload {
   application_id: string;
   decision: "approve" | "deny";
+  manual_gender?: "Male" | "Female";
   manual_income?: number;
   manual_reason?: string;
 }
