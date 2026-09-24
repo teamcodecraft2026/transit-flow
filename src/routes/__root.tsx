@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -81,13 +81,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Public Transit — Seamless, Equitable Bus Ticketing" },
+      { title: "Public Transit  Seamless, Equitable Bus Ticketing" },
       {
         name: "description",
         content:
           "Bilingual bus ticketing with instant QR boarding and Pink Card zero-fare verification for eligible women.",
       },
-      { property: "og:title", content: "Public Transit — Seamless, Equitable Bus Ticketing" },
+      { property: "og:title", content: "Public Transit  Seamless, Equitable Bus Ticketing" },
       {
         property: "og:description",
         content:

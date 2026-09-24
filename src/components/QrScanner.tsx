@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import type { Html5Qrcode as Html5QrcodeType } from "html5-qrcode";
 
 type Props = {
@@ -12,7 +12,7 @@ const ELEMENT_ID = "qr-reader-region";
  * Opens the device's back camera and decodes a QR code in real time using
  * the free, open-source `html5-qrcode` library (MIT licensed, no API key,
  * no per-scan cost). Calls `onScan` once with the decoded text, then stops
- * the camera. Requires HTTPS (or localhost) — the browser will not grant
+ * the camera. Requires HTTPS (or localhost)  the browser will not grant
  * camera access otherwise.
  */
 export function QrScanner({ onScan, onError }: Props) {
@@ -40,7 +40,7 @@ export function QrScanner({ onScan, onError }: Props) {
             onScan(decodedText);
           },
           () => {
-            // Fires continuously while no QR code is in frame — expected, ignore.
+            // Fires continuously while no QR code is in frame  expected, ignore.
           },
         );
         if (!cancelled) setStarting(false);
@@ -65,7 +65,7 @@ export function QrScanner({ onScan, onError }: Props) {
           .stop()
           .then(() => scannerInstance?.clear())
           .catch(() => {
-            // Camera may already be stopped/unmounted — safe to ignore.
+            // Camera may already be stopped/unmounted  safe to ignore.
           });
       }
     };
@@ -77,7 +77,7 @@ export function QrScanner({ onScan, onError }: Props) {
       <div id={ELEMENT_ID} className="size-full [&_video]:size-full [&_video]:object-cover" />
       {starting && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70 px-4 text-center font-sans text-[13px] text-white">
-          Starting camera…
+          Starting camera
         </div>
       )}
     </div>

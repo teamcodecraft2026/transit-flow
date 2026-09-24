@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type ReactNode } from "react";
+﻿import { useState, useRef, useEffect, type ReactNode } from "react";
 import { NavBar } from "./NavBar";
 import { Footer } from "./Footer";
 import { AuthModal } from "./AuthModal";
@@ -38,7 +38,7 @@ export function PageShell({
   );
 }
 
-/* ── Floating Chatbot ─────────────────────────────────── */
+/*  Floating Chatbot  */
 
 interface Message {
   id: string;
@@ -46,12 +46,12 @@ interface Message {
   text: string;
 }
 
-const SYSTEM_PROMPT = `You are SmartBus Assistant, a helpful AI for the SmartBus public transit app in West Bengal, India. You help passengers with: booking tickets, Pink Card eligibility (eligible if female with annual income below ₹1.5 lakh, verified via PAN), checking trip status, conductor scan process, and general transit queries. Be concise, friendly, and answer in the language the user writes in (English or Bengali). Do not make up bus schedules. Keep answers short — 2-3 sentences max unless the user asks for detail.`;
+const SYSTEM_PROMPT = `You are SmartBus Assistant, a helpful AI for the SmartBus public transit app in West Bengal, India. You help passengers with: booking tickets, Pink Card eligibility (eligible if female with annual income below 1.5 lakh, verified via PAN), checking trip status, conductor scan process, and general transit queries. Be concise, friendly, and answer in the language the user writes in (English or Bengali). Do not make up bus schedules. Keep answers short  2-3 sentences max unless the user asks for detail.`;
 
 const WELCOME: Message = {
   id: "welcome",
   role: "assistant",
-  text: "Hi! I'm SmartBus Assistant 🚌 Ask me anything about booking tickets, Pink Card eligibility, or your trips.",
+  text: "Hi! I'm SmartBus Assistant  Ask me anything about booking tickets, Pink Card eligibility, or your trips.",
 };
 
 function Chatbot() {
@@ -73,7 +73,7 @@ function Chatbot() {
   //   bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   // }, [messages, loading]);
 
-  // Scroll to bottom on new message — only inside chat panel, not page
+  // Scroll to bottom on new message  only inside chat panel, not page
 useEffect(() => {
   if (!open) return;
   const el = bottomRef.current;
@@ -219,7 +219,7 @@ const reply =
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-              placeholder="Ask anything about SmartBus…"
+              placeholder="Ask anything about SmartBus"
               className="flex-1 bg-transparent font-sans text-[13px] text-white placeholder:text-white/30 focus:outline-none"
             />
             <button

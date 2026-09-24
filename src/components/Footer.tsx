@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+﻿import { Link } from "@tanstack/react-router";
 import { Mail, Phone } from "lucide-react";
 import { useI18n } from "@/i18n/LanguageProvider";
 

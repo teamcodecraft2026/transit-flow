@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+﻿import { cn } from "@/lib/utils";
 
 type Props = {
   label: string;
@@ -6,7 +6,7 @@ type Props = {
   className?: string;
 };
 
-/** Small bordered pill with a dot — used above every section heading. */
+/** Small bordered pill with a dot  used above every section heading. */
 export function SectionEyebrow({ label, tone = "rose", className }: Props) {
   return (
     <span

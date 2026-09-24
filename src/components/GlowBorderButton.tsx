@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+﻿import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type Tone = "rose" | "navy" | "gold";
@@ -11,7 +11,7 @@ const RIM: Record<Tone, string> = {
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   tone?: Tone;
-  /** Gold hero treatment: transparent → cream fill on hover, serif ivory text. */
+  /** Gold hero treatment: transparent  cream fill on hover, serif ivory text. */
   hero?: boolean;
   children: ReactNode;
   innerClassName?: string;
@@ -19,7 +19,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 /**
  * A button wrapped in a slowly rotating conic-gradient rim. The gradient IS the
- * 1px stroke — the inner surface sits on top so only the rim glows.
+ * 1px stroke  the inner surface sits on top so only the rim glows.
  */
 export function GlowBorderButton({
   tone = "navy",

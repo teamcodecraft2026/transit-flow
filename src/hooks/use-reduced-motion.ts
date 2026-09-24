@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 /** True when the OS asks for reduced motion. SSR-safe (starts false). */
 export function usePrefersReducedMotion() {

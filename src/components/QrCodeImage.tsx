@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 
 /**
  * Renders a real QR code entirely in the browser (no third-party image API,
- * no network request, no rate limits — just the `qrcode` npm package).
+ * no network request, no rate limits  just the `qrcode` npm package).
  */
 export function QrCodeImage({ value, size = 200, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

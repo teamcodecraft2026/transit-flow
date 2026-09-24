@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+﻿import { useRef, useState, type ReactNode } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";

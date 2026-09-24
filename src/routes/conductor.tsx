@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -28,13 +28,13 @@ import { sendOtp, verifyOtp, scanTicket, type ScanTicketResponse } from "@/lib/a
 export const Route = createFileRoute("/conductor")({
   head: () => ({
     meta: [
-      { title: "Conductor Login — Scan & Verify Tickets | Public Transit" },
+      { title: "Conductor Login  Scan & Verify Tickets | Public Transit" },
       {
         name: "description",
         content:
           "Conductor sign-in for Public Transit: verify your ID and phone, then scan passenger QR tickets and review recent boardings.",
       },
-      { property: "og:title", content: "Conductor Login — Scan & Verify Tickets | Public Transit" },
+      { property: "og:title", content: "Conductor Login  Scan & Verify Tickets | Public Transit" },
       {
         property: "og:description",
         content: "Sign in as a conductor to scan passenger QR tickets and confirm boardings.",
@@ -272,7 +272,7 @@ function LoginPanel({
 
       {error ? <ErrorBanner message={error} /> : null}
 
-      <SweepButton disabled={busy} onClick={send} label={busy ? "Sending…" : t("cond.sendOtp")} />
+      <SweepButton disabled={busy} onClick={send} label={busy ? "Sending" : t("cond.sendOtp")} />
       <HelpFooter />
     </Panel>
   );
@@ -574,7 +574,7 @@ function Dashboard({ name, onLogout }: { name: string; onLogout: () => void }) {
                 value={ticketInput}
                 onChange={(e) => setTicketInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleScan()}
-                placeholder="Paste ticket UUID here…"
+                placeholder="Paste ticket UUID here"
                 className="mt-4 w-full rounded-[10px] border border-white/20 bg-white/10 px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/50 focus:outline-none"
               />
               {scanError && <p className="mt-3 font-sans text-[12px] text-red-300">{scanError}</p>}
@@ -674,7 +674,7 @@ function CameraScanPanel({
 
       {scanning && !error && (
         <p className="mt-3 flex items-center justify-center gap-2 font-sans text-[13px] text-white/80">
-          <Loader2 className="size-4 animate-spin" /> Validating…
+          <Loader2 className="size-4 animate-spin" /> Validating
         </p>
       )}
 
@@ -776,9 +776,9 @@ function ScanResultCard({
       {(state === "valid" || state === "already_used") && (
         <div className="mt-5 inline-block rounded-full border border-white/50 px-4 py-1.5 font-sans text-[13px] text-white">
           {result.fare_charged === 0
-            ? "🌸 Pink Card — Free Travel"
+            ? " Pink Card  Free Travel"
             : result.fare_charged
-              ? `₹${result.fare_charged} Paid`
+              ? `${result.fare_charged} Paid`
               : "Ticket Already Used"}
         </div>
       )}
@@ -853,7 +853,7 @@ function RecentScans({ scans }: { scans: ScanRecord[] }) {
                 : "border border-destructive/50 text-destructive",
             )}
           >
-            {s.fare_charged === 0 ? "Free" : `₹${s.fare_charged}`}
+            {s.fare_charged === 0 ? "Free" : `${s.fare_charged}`}
           </span>
           <span className="text-right font-sans text-[13px] text-ink-muted">{s.when}</span>
         </div>
@@ -893,13 +893,13 @@ function RecentScans({ scans }: { scans: ScanRecord[] }) {
 // export const Route = createFileRoute("/conductor")({
 //   head: () => ({
 //     meta: [
-//       { title: "Conductor Login — Scan & Verify Tickets | Public Transit" },
+//       { title: "Conductor Login  Scan & Verify Tickets | Public Transit" },
 //       {
 //         name: "description",
 //         content:
 //           "Conductor sign-in for Public Transit: verify your ID and phone, then scan passenger QR tickets and review recent boardings.",
 //       },
-//       { property: "og:title", content: "Conductor Login — Scan & Verify Tickets | Public Transit" },
+//       { property: "og:title", content: "Conductor Login  Scan & Verify Tickets | Public Transit" },
 //       {
 //         property: "og:description",
 //         content: "Sign in as a conductor to scan passenger QR tickets and confirm boardings.",
@@ -1140,7 +1140,7 @@ function RecentScans({ scans }: { scans: ScanRecord[] }) {
 
 //       {error ? <ErrorBanner message={error} /> : null}
 
-//       <SweepButton disabled={busy} onClick={send} label={busy ? "Sending…" : t("cond.sendOtp")} />
+//       <SweepButton disabled={busy} onClick={send} label={busy ? "Sending" : t("cond.sendOtp")} />
 //       <HelpFooter />
 //     </Panel>
 //   );
@@ -1418,7 +1418,7 @@ function RecentScans({ scans }: { scans: ScanRecord[] }) {
 //                 value={ticketInput}
 //                 onChange={(e) => setTicketInput(e.target.value)}
 //                 onKeyDown={(e) => e.key === "Enter" && handleScan()}
-//                 placeholder="Paste ticket UUID here…"
+//                 placeholder="Paste ticket UUID here"
 //                 className="mt-4 w-full rounded-[10px] border border-white/20 bg-white/10 px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/50 focus:outline-none"
 //               />
 //               {scanError && <p className="mt-3 font-sans text-[12px] text-red-300">{scanError}</p>}
@@ -1540,9 +1540,9 @@ function RecentScans({ scans }: { scans: ScanRecord[] }) {
 //       {(state === "valid" || state === "already_used") && (
 //         <div className="mt-5 inline-block rounded-full border border-white/50 px-4 py-1.5 font-sans text-[13px] text-white">
 //           {result.fare_charged === 0
-//             ? "🌸 Pink Card — Free Travel"
+//             ? " Pink Card  Free Travel"
 //             : result.fare_charged
-//               ? `₹${result.fare_charged} Paid`
+//               ? `${result.fare_charged} Paid`
 //               : "Ticket Already Used"}
 //         </div>
 //       )}
@@ -1617,7 +1617,7 @@ function RecentScans({ scans }: { scans: ScanRecord[] }) {
 //                 : "border border-destructive/50 text-destructive",
 //             )}
 //           >
-//             {s.fare_charged === 0 ? "Free" : `₹${s.fare_charged}`}
+//             {s.fare_charged === 0 ? "Free" : `${s.fare_charged}`}
 //           </span>
 //           <span className="text-right font-sans text-[13px] text-ink-muted">{s.when}</span>
 //         </div>

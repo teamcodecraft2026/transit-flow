@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Crown, MapPin, Navigation, RefreshCw, ShieldCheck } from "lucide-react";
 import heroImg from "@/assets/hero-bus-futuristic.jpg";
@@ -17,7 +17,7 @@ import { useAuth } from "@/auth/AuthProvider";
 export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
-      { title: "Public Transit — Bus Ticketing Made Seamless & Equitable" },
+      { title: "Public Transit  Bus Ticketing Made Seamless & Equitable" },
       {
         name: "description",
         content:
@@ -25,12 +25,12 @@ export const Route = createFileRoute("/home")({
       },
       {
         property: "og:title",
-        content: "Public Transit — Bus Ticketing Made Seamless & Equitable",
+        content: "Public Transit  Bus Ticketing Made Seamless & Equitable",
       },
       {
         property: "og:description",
         content:
-          "Search routes, pay in a tap, and board with a dynamic QR — with instant Pink Card zero-fare verification.",
+          "Search routes, pay in a tap, and board with a dynamic QR  with instant Pink Card zero-fare verification.",
       },
     ],
   }),
@@ -55,7 +55,7 @@ function Home() {
   );
 }
 
-/* ── Particle animation canvas ────────────────────────── */
+/*  Particle animation canvas  */
 
 interface Particle {
   x: number;
@@ -267,7 +267,7 @@ function HeroParticles() {
   );
 }
 
-/* ── Hero ─────────────────────────────────────────────── */
+/*  Hero  */
 
 function Hero() {
   const { t } = useI18n();
@@ -295,17 +295,17 @@ function Hero() {
         // progress: 0 at top, 1 when hero fully scrolled past
         const progress = Math.min(y / vh, 1);
 
-        // ── Background: parallax + subtle scale down ──
+        //  Background: parallax + subtle scale down 
         if (bgRef.current) {
           const translateY = y * 0.4;
           const scale = Math.max(1, 1.08 - y * 0.00008);
-          // Also scale down slightly as user scrolls (1 → 0.96)
+          // Also scale down slightly as user scrolls (1  0.96)
           const scaleOut = 1 - progress * 0.04;
           bgRef.current.style.transform =
             `translateY(${translateY}px) scale(${Math.max(scale, scaleOut)})`;
         }
 
-        // ── Text: float up + fade out ──
+        //  Text: float up + fade out 
         if (textRef.current) {
           const translateY = y * 0.15;
           const opacity = Math.max(0, 1 - progress * 1.6);
@@ -313,7 +313,7 @@ function Hero() {
           textRef.current.style.opacity = `${opacity}`;
         }
 
-        // ── Overlay: darken hero as user scrolls away ──
+        //  Overlay: darken hero as user scrolls away 
         if (overlayRef.current) {
           const extraDark = progress * 0.35;
           overlayRef.current.style.backgroundColor = `rgba(0,0,0,${0.6 + extraDark})`;
@@ -348,7 +348,7 @@ function Hero() {
         />
       </div>
 
-      {/* Scroll-reactive overlay — darkens as you leave */}
+      {/* Scroll-reactive overlay  darkens as you leave */}
       <div
         ref={overlayRef}
         className="absolute inset-0 will-change-[background-color]"
@@ -428,7 +428,7 @@ function Hero() {
         </div>
       </div>
 
-      {/* Bottom fade — hero dissolves into next section */}
+      {/* Bottom fade  hero dissolves into next section */}
       <div
         className="absolute inset-x-0 bottom-0 h-48 pointer-events-none"
         style={{
@@ -463,7 +463,7 @@ function useTypewriter(text: string, duration: number) {
 
 
 
-/* ── Four Steps — slides up into view ────────────────── */
+/*  Four Steps  slides up into view  */
 
 
 function FourSteps() {
@@ -725,7 +725,7 @@ function ScanMock() {
       <QrFrame tone="green" className="mt-2">
         <div className="flex h-[92px] flex-col items-center justify-center gap-1.5">
           <span className="flex size-9 items-center justify-center rounded-full border-2 border-status text-status">
-            ✓
+            
           </span>
           <p className="font-sans text-[10px] text-status">{t("steps.verified")}</p>
           <p className="font-sans text-[8.5px] text-ink-muted">{t("steps.happy")}</p>
@@ -735,7 +735,7 @@ function ScanMock() {
   );
 }
 
-/* ── Pink Card spotlight with clip-path reveal ────────── */
+/*  Pink Card spotlight with clip-path reveal  */
 
 function PinkSpotlight() {
   const { t } = useI18n();

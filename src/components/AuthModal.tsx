@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Bus } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import { useI18n } from "@/i18n/LanguageProvider";
@@ -71,7 +71,7 @@ export function AuthModal() {
     setBusy(true);
     try {
       const res = await sendOtp(phone);
-      // Backend is in mock mode — it returns the OTP in the response.
+      // Backend is in mock mode  it returns the OTP in the response.
       // Show it as a helper banner so testers don't need to check logs.
       if (res.otp_code) setMockOtp(res.otp_code);
       setCooldown(RESEND_SECONDS);
@@ -198,7 +198,7 @@ export function AuthModal() {
               disabled={busy}
               onClick={handleSendOtp}
             >
-              {busy ? "Sending…" : t("auth.sendOtp")}
+              {busy ? "Sending" : t("auth.sendOtp")}
             </Button>
 
             <p className="mt-5 font-sans text-[13px] text-ink-muted">
@@ -222,7 +222,7 @@ export function AuthModal() {
               {t("auth.otpSub")} +91 {phone}
             </p>
 
-            {/* Demo helper — backend returns OTP in response since SMS is mocked */}
+            {/* Demo helper  backend returns OTP in response since SMS is mocked */}
             {mockOtp ? (
               <p className="mt-3 rounded-[8px] border border-yellow-400/40 bg-yellow-400/10 px-3 py-2 font-sans text-[12.5px] text-yellow-300">
                 Demo OTP: <span className="font-bold tracking-widest">{mockOtp}</span>
@@ -258,7 +258,7 @@ export function AuthModal() {
               disabled={busy}
               onClick={handleVerify}
             >
-              {busy ? "Verifying…" : t("auth.verify")}
+              {busy ? "Verifying" : t("auth.verify")}
             </Button>
 
             <div className="mt-5 flex items-center justify-between font-sans text-[13px]">

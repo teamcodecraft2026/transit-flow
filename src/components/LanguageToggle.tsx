@@ -1,7 +1,7 @@
-import { useI18n } from "@/i18n/LanguageProvider";
+﻿import { useI18n } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
-/** EN / বাং switch — the knob slides, and all UI copy re-renders. */
+/** EN /  switch  the knob slides, and all UI copy re-renders. */
 export function LanguageToggle({ className }: { className?: string }) {
   const { locale, setLocale } = useI18n();
   const isEn = locale === "en";
@@ -29,7 +29,7 @@ export function LanguageToggle({ className }: { className?: string }) {
             locale === code ? "text-canvas" : "text-ink/70 hover:text-ink",
           )}
         >
-          {code === "en" ? "EN" : "বাং"}
+          {code === "en" ? "EN" : ""}
         </button>
       ))}
     </div>

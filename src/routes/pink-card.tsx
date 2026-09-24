@@ -51,7 +51,9 @@ function getPinkCardApplicationId(): string | null {
         return localStorage.getItem(`pt.pinkCardApplicationId.${user.id}`);
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return localStorage.getItem("pt.pinkCardApplicationId.guest");
 }
 
@@ -59,7 +61,10 @@ type StatusScreen = "already-applied" | "not-applied";
 
 function useThreeJS(onReady: () => void) {
   useEffect(() => {
-    if ((window as any).THREE) { onReady(); return; }
+    if ((window as any).THREE) {
+      onReady();
+      return;
+    }
     const script = document.createElement("script");
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
     script.async = true;
@@ -72,7 +77,10 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (revealHasRun) { onDone(); return; }
+    if (revealHasRun) {
+      onDone();
+      return;
+    }
     revealHasRun = true;
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -81,10 +89,16 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
     }
 
     const canvas = canvasRef.current;
-    if (!canvas) { onDone(); return; }
+    if (!canvas) {
+      onDone();
+      return;
+    }
 
     const THREE = (window as any).THREE;
-    if (!THREE) { onDone(); return; }
+    if (!THREE) {
+      onDone();
+      return;
+    }
 
     const W = window.innerWidth;
     const H = window.innerHeight;
@@ -125,11 +139,7 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
           opacity: 1,
         });
         const mesh = new THREE.Mesh(geometry, mat);
-        mesh.position.set(
-          -wWidth / 2 + i * OBJ_SIZE,
-          -wHeight / 2 + j * OBJ_SIZE,
-          0
-        );
+        mesh.position.set(-wWidth / 2 + i * OBJ_SIZE, -wHeight / 2 + j * OBJ_SIZE, 0);
         scene.add(mesh);
         meshes.push(mesh);
 
@@ -148,8 +158,12 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
     let rafId: number;
     let finished = false;
 
-    function easeOutQuad(t: number) { return t * (2 - t); }
-    function linear(t: number) { return t; }
+    function easeOutQuad(t: number) {
+      return t * (2 - t);
+    }
+    function linear(t: number) {
+      return t;
+    }
 
     function animate(ts: number) {
       if (finished) return;
@@ -166,14 +180,18 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
           mesh.rotation.y = a.ry * linear(tRot);
           mesh.rotation.z = a.rz * linear(tRot);
           if (tRot < 1) allDone = false;
-        } else { allDone = false; }
+        } else {
+          allDone = false;
+        }
 
         if (elapsed >= a.flyDelay) {
           const tFly = Math.min((elapsed - a.flyDelay) / a.flyDuration, 1);
           mesh.position.z = 80 * easeOutQuad(tFly);
           mesh.material.opacity = 1 - tFly;
           if (tFly < 1) allDone = false;
-        } else { allDone = false; }
+        } else {
+          allDone = false;
+        }
       }
 
       renderer.render(scene, camera);
@@ -198,8 +216,12 @@ function RevealEffect({ onDone }: { onDone: () => void }) {
     <canvas
       ref={canvasRef}
       style={{
-        position: "fixed", inset: 0, width: "100%", height: "100%",
-        zIndex: 9999, pointerEvents: "none",
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        zIndex: 9999,
+        pointerEvents: "none",
       }}
     />
   );
@@ -250,15 +272,20 @@ function PinkCardPage() {
     return (
       <PageShell theme="rose" backHome hideFooter>
         <section className="relative -mt-[88px] flex min-h-[100svh] items-center justify-center overflow-hidden pb-24 pt-[150px]">
-          <img src={navyBg} alt="" width={1920} height={1088}
-            className="absolute inset-0 size-full object-cover opacity-40" />
+          <img
+            src={navyBg}
+            alt=""
+            width={1920}
+            height={1088}
+            className="absolute inset-0 size-full object-cover opacity-40"
+          />
           <div className="absolute inset-0 bg-black/65" />
           <div className="relative z-10 w-full max-w-[500px] px-6 text-center">
             <ClipboardList className="mx-auto size-16 text-white/30" strokeWidth={1.25} />
             <h1 className="mt-5 font-display text-[34px] text-white">Not Applied Yet</h1>
             <p className="mt-3 font-sans text-[14px] text-white/60">
-              You haven't applied for the Pink Card yet. Complete the 4-step verification
-              to check your eligibility for zero-fare bus travel.
+              You haven't applied for the Pink Card yet. Complete the 4-step verification to check
+              your eligibility for zero-fare bus travel.
             </p>
             <div className="mt-6 rounded-[14px] border border-white/15 bg-white/5 p-5 text-left">
               <div className="flex items-start gap-3 py-2">
@@ -277,9 +304,12 @@ function PinkCardPage() {
               </div>
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button variant="pinkSolid" size="lg"
-                onClick={() => navigate({ to: "/pink-card-apply" })}>
-                Apply Now 
+              <Button
+                variant="pinkSolid"
+                size="lg"
+                onClick={() => navigate({ to: "/pink-card-apply" })}
+              >
+                Apply Now
               </Button>
               <Button variant="outline" size="lg" onClick={() => setStatusScreen(null)}>
                 Back
@@ -294,16 +324,27 @@ function PinkCardPage() {
   return (
     <>
       {!threeReady && !revealed && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, backgroundColor: "#0b0a10", pointerEvents: "none" }} />
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: "#0b0a10",
+            pointerEvents: "none",
+          }}
+        />
       )}
-      {threeReady && !revealed && (
-        <RevealEffect onDone={() => setRevealed(true)} />
-      )}
+      {threeReady && !revealed && <RevealEffect onDone={() => setRevealed(true)} />}
 
       <PageShell theme="rose" backHome>
         <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden pt-[88px]">
-          <img src={glowBg} alt="" width={1920} height={1088}
-            className="absolute inset-0 size-full object-cover opacity-70" />
+          <img
+            src={glowBg}
+            alt=""
+            width={1920}
+            height={1088}
+            className="absolute inset-0 size-full object-cover opacity-70"
+          />
           <div className="absolute inset-0 bg-black/55" />
           <div className="absolute inset-x-0 bottom-0 h-52 bg-linear-to-b from-transparent to-canvas" />
 
@@ -319,14 +360,20 @@ function PinkCardPage() {
                 {t("pc.body")}
               </p>
               <div className="mt-9 flex flex-wrap gap-4">
-                <Button variant="outline" size="md"
+                <Button
+                  variant="outline"
+                  size="md"
                   className="font-display text-[15px] font-medium"
-                  onClick={handleApplyNow}>
+                  onClick={handleApplyNow}
+                >
                   {t("pc.apply")}
                 </Button>
-                <Button variant="pinkSolid" size="md"
+                <Button
+                  variant="pinkSolid"
+                  size="md"
                   className="font-display text-[15px] font-medium"
-                  onClick={handleCheckStatus}>
+                  onClick={handleCheckStatus}
+                >
                   {t("pc.status")}
                 </Button>
               </div>
@@ -347,16 +394,19 @@ function PinkCardPage() {
           <div aria-hidden className="rose-glow absolute -right-32 top-0 size-[380px]" />
           <div className="relative mx-auto max-w-[1040px] px-6 text-center">
             <Reveal>
-              <h2 className="font-display text-[34px] text-ink sm:text-[42px]">{t("pc.whoTitle")}</h2>
+              <h2 className="font-display text-[34px] text-ink sm:text-[42px]">
+                {t("pc.whoTitle")}
+              </h2>
               <span className="mx-auto mt-4 block h-0.5 w-28 bg-rose" />
               <p className="mt-5 font-sans text-[13px] text-ink-muted">{t("pc.whoSub")}</p>
             </Reveal>
             <div className="relative mt-16 grid gap-12 sm:grid-cols-3">
-              <span aria-hidden
-                className="absolute left-[16%] right-[16%] top-[34px] hidden h-px bg-rose/30 sm:block" />
+              <span
+                aria-hidden
+                className="absolute left-[16%] right-[16%] top-[34px] hidden h-px bg-rose/30 sm:block"
+              />
               {checks.map(({ icon: Icon, title, body }, i) => (
-                <Reveal key={title} delay={i * 120}
-                  className="relative flex flex-col items-center">
+                <Reveal key={title} delay={i * 120} className="relative flex flex-col items-center">
                   <span className="flex size-[68px] items-center justify-center rounded-full border border-rose/60 bg-canvas">
                     <Icon className="size-6 text-rose-bright" strokeWidth={1.5} />
                   </span>
@@ -402,8 +452,7 @@ function PinkCard3D() {
         const rx = Math.sin(t * 0.7) * 10;
         const ry = Math.sin(t) * 14;
         if (cardRef.current) {
-          cardRef.current.style.transform =
-            `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+          cardRef.current.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg)`;
         }
         rafRef.current = requestAnimationFrame(autoRotate);
       }
@@ -428,7 +477,9 @@ function PinkCard3D() {
       shadowRef.current = { x: 0, y: 0 };
     }
 
-    function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+    function lerp(a: number, b: number, t: number) {
+      return a + (b - a) * t;
+    }
 
     function loop() {
       const cur = currentRotRef.current;
@@ -437,10 +488,8 @@ function PinkCard3D() {
       cur.y = lerp(cur.y, tgt.y, 0.08);
 
       if (cardRef.current) {
-        cardRef.current.style.transform =
-          `perspective(1000px) rotateX(${cur.x}deg) rotateY(${cur.y}deg)`;
-        cardRef.current.style.boxShadow =
-          `${shadowRef.current.x}px ${shadowRef.current.y}px 60px rgba(0,0,0,0.6), 0 30px 70px rgba(0,0,0,0.5)`;
+        cardRef.current.style.transform = `perspective(1000px) rotateX(${cur.x}deg) rotateY(${cur.y}deg)`;
+        cardRef.current.style.boxShadow = `${shadowRef.current.x}px ${shadowRef.current.y}px 60px rgba(0,0,0,0.6), 0 30px 70px rgba(0,0,0,0.5)`;
       }
       rafRef.current = requestAnimationFrame(loop);
     }
@@ -487,11 +536,12 @@ function PinkCard3D() {
         </div>
       </div>
       <div className="relative mt-6 h-14 w-[78%]">
-        <span aria-hidden
-          className="anim-pulse-glow absolute inset-x-[-14%] top-1 h-14 rounded-[50%] bg-rose-glow/45 blur-2xl" />
+        <span
+          aria-hidden
+          className="anim-pulse-glow absolute inset-x-[-14%] top-1 h-14 rounded-[50%] bg-rose-glow/45 blur-2xl"
+        />
         <span className="absolute inset-0 rounded-[50%] border border-rose-glow/70 bg-[#0b0a10]" />
       </div>
     </div>
   );
 }
-

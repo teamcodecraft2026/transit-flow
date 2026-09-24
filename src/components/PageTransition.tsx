@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouterState } from "@tanstack/react-router";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 
 /**
- * Crossfade between routes. Purely additive — the wrapper is a plain block in
+ * Crossfade between routes. Purely additive  the wrapper is a plain block in
  * normal document flow, so no layout, grid or spacing value changes.
  */
 export function PageTransition({ children }: { children: ReactNode }) {

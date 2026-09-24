@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-/** Viewfinder bracket frame — reused for ticket QR and conductor scan states. */
+/** Viewfinder bracket frame  reused for ticket QR and conductor scan states. */
 export function QrFrame({ children, tone = "rose", className }: Props) {
   const color = tone === "rose" ? "border-rose-bright" : "border-status";
   const corner = "pointer-events-none absolute size-5 border-2";

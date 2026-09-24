@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Smartphone, UserRound } from "lucide-react";
 import roleBg from "@/assets/role-select-bg.jpg";
 import { useI18n } from "@/i18n/LanguageProvider";
@@ -10,13 +10,13 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Public Transit — Choose Passenger or Conductor" },
+      { title: "Public Transit  Choose Passenger or Conductor" },
       {
         name: "description",
         content:
           "Enter Public Transit as a passenger to book bus tickets and apply for the Pink Card, or as a conductor to scan and verify boarding.",
       },
-      { property: "og:title", content: "Public Transit — Choose Passenger or Conductor" },
+      { property: "og:title", content: "Public Transit  Choose Passenger or Conductor" },
       {
         property: "og:description",
         content:
@@ -143,13 +143,13 @@ function RoleCard({
 // export const Route = createFileRoute("/")({
 //   head: () => ({
 //     meta: [
-//       { title: "Public Transit — Choose Passenger or Conductor" },
+//       { title: "Public Transit  Choose Passenger or Conductor" },
 //       {
 //         name: "description",
 //         content:
 //           "Enter Public Transit as a passenger to book bus tickets and apply for the Pink Card, or as a conductor to scan and verify boarding.",
 //       },
-//       { property: "og:title", content: "Public Transit — Choose Passenger or Conductor" },
+//       { property: "og:title", content: "Public Transit  Choose Passenger or Conductor" },
 //       {
 //         property: "og:description",
 //         content:
