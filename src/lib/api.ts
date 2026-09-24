@@ -188,7 +188,7 @@ export async function getApplicationStatus(
 }
 
 // 4. Service Portal — uses pt.officerSession directly
-
+//
 export interface OfficerApplication {
   id: string;
   user_id: string;

@@ -991,6 +991,7 @@ function ApplicationDetailPanel({
   );
 }
 
+//  Detail panel (old version, kept for reference)
 // function ApplicationDetailPanel({
 //   application,
 //   onClose,
