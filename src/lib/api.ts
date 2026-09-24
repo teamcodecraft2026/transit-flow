@@ -176,6 +176,8 @@ export interface ApplicationStatusResponse {
   decided_at?: string;
   manual_income?: number | null;
   manual_reason?: string | null;
+  is_officer_override?: boolean;
+  override_reason?: string | null;
 }
 
 export async function getApplicationStatus(
@@ -207,6 +209,7 @@ export interface OfficerApplication {
   manual_gender: string | null;
   manual_income: number | null;
   manual_reason: string | null;
+  override_reason: string | null;
   decided_by: string | null;
   decided_at: string | null;
   checked_at: string;
@@ -234,6 +237,8 @@ export interface OfficerDecideApplicationPayload {
   manual_gender?: "Male" | "Female";
   manual_income?: number;
   manual_reason?: string;
+  override_reason?: string;
+  override_reason_custom?: string;
 }
 
 export interface OfficerDecideApplicationResponse {

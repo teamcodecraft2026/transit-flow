@@ -358,6 +358,10 @@ function PinkCardApplyPage() {
                         "No income record found for this PAN — requires manual review."
                     )
                       return manualReason;
+                    // Officer override of eligible application
+                    if (appStatus.is_officer_override && appStatus.override_reason) {
+                      return appStatus.override_reason;
+                    }
                     // Auto match fallback
                     if (effectiveReasonCode === "INELIGIBLE_GENDER")
                       return "Pink Card is only available to female applicants.";
@@ -379,11 +383,24 @@ function PinkCardApplyPage() {
                     "INELIGIBLE_STATE",
                   ];
                   const displayReasonCode =
-                    manualReason && knownCodes.includes(manualReason)
-                      ? manualReason
-                      : effectiveReasonCode && effectiveReasonCode !== "INELIGIBLE_NO_RECORD"
-                        ? effectiveReasonCode
-                        : null;
+                    appStatus.is_officer_override && appStatus.override_reason
+                      ? (() => {
+                          if (appStatus.override_reason === "Documents do not match PAN records")
+                            return "OVERRIDE_DOC_MISMATCH";
+                          if (appStatus.override_reason === "Duplicate application detected")
+                            return "OVERRIDE_DUPLICATE";
+                          if (
+                            appStatus.override_reason ===
+                            "Application contains false or suspicious information"
+                          )
+                            return "OVERRIDE_FRAUD";
+                          return "OVERRIDE_OTHER";
+                        })()
+                      : manualReason && knownCodes.includes(manualReason)
+                        ? manualReason
+                        : effectiveReasonCode && effectiveReasonCode !== "INELIGIBLE_NO_RECORD"
+                          ? effectiveReasonCode
+                          : null;
 
                   const reasonLabel = getReasonLabel();
 

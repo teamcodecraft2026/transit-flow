@@ -613,6 +613,7 @@ function ApplicationDetailPanel({
 }) {
   const app = application;
   const isAutoIneligible = app.source === "auto_match" && app.eligible === false;
+  const isAutoEligible = app.source === "auto_match" && app.eligible === true;
   const isManual = app.source === "manual";
   const alreadyDecided = app.status !== "submitted";
 
@@ -632,10 +633,16 @@ function ApplicationDetailPanel({
       ? app.manual_reason
       : "",
   );
+
+  // Override reason state — for auto_match eligible apps being denied
+  const [overrideReason, setOverrideReason] = useState<string>("");
+  const [overrideReasonCustom, setOverrideReasonCustom] = useState("");
+  // Track if officer clicked Deny (to show override reason dropdown)
+  const [denyClicked, setDenyClicked] = useState(false);
+
   const [busy, setBusy] = useState<"approve" | "deny" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // The final reason string sent to backend
   const finalReason = reasonCode === "OTHER" ? customReason.trim() : reasonCode;
 
   async function decide(decision: "approve" | "deny") {
@@ -660,6 +667,17 @@ function ApplicationDetailPanel({
       }
     }
 
+    if (isAutoEligible && decision === "deny") {
+      if (!overrideReason) {
+        setError("Select an override reason before denying.");
+        return;
+      }
+      if (overrideReason === "OVERRIDE_OTHER" && !overrideReasonCustom.trim()) {
+        setError("Type a custom reason before denying.");
+        return;
+      }
+    }
+
     setBusy(decision);
     try {
       const payload: Parameters<typeof officerDecideApplication>[0] = {
@@ -670,6 +688,10 @@ function ApplicationDetailPanel({
         payload.manual_gender = manualGender as "Male" | "Female";
         payload.manual_income = Number(manualIncome);
         payload.manual_reason = finalReason;
+      }
+      if (isAutoEligible && decision === "deny") {
+        payload.override_reason = overrideReason;
+        payload.override_reason_custom = overrideReasonCustom.trim();
       }
       const res = await officerDecideApplication(payload);
       onDecided(res.application);
@@ -685,7 +707,6 @@ function ApplicationDetailPanel({
       <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[3px]" onClick={onClose} />
 
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[520px] flex-col bg-[#0d0f1a] shadow-[-8px_0_40px_rgba(0,0,0,0.6)]">
-        {/* Panel header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           <h2 className="font-sans text-[16px] font-semibold text-white">Application Detail</h2>
           <button
@@ -697,7 +718,6 @@ function ApplicationDetailPanel({
           </button>
         </div>
 
-        {/* Panel body */}
         <div className="flex-1 overflow-y-auto space-y-4 px-6 py-6">
           {/* Citizen details */}
           <div className="rounded-[12px] border border-white/10 bg-white/[0.03] p-5">
@@ -745,19 +765,93 @@ function ApplicationDetailPanel({
               <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-400" strokeWidth={1.5} />
               <p className="font-sans text-[12.5px] text-amber-300">
                 This PAN matched income records and was found ineligible by the system. Only{" "}
-                <strong>Deny</strong> is available for this application.
+                <strong>Deny</strong> is available.
               </p>
             </div>
           )}
 
-          {/* Manual entry fields — only for manual source, pending only */}
+          {/* Auto-eligible info */}
+          {isAutoEligible && !alreadyDecided && (
+            <div className="flex items-start gap-3 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-400" strokeWidth={1.5} />
+              <p className="font-sans text-[12.5px] text-emerald-300">
+                System found this applicant <strong>eligible</strong>. You may Approve or Deny. If
+                denying, you must provide an override reason.
+              </p>
+            </div>
+          )}
+
+          {/* Override reason — shown when officer clicks Deny on auto-eligible app */}
+          {isAutoEligible && !alreadyDecided && denyClicked && (
+            <div className="rounded-[12px] border border-red-500/30 bg-red-500/5 p-5">
+              <p className="mb-4 font-sans text-[11px] uppercase tracking-wide text-red-400">
+                Override Reason Required
+              </p>
+              <label className="mb-3 block">
+                <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+                  Reason for Denial <span className="text-rose-400">*</span>
+                </span>
+                <select
+                  value={overrideReason}
+                  onChange={(e) => setOverrideReason(e.target.value)}
+                  className="h-10 w-full rounded-[8px] border border-white/15 bg-[#0d0f1a] px-3 font-sans text-[13px] text-white focus:border-rose-500 focus:outline-none"
+                >
+                  <option value="" disabled>
+                    Select reason
+                  </option>
+                  <option value="OVERRIDE_DOC_MISMATCH">Documents do not match PAN records</option>
+                  <option value="OVERRIDE_DUPLICATE">Duplicate application detected</option>
+                  <option value="OVERRIDE_FRAUD">
+                    Application contains false or suspicious information
+                  </option>
+                  <option value="OVERRIDE_OTHER">Other (type manually)</option>
+                </select>
+              </label>
+              {overrideReason === "OVERRIDE_OTHER" && (
+                <label className="block">
+                  <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+                    Custom Reason <span className="text-rose-400">*</span>
+                  </span>
+                  <textarea
+                    value={overrideReasonCustom}
+                    onChange={(e) => setOverrideReasonCustom(e.target.value)}
+                    rows={3}
+                    placeholder="Describe the reason for overriding the system decision..."
+                    className="w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 py-2 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
+                  />
+                </label>
+              )}
+              <div className="mt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDenyClicked(false);
+                    setOverrideReason("");
+                    setOverrideReasonCustom("");
+                    setError(null);
+                  }}
+                  className="flex h-10 flex-1 items-center justify-center rounded-[8px] border border-white/15 font-sans text-[13px] text-white/50 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => decide("deny")}
+                  disabled={busy !== null}
+                  className="flex h-10 flex-1 items-center justify-center gap-2 rounded-[8px] bg-red-600 font-sans text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {busy === "deny" ? <Loader2 className="size-4 animate-spin" /> : "Confirm Deny"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Manual entry fields */}
           {isManual && !alreadyDecided && (
             <div className="rounded-[12px] border border-amber-500/20 bg-amber-500/5 p-5">
               <p className="mb-4 font-sans text-[11px] uppercase tracking-wide text-amber-400">
                 Manual Entry Required
               </p>
-
-              {/* Gender dropdown */}
               <label className="mb-4 block">
                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
                   Gender <span className="text-rose-400">*</span>
@@ -774,8 +868,6 @@ function ApplicationDetailPanel({
                   <option value="Female">Female</option>
                 </select>
               </label>
-
-              {/* Annual Income */}
               <label className="mb-4 block">
                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
                   Annual Income (₹) <span className="text-rose-400">*</span>
@@ -788,8 +880,6 @@ function ApplicationDetailPanel({
                   className="h-10 w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
                 />
               </label>
-
-              {/* Reason dropdown */}
               <label className="mb-3 block">
                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
                   Reason for Decision <span className="text-rose-400">*</span>
@@ -809,8 +899,6 @@ function ApplicationDetailPanel({
                   ))}
                 </select>
               </label>
-
-              {/* Custom reason textarea — only shown when OTHER is selected */}
               {reasonCode === "OTHER" && (
                 <label className="block">
                   <span className="mb-1.5 block font-sans text-[12px] text-white/60">
@@ -852,10 +940,12 @@ function ApplicationDetailPanel({
                 />
               )}
               {app.manual_reason && <DetailRow label="Reason" value={app.manual_reason} />}
+              {app.override_reason && (
+                <DetailRow label="Override Reason" value={app.override_reason} />
+              )}
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <p className="rounded-[8px] border border-red-500/40 bg-red-500/15 px-3 py-2 font-sans text-[12.5px] text-red-400">
               {error}
@@ -864,7 +954,7 @@ function ApplicationDetailPanel({
         </div>
 
         {/* Action buttons */}
-        {!alreadyDecided && (
+        {!alreadyDecided && !denyClicked && (
           <div className="flex gap-3 border-t border-white/10 px-6 py-4">
             {!isAutoIneligible && (
               <button
@@ -883,7 +973,7 @@ function ApplicationDetailPanel({
             )}
             <button
               type="button"
-              onClick={() => decide("deny")}
+              onClick={() => (isAutoEligible ? setDenyClicked(true) : decide("deny"))}
               disabled={busy !== null}
               className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[10px] bg-red-600 font-sans text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
@@ -900,6 +990,305 @@ function ApplicationDetailPanel({
     </>
   );
 }
+
+// function ApplicationDetailPanel({
+//   application,
+//   onClose,
+//   onDecided,
+// }: {
+//   application: OfficerApplication;
+//   onClose: () => void;
+//   onDecided: (updated: OfficerApplication) => void;
+// }) {
+//   const app = application;
+//   const isAutoIneligible = app.source === "auto_match" && app.eligible === false;
+//   const isManual = app.source === "manual";
+//   const alreadyDecided = app.status !== "submitted";
+
+//   const [manualGender, setManualGender] = useState<"Male" | "Female" | "">(
+//     (app.manual_gender as "Male" | "Female" | "") ?? "",
+//   );
+//   const [manualIncome, setManualIncome] = useState(
+//     app.manual_income != null ? String(app.manual_income) : "",
+//   );
+//   const [reasonCode, setReasonCode] = useState<ReasonCode | "">(
+//     app.manual_reason
+//       ? (REASON_OPTIONS.find((r) => r.code === app.manual_reason)?.code ?? "OTHER")
+//       : "",
+//   );
+//   const [customReason, setCustomReason] = useState(
+//     app.manual_reason && !REASON_OPTIONS.find((r) => r.code === app.manual_reason)
+//       ? app.manual_reason
+//       : "",
+//   );
+//   const [busy, setBusy] = useState<"approve" | "deny" | null>(null);
+//   const [error, setError] = useState<string | null>(null);
+
+//   // The final reason string sent to backend
+//   const finalReason = reasonCode === "OTHER" ? customReason.trim() : reasonCode;
+
+//   async function decide(decision: "approve" | "deny") {
+//     setError(null);
+
+//     if (isManual) {
+//       if (!manualGender) {
+//         setError("Select a gender before deciding.");
+//         return;
+//       }
+//       if (!manualIncome.trim() || Number.isNaN(Number(manualIncome))) {
+//         setError("Enter a valid annual income before deciding.");
+//         return;
+//       }
+//       if (!reasonCode) {
+//         setError("Select a reason before deciding.");
+//         return;
+//       }
+//       if (reasonCode === "OTHER" && !customReason.trim()) {
+//         setError("Type a reason in the text field.");
+//         return;
+//       }
+//     }
+
+//     setBusy(decision);
+//     try {
+//       const payload: Parameters<typeof officerDecideApplication>[0] = {
+//         application_id: app.id,
+//         decision,
+//       };
+//       if (isManual) {
+//         payload.manual_gender = manualGender as "Male" | "Female";
+//         payload.manual_income = Number(manualIncome);
+//         payload.manual_reason = finalReason;
+//       }
+//       const res = await officerDecideApplication(payload);
+//       onDecided(res.application);
+//     } catch (err: unknown) {
+//       setError(err instanceof Error ? err.message : "Failed to record decision.");
+//     } finally {
+//       setBusy(null);
+//     }
+//   }
+
+//   return (
+//     <>
+//       <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[3px]" onClick={onClose} />
+
+//       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[520px] flex-col bg-[#0d0f1a] shadow-[-8px_0_40px_rgba(0,0,0,0.6)]">
+//         {/* Panel header */}
+//         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+//           <h2 className="font-sans text-[16px] font-semibold text-white">Application Detail</h2>
+//           <button
+//             type="button"
+//             onClick={onClose}
+//             className="text-white/40 transition-colors hover:text-white"
+//           >
+//             <X className="size-5" strokeWidth={1.5} />
+//           </button>
+//         </div>
+
+//         {/* Panel body */}
+//         <div className="flex-1 overflow-y-auto space-y-4 px-6 py-6">
+//           {/* Citizen details */}
+//           <div className="rounded-[12px] border border-white/10 bg-white/[0.03] p-5">
+//             <p className="mb-3 font-sans text-[11px] uppercase tracking-wide text-white/40">
+//               Citizen Details
+//             </p>
+//             <DetailRow label="Full Name" value={app.full_name} />
+//             <DetailRow label="Phone" value={app.phone} />
+//             <DetailRow label="Aadhaar" value={app.aadhaar} />
+//             <DetailRow label="PAN" value={app.pan} />
+//             <DetailRow label="State" value={app.state} />
+//             <DetailRow label="Submitted" value={new Date(app.checked_at).toLocaleString("en-IN")} />
+//           </div>
+
+//           {/* System check */}
+//           <div className="rounded-[12px] border border-white/10 bg-white/[0.03] p-5">
+//             <p className="mb-3 font-sans text-[11px] uppercase tracking-wide text-white/40">
+//               System Check
+//             </p>
+//             {app.source === "auto_match" ? (
+//               <>
+//                 <DetailRow label="PAN match" value="Found in income records" />
+//                 <DetailRow label="Gender" value={app.gender ?? ""} />
+//                 <DetailRow
+//                   label="Annual Income"
+//                   value={`₹${(app.annual_income ?? 0).toLocaleString("en-IN")}`}
+//                 />
+//                 <DetailRow label="Threshold" value={`₹${app.threshold.toLocaleString("en-IN")}`} />
+//                 <DetailRow
+//                   label="System Decision"
+//                   value={app.eligible ? "✓ Eligible" : "✗ Not eligible"}
+//                 />
+//                 <DetailRow label="Reason" value={app.reason_message ?? ""} />
+//               </>
+//             ) : (
+//               <p className="font-sans text-[13px] text-amber-300">
+//                 No income record found for this PAN. Enter details below before deciding.
+//               </p>
+//             )}
+//           </div>
+
+//           {/* Auto-ineligible warning */}
+//           {isAutoIneligible && !alreadyDecided && (
+//             <div className="flex items-start gap-3 rounded-[10px] border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+//               <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-400" strokeWidth={1.5} />
+//               <p className="font-sans text-[12.5px] text-amber-300">
+//                 This PAN matched income records and was found ineligible by the system. Only{" "}
+//                 <strong>Deny</strong> is available for this application.
+//               </p>
+//             </div>
+//           )}
+
+//           {/* Manual entry fields — only for manual source, pending only */}
+//           {isManual && !alreadyDecided && (
+//             <div className="rounded-[12px] border border-amber-500/20 bg-amber-500/5 p-5">
+//               <p className="mb-4 font-sans text-[11px] uppercase tracking-wide text-amber-400">
+//                 Manual Entry Required
+//               </p>
+
+//               {/* Gender dropdown */}
+//               <label className="mb-4 block">
+//                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+//                   Gender <span className="text-rose-400">*</span>
+//                 </span>
+//                 <select
+//                   value={manualGender}
+//                   onChange={(e) => setManualGender(e.target.value as "Male" | "Female" | "")}
+//                   className="h-10 w-full rounded-[8px] border border-white/15 bg-[#0d0f1a] px-3 font-sans text-[13px] text-white focus:border-rose-500 focus:outline-none"
+//                 >
+//                   <option value="" disabled>
+//                     Select gender
+//                   </option>
+//                   <option value="Male">Male</option>
+//                   <option value="Female">Female</option>
+//                 </select>
+//               </label>
+
+//               {/* Annual Income */}
+//               <label className="mb-4 block">
+//                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+//                   Annual Income (₹) <span className="text-rose-400">*</span>
+//                 </span>
+//                 <input
+//                   value={manualIncome}
+//                   onChange={(e) => setManualIncome(e.target.value.replace(/[^\d]/g, ""))}
+//                   inputMode="numeric"
+//                   placeholder="e.g. 180000"
+//                   className="h-10 w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
+//                 />
+//               </label>
+
+//               {/* Reason dropdown */}
+//               <label className="mb-3 block">
+//                 <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+//                   Reason for Decision <span className="text-rose-400">*</span>
+//                 </span>
+//                 <select
+//                   value={reasonCode}
+//                   onChange={(e) => setReasonCode(e.target.value as ReasonCode | "")}
+//                   className="h-10 w-full rounded-[8px] border border-white/15 bg-[#0d0f1a] px-3 font-sans text-[13px] text-white focus:border-rose-500 focus:outline-none"
+//                 >
+//                   <option value="" disabled>
+//                     Select reason
+//                   </option>
+//                   {REASON_OPTIONS.map((r) => (
+//                     <option key={r.code} value={r.code}>
+//                       {r.label}
+//                     </option>
+//                   ))}
+//                 </select>
+//               </label>
+
+//               {/* Custom reason textarea — only shown when OTHER is selected */}
+//               {reasonCode === "OTHER" && (
+//                 <label className="block">
+//                   <span className="mb-1.5 block font-sans text-[12px] text-white/60">
+//                     Custom Reason <span className="text-rose-400">*</span>
+//                   </span>
+//                   <textarea
+//                     value={customReason}
+//                     onChange={(e) => setCustomReason(e.target.value)}
+//                     rows={3}
+//                     placeholder="Describe the reason for your decision..."
+//                     className="w-full rounded-[8px] border border-white/15 bg-white/[0.05] px-3 py-2 font-sans text-[13px] text-white placeholder:text-white/25 focus:border-rose-500 focus:outline-none"
+//                   />
+//                 </label>
+//               )}
+//             </div>
+//           )}
+
+//           {/* Already decided summary */}
+//           {alreadyDecided && (
+//             <div className="rounded-[12px] border border-white/10 bg-white/[0.03] p-5">
+//               <p className="mb-3 font-sans text-[11px] uppercase tracking-wide text-white/40">
+//                 Decision
+//               </p>
+//               <DetailRow
+//                 label="Final Status"
+//                 value={app.status === "eligible" ? "✓ Eligible" : "✗ Not eligible"}
+//               />
+//               {app.decided_at && (
+//                 <DetailRow
+//                   label="Decided At"
+//                   value={new Date(app.decided_at).toLocaleString("en-IN")}
+//                 />
+//               )}
+//               {app.manual_gender && <DetailRow label="Gender" value={app.manual_gender} />}
+//               {app.manual_income != null && (
+//                 <DetailRow
+//                   label="Annual Income"
+//                   value={`₹${app.manual_income.toLocaleString("en-IN")}`}
+//                 />
+//               )}
+//               {app.manual_reason && <DetailRow label="Reason" value={app.manual_reason} />}
+//             </div>
+//           )}
+
+//           {/* Error */}
+//           {error && (
+//             <p className="rounded-[8px] border border-red-500/40 bg-red-500/15 px-3 py-2 font-sans text-[12.5px] text-red-400">
+//               {error}
+//             </p>
+//           )}
+//         </div>
+
+//         {/* Action buttons */}
+//         {!alreadyDecided && (
+//           <div className="flex gap-3 border-t border-white/10 px-6 py-4">
+//             {!isAutoIneligible && (
+//               <button
+//                 type="button"
+//                 onClick={() => decide("approve")}
+//                 disabled={busy !== null}
+//                 className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[10px] bg-emerald-600 font-sans text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+//               >
+//                 {busy === "approve" ? (
+//                   <Loader2 className="size-4 animate-spin" />
+//                 ) : (
+//                   <CheckCircle2 className="size-4" strokeWidth={1.5} />
+//                 )}
+//                 Approve
+//               </button>
+//             )}
+//             <button
+//               type="button"
+//               onClick={() => decide("deny")}
+//               disabled={busy !== null}
+//               className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[10px] bg-red-600 font-sans text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+//             >
+//               {busy === "deny" ? (
+//                 <Loader2 className="size-4 animate-spin" />
+//               ) : (
+//                 <XCircle className="size-4" strokeWidth={1.5} />
+//               )}
+//               Deny
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </>
+//   );
+// }
 
 //  Detail row
 
