@@ -326,11 +326,22 @@ function PinkCardApplyPage() {
                   const effectiveReasonCode = appStatus.reason_code;
                   const manualReason = appStatus.reason_message;
 
+                  // Override reason code → human readable label
+                  function getOverrideLabel(code: string): string {
+                    if (code === "OVERRIDE_DOC_MISMATCH")
+                      return "Documents do not match PAN records.";
+                    if (code === "OVERRIDE_DUPLICATE") return "Duplicate application detected.";
+                    if (code === "OVERRIDE_FRAUD")
+                      return "Application contains false or suspicious information.";
+                    // OVERRIDE_OTHER or custom text — show as-is
+                    return code;
+                  }
+
                   // Build human-readable label
                   function getReasonLabel(): string {
                     // Officer override check FIRST — takes priority over everything
                     if (appStatus.is_officer_override && appStatus.override_reason) {
-                      return `Your application was denied by a Verifying Officer: ${appStatus.override_reason}.`;
+                      return `Your application was denied by a Verifying Officer: ${getOverrideLabel(appStatus.override_reason)}`;
                     }
                     // Check if this is a manual review app by seeing if reason_message
                     // matches one of our known reason codes
@@ -386,16 +397,14 @@ function PinkCardApplyPage() {
                   const displayReasonCode =
                     appStatus.is_officer_override && appStatus.override_reason
                       ? (() => {
-                          if (appStatus.override_reason === "Documents do not match PAN records")
+                          // override_reason stores the code directly
+                          if (appStatus.override_reason === "OVERRIDE_DOC_MISMATCH")
                             return "OVERRIDE_DOC_MISMATCH";
-                          if (appStatus.override_reason === "Duplicate application detected")
+                          if (appStatus.override_reason === "OVERRIDE_DUPLICATE")
                             return "OVERRIDE_DUPLICATE";
-                          if (
-                            appStatus.override_reason ===
-                            "Application contains false or suspicious information"
-                          )
+                          if (appStatus.override_reason === "OVERRIDE_FRAUD")
                             return "OVERRIDE_FRAUD";
-                          return "OVERRIDE_OTHER";
+                          return "OVERRIDE_OTHER"; // custom text from officer
                         })()
                       : manualReason && knownCodes.includes(manualReason)
                         ? manualReason
