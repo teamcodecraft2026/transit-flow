@@ -328,6 +328,10 @@ function PinkCardApplyPage() {
 
                   // Build human-readable label
                   function getReasonLabel(): string {
+                    // Officer override check FIRST — takes priority over everything
+                    if (appStatus.is_officer_override && appStatus.override_reason) {
+                      return `Your application was denied by a Verifying Officer: ${appStatus.override_reason}.`;
+                    }
                     // Check if this is a manual review app by seeing if reason_message
                     // matches one of our known reason codes
                     const knownCodes = [
@@ -358,11 +362,7 @@ function PinkCardApplyPage() {
                         "No income record found for this PAN — requires manual review."
                     )
                       return manualReason;
-                    // Officer override of eligible application
-                    if (appStatus.is_officer_override && appStatus.override_reason) {
-                      // override_reason stores the human-readable label directly
-                      return `Your application was denied by a Verifying Officer: ${appStatus.override_reason}.`;
-                    }
+
                     // Auto match fallback
                     if (effectiveReasonCode === "INELIGIBLE_GENDER")
                       return "Pink Card is only available to female applicants.";
@@ -385,7 +385,18 @@ function PinkCardApplyPage() {
                   ];
                   const displayReasonCode =
                     appStatus.is_officer_override && appStatus.override_reason
-                      ? "OFFICER_OVERRIDE"
+                      ? (() => {
+                          if (appStatus.override_reason === "Documents do not match PAN records")
+                            return "OVERRIDE_DOC_MISMATCH";
+                          if (appStatus.override_reason === "Duplicate application detected")
+                            return "OVERRIDE_DUPLICATE";
+                          if (
+                            appStatus.override_reason ===
+                            "Application contains false or suspicious information"
+                          )
+                            return "OVERRIDE_FRAUD";
+                          return "OVERRIDE_OTHER";
+                        })()
                       : manualReason && knownCodes.includes(manualReason)
                         ? manualReason
                         : effectiveReasonCode && effectiveReasonCode !== "INELIGIBLE_NO_RECORD"
