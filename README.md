@@ -2,7 +2,6 @@
 
 <div align="center">
 
-
 **A full-stack, AI-powered public bus ticketing system with zero-fare Pink Card support for women**
 
 [![Deployed on Cloudflare](https://img.shields.io/badge/Frontend-Cloudflare%20Workers-orange?style=flat-square&logo=cloudflare)](https://pink-card-transit.teamcodecraft.workers.dev)
@@ -22,7 +21,7 @@
 
 ---
 
-##  Table of Contents
+## Table of Contents
 
 1. [Project Overview](#-project-overview)
 2. [Key Features](#-key-features)
@@ -39,7 +38,7 @@
 
 ---
 
-##  Project Overview
+## Project Overview
 
 Transit Flow is a **full-stack, production-deployed public bus ticketing platform** built for the state of West Bengal, India. It digitises the entire bus journey — from route discovery and ticket booking to conductor-side QR validation — while embedding an AI-powered demand forecasting engine and a government-linked zero-fare scheme for eligible women.
 
@@ -54,39 +53,52 @@ Transit Flow solves this end-to-end:
 - **Passengers** can search bus routes, book tickets, receive a real QR code, and board using their phone — with zero-fare automatically applied if they hold a verified Pink Card.
 - **Conductors** log in via OTP on their phone, open the camera-based QR scanner, and validate passenger tickets in real time — with instant visual feedback for valid, already-used, expired, or fraudulent tickets.
 - **Administrators** view a live analytics dashboard showing revenue, Pink Card subsidy cost, route-wise performance, and an AI-generated demand forecast powered by a trained scikit-learn model.
-- **The Pink Card system** verifies women's eligibility for zero-fare travel using PAN-linked income data, mirroring real government subsidy frameworks.
+- **The Pink Card system** verifies women's eligibility for zero-fare travel using PAN-linked income data, mirroring real government subsidy frameworks. Applications with unrecognised PANs are forwarded to a Verifying Officer for manual review.
 
 The platform is **fully deployed and publicly accessible**, bilingual (English and Bengali), and built with a modern serverless architecture that scales without infrastructure overhead.
 
 ### Live Deployment
 
-| Service | URL |
-|---------|-----|
-| Frontend (Passenger Portal) | https://pink-card-transit.teamcodecraft.workers.dev |
+| Service                           | URL                                                   |
+| --------------------------------- | ----------------------------------------------------- |
+| Frontend (Passenger Portal)       | https://pink-card-transit.teamcodecraft.workers.dev   |
 | Backend (Supabase Edge Functions) | https://welccusfyovxgpfplnlj.supabase.co/functions/v1 |
-| AI/ML API | https://bus-aiml.onrender.com |
+| AI/ML API                         | https://bus-aiml.onrender.com                         |
 
 ---
 
-##  Key Features
+## Key Features
 
-###  Passenger Portal
+### Passenger Portal
+
 - **OTP-based phone authentication** — no passwords, no email, login via 6-digit SMS OTP
-- **Route search** — search trips by origin and destination against live Supabase data
+- **Route search** — search trips by origin, destination, and date against live Supabase data
 - **Ticket booking** — one-tap booking with instant fare calculation
 - **Real QR ticket generation** — QR codes generated locally in the browser using `qrcode` library (no external API calls, fully offline-capable)
 - **Click-to-enlarge QR modal** — passengers can expand their ticket QR for easy scanning
 - **My Trips dashboard** — view all upcoming and past tickets with live status (Issued / Scanned / Expired)
 - **Pink Card zero-fare** — eligible passengers are automatically charged ₹0 at booking
 
-###  Pink Card System
+### Pink Card System
+
 - **4-step eligibility application** — Aadhaar details, PAN details, residency proof, review
 - **PAN-linked income verification** — backend checks income record against threshold (₹2,50,000/year)
 - **Three-factor eligibility check** — gender (female), state residency, and income threshold
+- **Officer review flow** — PANs not found in income records are forwarded to a Verifying Officer for manual review with gender, income, and reason entry
+- **Real-time status polling** — citizen page polls every 2 seconds and updates automatically once officer decides
 - **Persistent result storage** — eligibility result saved locally so "Check Status" shows immediately on return
-- **Detailed rejection reasons** — users see exactly why they were rejected with guidance
+- **Detailed rejection reasons** — users see exactly why they were rejected with human-readable labels
 
-###  Conductor Portal
+### Service Portal (Verifying Officer)
+
+- **Separate officer login** — role-based OTP auth, only users with `role = officer` can access `/service-portal`
+- **Pending / Checked tabs** — view all submitted and decided applications
+- **Manual review entry** — for PANs not in income records, officer enters Gender (dropdown), Annual Income, and Reason (dropdown with predefined options + custom text)
+- **Override reason for eligible denial** — when officer denies a system-eligible application, a mandatory override reason dropdown appears (Document mismatch, Duplicate application, Fraudulent submission, Other)
+- **Decision shown to citizen** — override reason and manual review reason both shown on citizen result screen
+
+### Conductor Portal
+
 - **Separate conductor login** — role-based OTP auth, only users with `role = conductor` in database can access
 - **Camera-based QR scanning** — uses `html5-qrcode` to open the phone's rear camera and decode QR codes in real time
 - **Manual ticket ID fallback** — conductors can paste/type the full ticket UUID if camera is unavailable
@@ -94,97 +106,102 @@ The platform is **fully deployed and publicly accessible**, bilingual (English a
 - **Pink Card detection** — scan result shows " Pink Card — Free Travel" for zero-fare tickets
 - **Recent scans log** — live session history of all scans with timestamps
 
-###  Admin Dashboard
+### Admin Dashboard
+
 - **Separate admin login** — `role = admin` OTP authentication
 - **Live revenue analytics** — total revenue, Pink Card discount cost, net estimate
 - **Route-wise breakdown table** — per-route revenue, tickets sold, free tickets, paid percentage bar
 - **Date range filtering** — Today / This Week / All Time
 - **AI Demand Forecast section** — powered by the ML backend, shows predicted passenger load, recommended buses per route, and estimated daily revenue/cost
 
-###  AI/ML Features
+### AI/ML Features
+
 - **Gemini-powered chatbot** — floating assistant on all passenger pages, answers transit queries in English or Bengali
 - **Demand prediction model** — scikit-learn regression model predicts passenger load per route based on time, day, and historical data
 - **Fleet recommendation engine** — calculates how many buses each route needs based on predicted demand
 - **Admin forecast summary** — aggregated AI output showing estimated profit/loss across all routes
 
-###  Additional Features
+### Additional Features
+
 - **Bilingual UI** — full English and Bengali (বাংলা) translation across all pages
 - **Responsive design** — works on mobile, tablet, and desktop
 - **Parallax hero animations** — smooth scroll-based parallax on landing pages
 - **Clip-path reveal animations** — cinematic section reveals on scroll using IntersectionObserver
 - **Serverless architecture** — zero server maintenance; scales automatically
+- **Same-browser multi-role support** — passenger, officer, and admin sessions are fully isolated using namespaced localStorage keys
 
 ---
 
-##  Tech Stack & Libraries
+## Tech Stack & Libraries
 
 ### Frontend
 
-| Technology | Library / Tool | Version | Purpose |
-|-----------|---------------|---------|---------|
-| Language | TypeScript | 5.x | Type-safe JavaScript for all frontend code |
-| UI Framework | React | 19.x | Component-based UI rendering |
-| Styling | TailwindCSS | v4 | Utility-first CSS framework |
-| Routing | TanStack Router | Latest | File-based type-safe client-side routing |
-| Build Tool | Vite | Latest | Fast frontend bundler and dev server |
-| Runtime | Bun | 1.2.15 | JavaScript runtime and package manager |
-| QR Generation | qrcode | 1.5.4 | Generates real QR codes on `<canvas>` — fully offline, no external calls |
-| QR Types | @types/qrcode | 1.5.6 | TypeScript type definitions for qrcode library |
-| QR Scanning | html5-qrcode | 2.3.8 | Opens phone camera and decodes QR codes in real time (MIT licensed) |
-| Icons | lucide-react | 0.383.0 | SVG icon library |
+| Technology    | Library / Tool  | Version | Purpose                                                                  |
+| ------------- | --------------- | ------- | ------------------------------------------------------------------------ |
+| Language      | TypeScript      | 5.x     | Type-safe JavaScript for all frontend code                               |
+| UI Framework  | React           | 19.x    | Component-based UI rendering                                             |
+| Styling       | TailwindCSS     | v4      | Utility-first CSS framework                                              |
+| Routing       | TanStack Router | Latest  | File-based type-safe client-side routing                                 |
+| Build Tool    | Vite            | Latest  | Fast frontend bundler and dev server                                     |
+| Runtime       | Bun             | 1.2.15  | JavaScript runtime and package manager                                   |
+| QR Generation | qrcode          | 1.5.4   | Generates real QR codes on `<canvas>` — fully offline, no external calls |
+| QR Types      | @types/qrcode   | 1.5.6   | TypeScript type definitions for qrcode library                           |
+| QR Scanning   | html5-qrcode    | 2.3.8   | Opens phone camera and decodes QR codes in real time (MIT licensed)      |
+| Icons         | lucide-react    | 0.383.0 | SVG icon library                                                         |
 
 ### Backend (Supabase)
 
-| Technology | Library / Tool | Purpose |
-|-----------|---------------|---------|
-| Database | PostgreSQL (via Supabase) | Relational database for users, trips, tickets, Pink Card applications |
-| Edge Functions | Deno (TypeScript) | Serverless functions running at the edge |
-| Authentication | Custom OTP via Supabase DB | Phone-based OTP authentication with JWT tokens |
-| Hosting | Supabase Cloud | Managed PostgreSQL + Edge Function hosting |
+| Technology     | Library / Tool             | Purpose                                                               |
+| -------------- | -------------------------- | --------------------------------------------------------------------- |
+| Database       | PostgreSQL (via Supabase)  | Relational database for users, trips, tickets, Pink Card applications |
+| Edge Functions | Deno (TypeScript)          | Serverless functions running at the edge                              |
+| Authentication | Custom OTP via Supabase DB | Phone-based OTP authentication with JWT tokens                        |
+| Hosting        | Supabase Cloud             | Managed PostgreSQL + Edge Function hosting                            |
 
 ### AI/ML Backend
 
-| Technology | Library / Tool | Version | Purpose |
-|-----------|---------------|---------|---------|
-| Language | Python | 3.11+ | Core language for AI/ML service |
-| Framework | FastAPI | Latest | REST API framework for ML endpoints |
-| Server | uvicorn | Latest | ASGI server to run FastAPI |
-| LLM | google-generativeai | Latest | Google Gemini API — powers the chatbot |
-| ML Model | scikit-learn | Latest | Trains and serves the demand prediction model |
-| Numerics | numpy | Latest | Numerical computations and array operations |
-| Data Processing | pandas | Latest | Data manipulation and preprocessing |
-| Model Persistence | joblib | Latest | Saves and loads the trained `model.pkl` |
-| Environment | python-dotenv | Latest | Loads API keys from `.env` file |
-| Validation | pydantic | Latest | Request/response schema validation |
-| CORS | fastapi.middleware.cors | Built-in | Allows frontend domain to call AI/ML API |
+| Technology        | Library / Tool          | Version  | Purpose                                       |
+| ----------------- | ----------------------- | -------- | --------------------------------------------- |
+| Language          | Python                  | 3.11+    | Core language for AI/ML service               |
+| Framework         | FastAPI                 | Latest   | REST API framework for ML endpoints           |
+| Server            | uvicorn                 | Latest   | ASGI server to run FastAPI                    |
+| LLM               | google-generativeai     | Latest   | Google Gemini API — powers the chatbot        |
+| ML Model          | scikit-learn            | Latest   | Trains and serves the demand prediction model |
+| Numerics          | numpy                   | Latest   | Numerical computations and array operations   |
+| Data Processing   | pandas                  | Latest   | Data manipulation and preprocessing           |
+| Model Persistence | joblib                  | Latest   | Saves and loads the trained `model.pkl`       |
+| Environment       | python-dotenv           | Latest   | Loads API keys from `.env` file               |
+| Validation        | pydantic                | Latest   | Request/response schema validation            |
+| CORS              | fastapi.middleware.cors | Built-in | Allows frontend domain to call AI/ML API      |
 
 ### Infrastructure & Deployment
 
-| Service | Purpose |
-|---------|---------|
-| Cloudflare Workers | Frontend hosting and global CDN |
-| GitHub Actions (via Cloudflare Pages CI) | Automatic deploy on `git push` |
-| Supabase Cloud | Backend Edge Functions + PostgreSQL |
-| Render.com | AI/ML FastAPI service hosting |
+| Service                                  | Purpose                             |
+| ---------------------------------------- | ----------------------------------- |
+| Cloudflare Workers                       | Frontend hosting and global CDN     |
+| GitHub Actions (via Cloudflare Pages CI) | Automatic deploy on `git push`      |
+| Supabase Cloud                           | Backend Edge Functions + PostgreSQL |
+| Render.com                               | AI/ML FastAPI service hosting       |
 
 ---
 
-##  System Architecture
+## System Architecture
 
 ### High-Level Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        USER DEVICES                          │
-│  Passenger (Mobile/Desktop)  │  Conductor (Mobile)  │ Admin  │
-└──────────────┬───────────────┴──────────┬───────────┴───┬───┘
-               │                          │               │
-               ▼                          ▼               ▼
-┌──────────────────────────────────────────────────────────────┐
-│           CLOUDFLARE WORKERS — Frontend (React + Vite)        │
-│  /home  /book  /trips  /pink-card  /conductor  /admin         │
-│  QR Generation (qrcode)  │  QR Scanning (html5-qrcode)        │
-└───────────────────────┬──────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                           USER DEVICES                               │
+│  Passenger (Mobile/Desktop) │ Conductor (Mobile) │ Officer │ Admin  │
+└──────────────┬──────────────┴─────────┬──────────┴────┬────┴───┬───┘
+               │                        │               │        │
+               ▼                        ▼               ▼        ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│           CLOUDFLARE WORKERS — Frontend (React + Vite)                │
+│  /home  /book  /trips  /pink-card  /pink-card-apply                   │
+│  /conductor  /service-portal  /admin                                  │
+│  QR Generation (qrcode)  │  QR Scanning (html5-qrcode)                │
+└───────────────────────┬──────────────────────────────────────────────┘
                         │  HTTPS API Calls
           ┌─────────────┴──────────────┐
           ▼                            ▼
@@ -195,10 +212,14 @@ The platform is **fully deployed and publicly accessible**, bilingual (English a
 │  /send-otp          │    │  /chatbot (Gemini)       │
 │  /verify-otp        │    │  /predict-demand (ML)    │
 │  /search-trips      │    │  /fleet-recommendation   │
-│  /book-ticket       │    │  /admin/summary          │
-│  /scan-ticket       │    │  /health                 │
-│  /check-pink-card   │    └──────────────────────────┘
+│  /fetch-stops       │    │  /admin/summary          │
+│  /book-ticket       │    └──────────────────────────┘
+│  /scan-ticket       │
 │  /ticket-history    │
+│  /submit-pink-card-application │
+│  /get-application-status       │
+│  /officer-list-applications    │
+│  /officer-decide-application   │
 │  /admin-stats       │
 └──────────┬──────────┘
            │
@@ -218,7 +239,7 @@ The platform is **fully deployed and publicly accessible**, bilingual (English a
 ### Authentication Flow
 
 ```
-Passenger/Conductor/Admin
+Passenger/Conductor/Officer/Admin
         │
         │  Enter Phone Number
         ▼
@@ -230,8 +251,10 @@ Passenger/Conductor/Admin
   POST /verify-otp
         │
         │  OTP matched → JWT issued (contains user_id + role)
+        │  Role checked: passenger | conductor | officer | admin
         ▼
-  JWT stored in localStorage
+  JWT stored in namespaced localStorage key
+  (pt.session / pt.officerSession / pt.adminSession)
         │
         │  Attached as Authorization: Bearer <token>
         ▼
@@ -263,22 +286,47 @@ Passenger                    Backend                   Conductor
     │                            │    (valid/used/expired) │
 ```
 
+### Pink Card Application Flow
+
+```
+Citizen                      Backend                    Officer
+    │                            │                          │
+    │── POST /submit-pink-card ─►│                          │
+    │       application          │ Lookup PAN in records    │
+    │                            │ source: auto_match /     │
+    │                            │         manual           │
+    │◄── application_id ────────│                          │
+    │                            │                          │
+    │ Poll /get-application-     │                          │
+    │       status every 2s      │                          │
+    │                            │◄── GET /officer-list ───│
+    │                            │        applications     │
+    │                            │──► applications ───────►│
+    │                            │                          │
+    │                            │◄── POST /officer-decide─│
+    │                            │    (approve / deny)     │
+    │                            │ Update status in DB     │
+    │◄── status: eligible / ────│                          │
+    │    not_eligible            │                          │
+```
+
 ---
 
-##  Getting Started
+## Getting Started
 
 ### Prerequisites
 
 Before running this project locally, ensure you have the following installed:
 
-| Tool | Version | Download |
-|------|---------|----------|
-| Node.js | v18+ | https://nodejs.org |
-| Bun | 1.2.15+ | https://bun.sh |
-| Git | Latest | https://git-scm.com |
-| Python | 3.11+ | https://python.org (for AI/ML module only) |
+| Tool    | Version | Download                                   |
+| ------- | ------- | ------------------------------------------ |
+| Node.js | v18+    | https://nodejs.org                         |
+| Bun     | 1.2.15+ | https://bun.sh                             |
+| Git     | Latest  | https://git-scm.com                        |
+| Python  | 3.11+   | https://python.org (for AI/ML module only) |
 
 You also need accounts on:
+
 - [Supabase](https://supabase.com) — for the backend database and edge functions
 - [Cloudflare](https://cloudflare.com) — for frontend deployment
 - [Google AI Studio](https://makersuite.google.com) — for Gemini API key (AI/ML module)
@@ -303,6 +351,7 @@ bun install
 ```
 
 This installs all packages defined in `package.json`, including:
+
 - React, TailwindCSS, TanStack Router
 - `qrcode@1.5.4` — local QR generation
 - `@types/qrcode@1.5.6` — TypeScript types
@@ -319,7 +368,7 @@ VITE_SUPABASE_URL=https://welccusfyovxgpfplnlj.supabase.co/functions/v1
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
->  **Note:** The Supabase anon key is a public key designed to be used in browser code. It is safe to include in frontend environment variables.
+> **Note:** The Supabase anon key is a public key designed to be used in browser code. It is safe to include in frontend environment variables.
 
 ---
 
@@ -362,7 +411,7 @@ uvicorn main:app --reload
 
 The AI/ML API will be available at `http://localhost:8000`
 
->  The live AI/ML API is already deployed at `https://bus-aiml.onrender.com` — local setup is only needed for development.
+> The live AI/ML API is already deployed at `https://bus-aiml.onrender.com` — local setup is only needed for development.
 
 ---
 
@@ -380,15 +429,16 @@ Or simply push to GitHub — Cloudflare automatically deploys on every push to t
 
 ---
 
-##  How to Use the Application
+## How to Use the Application
 
-###  As a Passenger
+### As a Passenger
 
 #### Step 1 — Visit the Application
+
 Navigate to `https://pink-card-transit.teamcodecraft.workers.dev` in any browser (mobile or desktop).
 
-
 #### Step 2 — Log In
+
 Click **Login** in the top-right navigation bar.
 
 - Enter your 10-digit Indian phone number (starting with 6, 7, 8, or 9)
@@ -399,13 +449,14 @@ Click **Login** in the top-right navigation bar.
 
 You are now logged in. Your name and a **Logout** button appear in the navbar.
 
-
 #### Step 3 — Book a Ticket
+
 Navigate to **Book** from the navbar.
 
 - Enter an origin (e.g., `Howrah`) in the **From** field
 - Enter a destination (e.g., `Salt Lake`) in the **To** field
-- Click **Search**
+- Select a date
+- Click **Search Buses**
 - A list of available bus trips appears with route name, bus number, departure time, and fare
 - Click **Select** on any trip
 - A booking success modal appears with:
@@ -414,93 +465,154 @@ Navigate to **Book** from the navbar.
   - Ticket ID, fare charged, status, and issue time
   - If you hold a Pink Card: a pink banner showing **"Pink Card Applied — ₹0 Fare"**
 
-
 #### Step 4 — View Your Trips
+
 Navigate to **My Trips** from the navbar.
 
 - **Upcoming** tab shows tickets with status `ISSUED` — includes the QR code to show when boarding
 - **Past** tab shows tickets with status `SCANNED` or `EXPIRED`
 - Click any QR code to enlarge it in a full-screen modal for easy scanning
 
-
 ---
 
-###  Applying for the Pink Card
+### Applying for the Pink Card
 
 #### Step 1 — Navigate to Pink Card
+
 Click **Pink Card** in the navbar, then click **Apply Now**.
 
 #### Step 2 — Complete 4-Step Verification
 
-| Step | What to Fill |
-|------|-------------|
+| Step                | What to Fill                                                           |
+| ------------------- | ---------------------------------------------------------------------- |
 | 1 — Aadhaar Details | Full name, phone number, 12-digit Aadhaar number, upload Aadhaar image |
-| 2 — PAN Details | 10-character PAN number, upload PAN card image |
-| 3 — Residency Proof | Select your state, upload residency certificate |
-| 4 — Review | Review all details, click **Submit Application** |
+| 2 — PAN Details     | 10-character PAN number, upload PAN card image                         |
+| 3 — Residency Proof | Select your state, upload residency certificate                        |
+| 4 — Review          | Review all details, click **Apply Now →**                              |
 
 **Test PAN numbers for demo:**
 
-| PAN | Expected Result |
-|-----|----------------|
-| `ABCDE1234F` | ✅ Eligible — female, income below threshold |
-| `IJKLM9012N` | ❌ Ineligible — income too high |
-| `NOPQR4567S` | ❌ Ineligible — male applicant |
+| PAN           | Expected Result                                     |
+| ------------- | --------------------------------------------------- |
+| `ABCDE1234F`  | ✅ Eligible — female, income below threshold        |
+| `IJKLM9012N`  | ❌ Ineligible — income too high                     |
+| `NOPQR4567S`  | ❌ Ineligible — male applicant                      |
+| Any other PAN | 🔄 Forwarded to Verifying Officer for manual review |
 
-#### Step 3 — View Result
+#### Step 3 — Wait for Officer Review
+
+After submitting, you are shown an **Application Submitted** screen with your Application ID. The page polls every 2 seconds and updates automatically once the officer makes a decision.
+
+#### Step 4 — View Result
+
 - If **eligible**: Green screen with Pink Card active confirmation + "Book a Free Ticket →" button
-- If **ineligible**: Red screen with specific reason and guidance
-
+- If **not eligible**: Red screen with specific reason code and human-readable label
+- If **denied by officer override**: Screen shows the officer's override reason
 
 #### Checking Status Later
+
 Click **Check Status** on the Pink Card page — if you have already applied, your result appears immediately without re-submitting.
 
 ---
 
-###  As a Conductor
+### As a Verifying Officer
+
+#### Step 1 — Navigate to Service Portal
+
+Go to `/service-portal` route.
+
+#### Step 2 — Log In
+
+- Enter officer phone number: **`8888888888`**
+- Click **Send OTP** — the OTP appears in a yellow banner immediately
+- Enter the OTP and click **Verify & Enter**
+
+> Only phone numbers with `role = officer` in the database can access the Service Portal.
+
+#### Step 3 — Review Applications
+
+The dashboard shows two tabs:
+
+- **Pending** — applications awaiting a decision
+- **Checked** — applications already decided
+
+Each row shows: Applicant name, PAN, State, Source (PAN matched / Manual review), System Check result, and Status.
+
+#### Step 4 — Decide an Application
+
+Click any application row to open the detail panel.
+
+**For PAN matched (auto_match) applications:**
+
+- System check result is shown (gender, income, threshold, reason)
+- If system says **Not Eligible** — only **Deny** is available
+- If system says **Eligible** — both **Approve** and **Deny** are available
+  - Clicking **Deny** on an eligible application triggers a mandatory **Override Reason** dropdown:
+    - Documents do not match PAN records
+    - Duplicate application detected
+    - Application contains false or suspicious information
+    - Other (type manually)
+
+**For Manual review applications (PAN not in records):**
+
+- Officer must fill in:
+  - **Gender** — Male / Female (dropdown)
+  - **Annual Income** — numeric entry
+  - **Reason** — predefined dropdown + custom text option
+- Then click **Approve** or **Deny**
+
+The citizen's status page updates automatically within 2 seconds of the decision.
+
+---
+
+### As a Conductor
 
 #### Step 1 — Navigate to Conductor Portal
+
 Go to `/conductor` route or find the Conductor link.
 
 #### Step 2 — Log In
-- Enter any Conductor ID (e.g., `COND001`) — this is a UI field, not verified by backend
+
 - Enter the conductor's registered phone number: **`9999999999`**
 - Click **Send OTP** — the OTP appears in a yellow banner immediately
 - Enter the OTP and click **Verify**
 
->  Only phone numbers with `role = conductor` in the database can access the dashboard.
+> Only phone numbers with `role = conductor` in the database can access the dashboard.
 
 #### Step 3 — Scan a Passenger Ticket
 
 **Option A — Camera Scan (recommended on mobile):**
+
 - Click the large blue **Scan QR** card
 - Your phone camera opens automatically
 - Point it at the passenger's QR code on their phone
 - Result appears instantly
 
 **Option B — Manual Entry (fallback):**
+
 - Click the Scan button
 - Paste or type the full ticket UUID (e.g., `069f8e72-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
 - Click **Validate Ticket**
 
 #### Step 4 — Read the Result
 
-| Result | Colour | Meaning |
-|--------|--------|---------|
-| ✅ Verified | Green | Valid ticket — passenger boards |
-| 🔁 Already Scanned | Amber | Ticket already used — possible fraud |
-| ⚠️ Expired | Red | Ticket past validity window |
-| ❌ Invalid | Red | Ticket not found in database |
-
+| Result             | Colour | Meaning                              |
+| ------------------ | ------ | ------------------------------------ |
+| ✅ Verified        | Green  | Valid ticket — passenger boards      |
+| 🔁 Already Scanned | Amber  | Ticket already used — possible fraud |
+| ⚠️ Expired         | Red    | Ticket past validity window          |
+| ❌ Invalid         | Red    | Ticket not found in database         |
 
 ---
 
-###  As an Administrator
+### As an Administrator
 
 #### Step 1 — Navigate to Admin Portal
+
 Go to `/admin` route.
 
 #### Step 2 — Log In
+
 - Enter phone number: **`9888888888`**
 - Enter the OTP shown in the yellow banner
 - Click **Verify & Enter**
@@ -509,43 +621,49 @@ Go to `/admin` route.
 
 The dashboard shows:
 
-| KPI Card | What it Shows |
-|----------|--------------|
-| Total Revenue | Sum of all fares collected |
-| Tickets Sold | Total tickets issued (with free ticket count) |
-| Pink Card Discount | Total government subsidy applied |
-| Total Trips | Number of bus trips operated |
+| KPI Card           | What it Shows                                 |
+| ------------------ | --------------------------------------------- |
+| Total Revenue      | Sum of all fares collected                    |
+| Tickets Sold       | Total tickets issued (with free ticket count) |
+| Pink Card Discount | Total government subsidy applied              |
+| Total Trips        | Number of bus trips operated                  |
 
 Use the **Today / This Week / All Time** toggle to filter data by date range.
 
 The **Revenue by Route** table shows per-route performance with a visual paid-percentage bar.
 
 The **AI Demand Forecast** section (powered by the ML backend) shows:
+
 - Predicted average and peak passenger load per route
 - Recommended number of buses
 - Estimated daily revenue and cost
 
 ---
 
-##  API Reference
+## API Reference
 
 All backend endpoints are Supabase Edge Functions deployed at:
 `https://welccusfyovxgpfplnlj.supabase.co/functions/v1/`
 
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|--------------|-------------|
-| `POST` | `/send-otp` | No (anon key) | Sends OTP to phone number |
-| `POST` | `/verify-otp` | No (anon key) | Verifies OTP, returns JWT + user role |
-| `GET` | `/search-trips` | No (anon key) | Search trips by origin/destination |
-| `POST` | `/book-ticket` | Yes (JWT) | Books a ticket, applies Pink Card if eligible |
-| `POST` | `/scan-ticket` | Yes (conductor JWT) | Validates and marks a ticket as scanned |
-| `POST` | `/check-pink-card` | Yes (JWT) | Checks PAN eligibility for Pink Card |
-| `GET` | `/ticket-history` | Yes (JWT) | Returns all tickets for logged-in user |
-| `GET` | `/admin-stats` | Yes (admin JWT) | Returns revenue and booking analytics |
+| Method | Endpoint                        | Auth Required       | Description                                   |
+| ------ | ------------------------------- | ------------------- | --------------------------------------------- |
+| `POST` | `/send-otp`                     | No (anon key)       | Sends OTP to phone number                     |
+| `POST` | `/verify-otp`                   | No (anon key)       | Verifies OTP, returns JWT + user role         |
+| `GET`  | `/search-trips`                 | No (anon key)       | Search trips by origin, destination, date     |
+| `GET`  | `/fetch-stops`                  | No (anon key)       | Returns all unique stop names                 |
+| `POST` | `/book-ticket`                  | Yes (JWT)           | Books a ticket, applies Pink Card if eligible |
+| `POST` | `/scan-ticket`                  | Yes (conductor JWT) | Validates and marks a ticket as scanned       |
+| `GET`  | `/ticket-history`               | Yes (JWT)           | Returns all tickets for logged-in user        |
+| `POST` | `/submit-pink-card-application` | Yes (JWT)           | Submits Pink Card eligibility application     |
+| `GET`  | `/get-application-status`       | Yes (JWT)           | Returns current status of an application      |
+| `GET`  | `/officer-list-applications`    | Yes (officer JWT)   | Lists pending or checked applications         |
+| `POST` | `/officer-decide-application`   | Yes (officer JWT)   | Approves or denies an application             |
+| `GET`  | `/admin-stats`                  | Yes (admin JWT)     | Returns revenue and booking analytics         |
 
 ### Example: Book a Ticket
 
 **Request:**
+
 ```bash
 POST /book-ticket
 Authorization: Bearer <jwt_token>
@@ -557,6 +675,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -576,7 +695,7 @@ Content-Type: application/json
 
 ---
 
-##  AI/ML Module
+## AI/ML Module
 
 The AI/ML backend is a standalone FastAPI service deployed on Render.com.
 
@@ -584,13 +703,13 @@ The AI/ML backend is a standalone FastAPI service deployed on Render.com.
 
 ### Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check — confirms service is running |
-| `POST` | `/chatbot` | AI chatbot powered by Google Gemini 1.5 Flash |
-| `POST` | `/predict-demand` | ML model predicts passenger demand for a route |
-| `GET` | `/fleet-recommendation` | Recommends bus count per route based on predicted load |
-| `GET` | `/admin/summary` | Aggregated ML forecast consumed by admin dashboard |
+| Method | Endpoint                | Description                                            |
+| ------ | ----------------------- | ------------------------------------------------------ |
+| `GET`  | `/health`               | Health check — confirms service is running             |
+| `POST` | `/chatbot`              | AI chatbot powered by Google Gemini 1.5 Flash          |
+| `POST` | `/predict-demand`       | ML model predicts passenger demand for a route         |
+| `GET`  | `/fleet-recommendation` | Recommends bus count per route based on predicted load |
+| `GET`  | `/admin/summary`        | Aggregated ML forecast consumed by admin dashboard     |
 
 ### Demand Prediction Model
 
@@ -602,6 +721,7 @@ The ML model is trained using **scikit-learn** on historical passenger load data
 - **Output:** Predicted passenger load per route
 
 **Sample `/admin/summary` response:**
+
 ```json
 {
   "total_estimated_revenue": 66582,
@@ -613,7 +733,7 @@ The ML model is trained using **scikit-learn** on historical passenger load data
       "avg_predicted_load": 62.83,
       "peak_predicted_load": 86.56,
       "recommended_buses": 3,
-      "estimated_daily_revenue": 22618.80,
+      "estimated_daily_revenue": 22618.8,
       "estimated_daily_cost": 6000
     }
   ]
@@ -642,7 +762,7 @@ bus-aiml/
 
 ---
 
-##  QR Code System
+## QR Code System
 
 ### Problem with the Previous Approach
 
@@ -673,18 +793,18 @@ We replaced the external service with a fully local, privacy-safe QR system:
 
 ### New Components
 
-| File | Purpose |
-|------|---------|
+| File                             | Purpose                                                              |
+| -------------------------------- | -------------------------------------------------------------------- |
 | `src/components/QrCodeImage.tsx` | Reusable QR generator — renders QR to canvas from any string payload |
-| `src/components/QrScanner.tsx` | Reusable camera scanner — opens rear camera, emits decoded string |
+| `src/components/QrScanner.tsx`   | Reusable camera scanner — opens rear camera, emits decoded string    |
 
 ### Modified Files
 
-| File | Change Made |
-|------|------------|
-| `src/routes/book.tsx` | Replaced `<img src="api.qrserver.com/...">` with `<QrCodeImage payload={ticket.qr_payload} />` |
-| `src/routes/trips.tsx` | Replaced external QR image, added click-to-enlarge modal |
-| `src/routes/conductor.tsx` | Added `CameraScanPanel` component with `html5-qrcode` integration and manual fallback |
+| File                       | Change Made                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/routes/book.tsx`      | Replaced `<img src="api.qrserver.com/...">` with `<QrCodeImage payload={ticket.qr_payload} />` |
+| `src/routes/trips.tsx`     | Replaced external QR image, added click-to-enlarge modal                                       |
+| `src/routes/conductor.tsx` | Added `CameraScanPanel` component with `html5-qrcode` integration and manual fallback          |
 
 ---
 
@@ -693,12 +813,13 @@ We replaced the external service with a fully local, privacy-safe QR system:
 The PostgreSQL database on Supabase contains the following core tables:
 
 ```sql
--- Users table (passengers, conductors, admins)
+-- Users table (passengers, conductors, officers, admins)
 CREATE TABLE users (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   phone       TEXT UNIQUE NOT NULL,
   name        TEXT,
-  role        TEXT NOT NULL DEFAULT 'passenger', -- 'passenger' | 'conductor' | 'admin'
+  role        TEXT NOT NULL DEFAULT 'passenger',
+  -- role: 'passenger' | 'conductor' | 'officer' | 'admin'
   created_at  TIMESTAMPTZ DEFAULT now()
 );
 
@@ -733,14 +854,31 @@ CREATE TABLE tickets (
 
 -- Pink Card eligibility applications
 CREATE TABLE pink_card_applications (
-  application_id  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID REFERENCES users(id),
   pan             TEXT NOT NULL,
-  eligible        BOOLEAN NOT NULL,
-  gender          TEXT,
-  annual_income   INTEGER,
+  full_name       TEXT,
+  phone           TEXT,
+  aadhaar         TEXT,
+  state           TEXT,
+  status          TEXT DEFAULT 'submitted',
+  -- status: 'submitted' | 'eligible' | 'not_eligible'
+  source          TEXT,
+  -- source: 'auto_match' (PAN found) | 'manual' (PAN not found)
+  eligible        BOOLEAN,           -- nullable; null for manual review apps
+  gender          TEXT,              -- from income records (auto_match only)
+  annual_income   INTEGER,           -- from income records (auto_match only)
+  threshold       INTEGER,
+  gap             INTEGER,
   reason_code     TEXT,
-  created_at      TIMESTAMPTZ DEFAULT now()
+  reason_message  TEXT,
+  manual_gender   TEXT,              -- officer-entered (manual only)
+  manual_income   NUMERIC,           -- officer-entered (manual only)
+  manual_reason   TEXT,              -- officer-entered (manual only)
+  override_reason TEXT,              -- officer override reason (auto_match eligible deny)
+  decided_by      UUID REFERENCES users(id),
+  decided_at      TIMESTAMPTZ,
+  checked_at      TIMESTAMPTZ DEFAULT now()
 );
 
 -- OTP codes for authentication
@@ -755,39 +893,40 @@ CREATE TABLE otp_codes (
 
 ---
 
-##  Known Limitations & Future Scope
+## Known Limitations & Future Scope
 
 ### Current Limitations
 
-| Limitation | Details |
-|-----------|---------|
-| **Mock SMS** | OTP is returned in the API response instead of being sent via SMS. In production, this would use Twilio, MSG91, or AWS SNS. |
-| **Mock Payment** | Ticket booking marks payment as successful without integrating a real payment gateway. Production would use Razorpay or PhonePe. |
-| **Seed PAN data only** | The Pink Card income check uses a small set of seeded PAN records. A real deployment would integrate with Income Tax Department APIs. |
-| **No Aadhaar OCR** | The 4-step Pink Card form accepts file uploads but does not perform OCR or verify Aadhaar data. |
-| **ML model trained on synthetic data** | The demand prediction model is trained on generated data. Real deployment requires historical WBTC ridership data. |
-| **Session persistence** | JWT tokens are stored in `localStorage`. A production system would use secure `httpOnly` cookies. |
-| **Single state coverage** | The app is seeded with West Bengal routes only. Expanding requires adding routes, buses, and state-specific income thresholds for other states. |
+| Limitation                             | Details                                                                                                                                                                                      |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mock SMS**                           | OTP is returned in the API response instead of being sent via SMS. In production, this would use Twilio, MSG91, or AWS SNS.                                                                  |
+| **Mock Payment**                       | Ticket booking marks payment as successful without integrating a real payment gateway. Production would use Razorpay or PhonePe.                                                             |
+| **Seed PAN data only**                 | The Pink Card income check uses a small set of seeded PAN records. PANs not in the seed data go to manual officer review. A real deployment would integrate with Income Tax Department APIs. |
+| **No Aadhaar OCR**                     | The 4-step Pink Card form accepts file uploads but does not perform OCR or verify Aadhaar data.                                                                                              |
+| **ML model trained on synthetic data** | The demand prediction model is trained on generated data. Real deployment requires historical WBTC ridership data.                                                                           |
+| **Session persistence**                | JWT tokens are stored in `localStorage`. A production system would use secure `httpOnly` cookies.                                                                                            |
+| **Single state coverage**              | The app is seeded with West Bengal routes only. Expanding requires adding routes, buses, and state-specific income thresholds for other states.                                              |
 
 ### Future Scope
 
-| Feature | Description |
-|---------|------------|
-| **Real SMS OTP** | Integrate MSG91 or Twilio for actual SMS delivery |
-| **Payment gateway** | Razorpay / UPI integration for real fare collection |
-| **Aadhaar eKYC** | DigiLocker API integration for verified Aadhaar data |
-| **Real-time bus tracking** | GPS integration showing live bus location on map |
-| **Push notifications** | Notify passengers when bus is approaching their stop |
-| **Offline PWA mode** | Service workers for full offline ticket access |
-| **Multi-state expansion** | Support for all Indian states with state-specific Pink Card income thresholds |
-| **Conductor mobile app** | Dedicated Android app for conductors with better camera access |
-| **WBTC data integration** | Live route and schedule data from West Bengal Transport Corporation |
-| **Federated ML model** | Train demand model on real ridership data from WBTC |
-| **Analytics export** | Admin dashboard CSV/PDF export for government reporting |
+| Feature                    | Description                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| **Real SMS OTP**           | Integrate MSG91 or Twilio for actual SMS delivery                             |
+| **Payment gateway**        | Razorpay / UPI integration for real fare collection                           |
+| **Aadhaar eKYC**           | DigiLocker API integration for verified Aadhaar data                          |
+| **Income Tax API**         | Real PAN-linked income verification via IT Department APIs                    |
+| **Real-time bus tracking** | GPS integration showing live bus location on map                              |
+| **Push notifications**     | Notify passengers when bus is approaching their stop                          |
+| **Offline PWA mode**       | Service workers for full offline ticket access                                |
+| **Multi-state expansion**  | Support for all Indian states with state-specific Pink Card income thresholds |
+| **Conductor mobile app**   | Dedicated Android app for conductors with better camera access                |
+| **WBTC data integration**  | Live route and schedule data from West Bengal Transport Corporation           |
+| **Federated ML model**     | Train demand model on real ridership data from WBTC                           |
+| **Analytics export**       | Admin dashboard CSV/PDF export for government reporting                       |
 
 ---
 
-##  References & Acknowledgements
+## References & Acknowledgements
 
 ### Government Schemes
 
@@ -820,6 +959,6 @@ We thank **Techno India University** and the organisers of **AI — UNLEASHED 20
 
 Sayan Ghosh · Archisman Saha · Samanwita Mandal · Aditya Bikram Dhar · Mousumi Mondal
 
-*Techno India University · AI — UNLEASHED 2026*
+_Techno India University · AI — UNLEASHED 2026_
 
 </div>
