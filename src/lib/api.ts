@@ -442,10 +442,21 @@ export interface AIAdminSummary {
 }
 
 export async function getAIAdminSummary(): Promise<AIAdminSummary> {
-  const res = await fetch("https://bus-aiml.onrender.com/admin/summary");
-  return res.json();
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+      const res = await fetch("https://bus-aiml.onrender.com/admin/summary", {
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      return res.json();
+    } catch {
+      if (attempt === 3) throw new Error("AI Forecast unavailable — Render is waking up, please refresh in a minute.");
+    }
+  }
+  throw new Error("AI Forecast unavailable.");
 }
-
 // 12. Scan ticket (conductor)
 
 export interface ScanTicketResponse {
