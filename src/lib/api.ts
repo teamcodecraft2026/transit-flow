@@ -297,31 +297,32 @@ export interface RoutePassenger {
   origin: string;
   destination: string;
   bus_number: string;
+  departure_time: string | null;
+  issued_at: string;
+  scanned_at: string | null;
   fare_charged: number;
   is_pink_card: boolean;
-  status: "issued" | "scanned" | "expired";
-  issued_at: string;
-  departure_time: string | null;
+  status: string;
 }
 
 export interface RoutePassengersResponse {
   success: boolean;
-  route: string;
-  count: number;
-  passengers: RoutePassenger[];
+  route_name: string;
+  range: string;
   summary: {
     total_revenue: number;
     total_passengers: number;
     pink_card_count: number;
     paid_count: number;
   };
+  passengers: RoutePassenger[];
 }
 
 export async function getRoutePassengers(
-  route: string,
+  route_name: string,
   range: "today" | "week" | "all" = "all",
 ): Promise<RoutePassengersResponse> {
-  const params = new URLSearchParams({ route, range });
+  const params = new URLSearchParams({ route_name, range });
   const token = getAdminSession();
   return request<RoutePassengersResponse>(`/route-passengers?${params.toString()}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
