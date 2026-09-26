@@ -291,16 +291,17 @@ export async function getAdminStats(
 // 6. Route passengers — uses pt.adminSession directly
 
 export interface RoutePassenger {
-  passenger_id: string;
+  ticket_id: string;
   passenger_name: string;
-  phone: string;
-  source: string;
+  passenger_phone: string;
+  origin: string;
   destination: string;
   bus_number: string;
-  fare: number;
-  type: "paid" | "pink_card";
+  fare_charged: number;
+  is_pink_card: boolean;
   status: "issued" | "scanned" | "expired";
   issued_at: string;
+  departure_time: string | null;
 }
 
 export interface RoutePassengersResponse {
