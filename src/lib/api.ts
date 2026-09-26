@@ -309,6 +309,12 @@ export interface RoutePassengersResponse {
   route: string;
   count: number;
   passengers: RoutePassenger[];
+  summary: {
+    total_revenue: number;
+    total_passengers: number;
+    pink_card_count: number;
+    paid_count: number;
+  };
 }
 
 export async function getRoutePassengers(
