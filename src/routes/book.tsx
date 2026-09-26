@@ -1,5 +1,5 @@
-﻿import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   ArrowLeftRight,
   Calendar,
@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Ticket,
   X,
+  ScanLine,
 } from "lucide-react";
 import navyBg from "@/assets/night-street-navy.jpg";
 import { PageShell } from "@/components/PageShell";
@@ -21,13 +22,7 @@ import { StatBadgeStrip } from "@/components/StatBadgeStrip";
 import { QrCodeImage } from "@/components/QrCodeImage";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/auth/AuthProvider";
-import {
-  searchTrips,
-  bookTicket,
-  fetchAllStops,
-  type Trip,
-  type Ticket as TicketType,
-} from "@/lib/api";
+import { searchTrips, bookTicket, type Trip, type Ticket as TicketType } from "@/lib/api";
 
 export const Route = createFileRoute("/book")({
   head: () => ({
@@ -49,25 +44,31 @@ export const Route = createFileRoute("/book")({
   component: BookPage,
 });
 
+// ── Payment modal state type ─────────────────────────────────────────────────
+type PendingPayment = {
+  trip_id: string;
+  fare: number;
+  route_name: string;
+};
+
 function BookPage() {
   const { t } = useI18n();
   const { isAuthenticated, requireAuth, openAuth } = useAuth();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState({ from: false, to: false });
   const [searched, setSearched] = useState(false);
-  const [allStops, setAllStops] = useState<string[]>([]);
 
+  // Booking state
   const [booking, setBooking] = useState<string | null>(null);
   const [bookedTicket, setBookedTicket] = useState<TicketType | null>(null);
   const [bookError, setBookError] = useState<string | null>(null);
   const [pinkCardApplied, setPinkCardApplied] = useState(false);
 
-  const availableBusesRef = useRef<HTMLDivElement>(null);
+  // Payment modal state
+  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
 
   const features = [
     { icon: ShieldCheck, title: t("book.f1"), caption: t("book.f1sub") },
@@ -75,51 +76,47 @@ function BookPage() {
     { icon: CreditCard, title: t("book.f3"), caption: t("book.f3sub") },
   ];
 
-  useEffect(() => {
-    fetchAllStops()
-      .then((res) => setAllStops(res.stops))
-      .catch(console.error);
-  }, []);
-
   async function handleSearch() {
-    const errors = { from: !from.trim(), to: !to.trim() };
-    setFieldErrors(errors);
-    if (errors.from || errors.to) return;
-    if (from.trim() === to.trim()) {
-      setFieldErrors({ from: true, to: true });
-      setSearchError("Source and destination cannot be the same.");
-      return;
-    }
-    setFieldErrors({ from: false, to: false });
     setSearchError(null);
     setSearched(true);
     setLoading(true);
     setTrips([]);
     try {
-      const res = await searchTrips(from.trim(), to.trim(), date);
+      const res = await searchTrips(from.trim(), to.trim());
       setTrips(res.trips);
     } catch (err: unknown) {
       setSearchError(err instanceof Error ? err.message : "Search failed. Please try again.");
     } finally {
       setLoading(false);
-      availableBusesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
-  async function handleBook(trip_id: string, fare: number) {
-    requireAuth(async () => {
-      setBookError(null);
-      setBooking(trip_id);
-      try {
-        const res = await bookTicket(trip_id, fare);
-        setBookedTicket(res.ticket);
-        setPinkCardApplied(res.pink_card_applied ?? res.ticket.type === "pink_card");
-      } catch (err: unknown) {
-        setBookError(err instanceof Error ? err.message : "Booking failed. Please try again.");
-      } finally {
-        setBooking(null);
-      }
+  // Step 1: Show payment modal instead of booking directly
+  function handleSelectTrip(trip: Trip) {
+    requireAuth(() => {
+      setPendingPayment({
+        trip_id: trip.trip_id,
+        fare: trip.base_fare,
+        route_name: trip.route_name,
+      });
     });
+  }
+
+  // Step 2: Called after user clicks "I've Paid" in the payment modal
+  async function handleConfirmPayment() {
+    if (!pendingPayment) return;
+    setPendingPayment(null);
+    setBookError(null);
+    setBooking(pendingPayment.trip_id);
+    try {
+      const res = await bookTicket(pendingPayment.trip_id);
+      setBookedTicket(res.ticket);
+      setPinkCardApplied(res.pink_card_applied);
+    } catch (err: unknown) {
+      setBookError(err instanceof Error ? err.message : "Booking failed. Please try again.");
+    } finally {
+      setBooking(null);
+    }
   }
 
   function formatTime(isoString: string) {
@@ -154,19 +151,14 @@ function BookPage() {
 
           {/* Search panel */}
           <Reveal delay={120}>
-            <div className="mt-12 overflow-visible rounded-[18px] border border-navy-line bg-navy-field/70 p-5 backdrop-blur-md sm:p-7">
+            <div className="mt-12 overflow-hidden rounded-[18px] border border-navy-line bg-navy-field/70 p-5 backdrop-blur-md sm:p-7">
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_minmax(0,0.8fr)_auto] lg:items-end">
                 <Field label={t("book.from")}>
-                  <StopDropdown
+                  <SelectRow
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={from}
-                    onChange={(v) => {
-                      setFrom(v);
-                      setFieldErrors((e) => ({ ...e, from: false }));
-                    }}
+                    onChange={setFrom}
                     placeholder={t("book.fromPlaceholder")}
-                    stops={allStops}
-                    hasError={fieldErrors.from}
                   />
                 </Field>
 
@@ -183,16 +175,11 @@ function BookPage() {
                 </button>
 
                 <Field label={t("book.to")}>
-                  <StopDropdown
+                  <SelectRow
                     icon={<MapPin className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />}
                     value={to}
-                    onChange={(v) => {
-                      setTo(v);
-                      setFieldErrors((e) => ({ ...e, to: false }));
-                    }}
+                    onChange={setTo}
                     placeholder={t("book.toPlaceholder")}
-                    stops={allStops}
-                    hasError={fieldErrors.to}
                   />
                 </Field>
 
@@ -201,8 +188,7 @@ function BookPage() {
                     <Calendar className="size-3.5 shrink-0 text-navy-icon" strokeWidth={1.5} />
                     <input
                       type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      defaultValue={new Date().toISOString().split("T")[0]}
                       className="min-w-0 flex-1 bg-transparent font-sans text-[13px] text-ink [color-scheme:dark] focus:outline-none"
                     />
                   </div>
@@ -251,7 +237,7 @@ function BookPage() {
           </Reveal>
 
           {/* Search results */}
-          <div className="mt-14" ref={availableBusesRef}>
+          <div className="mt-14">
             <h2 className="font-display text-[26px] text-ink">{t("book.results")}</h2>
 
             {searchError ? (
@@ -278,55 +264,30 @@ function BookPage() {
                     <li
                       key={trip.trip_id}
                       style={{ animationDelay: `${i * 90}ms` }}
-                      className="anim-slide-left rounded-[14px] border border-navy-line bg-navy-panel/95 p-5"
+                      className="anim-slide-left flex flex-col gap-4 rounded-[14px] border border-navy-line bg-navy-panel/95 p-5 sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="font-display text-[18px] text-ink">{trip.route_name}</p>
-                          <p className="mt-1 font-sans text-[12px] text-ink-muted">
-                            {trip.origin} → {trip.destination} · Bus {trip.bus_number} ·{" "}
-                            {formatTime(trip.departure_time)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-5">
-                          <span className="font-display text-[20px] text-ink">
-                            ₹{trip.base_fare}
-                          </span>
-                          <Button
-                            variant="blue"
-                            size="sm"
-                            disabled={booking === trip.trip_id}
-                            onClick={() => handleBook(trip.trip_id, trip.base_fare)}
-                          >
-                            {booking === trip.trip_id ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              t("book.select")
-                            )}
-                          </Button>
-                        </div>
+                      <div>
+                        <p className="font-display text-[18px] text-ink">{trip.route_name}</p>
+                        <p className="mt-1 font-sans text-[12px] text-ink-muted">
+                          {trip.origin} → {trip.destination} · Bus {trip.bus_number} ·{" "}
+                          {formatTime(trip.departure_time)}
+                        </p>
                       </div>
-                      {trip.stops && trip.stops.length > 0 && (
-                        <div className="mt-4 border-t border-navy-line pt-4">
-                          <p className="mb-3 font-sans text-[11px] uppercase tracking-wider text-ink-muted">
-                            Route Stops
-                          </p>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {trip.stops.map((stop, idx) => (
-                              <div key={stop.name} className="flex items-center gap-2">
-                                <div className="rounded-[8px] border border-navy-line bg-navy-field/50 px-3 py-1.5">
-                                  <span className="font-sans text-[12px] text-ink">
-                                    {stop.name}
-                                  </span>
-                                </div>
-                                {idx < trip.stops.length - 1 && (
-                                  <span className="text-[10px] text-ink-muted">→</span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-5">
+                        <span className="font-display text-[20px] text-ink">₹{trip.base_fare}</span>
+                        <Button
+                          variant="blue"
+                          size="sm"
+                          disabled={booking === trip.trip_id}
+                          onClick={() => handleSelectTrip(trip)}
+                        >
+                          {booking === trip.trip_id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            t("book.select")
+                          )}
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -338,6 +299,17 @@ function BookPage() {
         </div>
       </section>
 
+      {/* PAYMENT MODAL — shows QR, user scans and clicks I've Paid */}
+      {pendingPayment && (
+        <PaymentModal
+          fare={pendingPayment.fare}
+          routeName={pendingPayment.route_name}
+          onPaid={handleConfirmPayment}
+          onClose={() => setPendingPayment(null)}
+        />
+      )}
+
+      {/* Booking success modal */}
       {bookedTicket && (
         <BookingSuccessModal
           ticket={bookedTicket}
@@ -351,6 +323,122 @@ function BookPage() {
     </PageShell>
   );
 }
+
+// ── Payment Modal ─────────────────────────────────────────────────────────────
+// Shows a UPI-style QR. When scanned, opens a "Payment Successful" page.
+// User then clicks "I've Paid" to confirm and get their ticket.
+
+function PaymentModal({
+  fare,
+  routeName,
+  onPaid,
+  onClose,
+}: {
+  fare: number;
+  routeName: string;
+  onPaid: () => void;
+  onClose: () => void;
+}) {
+  const [paying, setPaying] = useState(false);
+
+  // This URL is what the QR encodes.
+  // When scanned with any phone camera, it opens a simple "Payment Successful" page.
+  // We use a free redirect via a data URL trick — just a hosted success page.
+  const successUrl = `https://smartbus-pay.vercel.app/?amount=${fare}&route=${encodeURIComponent(routeName)}`;
+
+  function handlePaid() {
+    setPaying(true);
+    // Simulate a small delay to feel realistic
+    setTimeout(() => {
+      setPaying(false);
+      onPaid();
+    }, 1500);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-[16px]"
+      />
+      <div className="relative w-full max-w-[400px] rounded-[20px] border border-white/10 bg-[rgba(10,18,42,0.95)] p-8 text-center shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 text-ink-muted hover:text-ink"
+        >
+          <X className="size-5" />
+        </button>
+
+        {/* Header */}
+        <div className="flex items-center justify-center gap-2">
+          <ScanLine className="size-6 text-indigo-400" strokeWidth={1.5} />
+          <h2 className="font-display text-[22px] text-ink">Pay to Book</h2>
+        </div>
+        <p className="mt-1 font-sans text-[12px] text-ink-muted">
+          Scan QR with any phone camera to pay
+        </p>
+
+        {/* Amount */}
+        <div className="mt-4 inline-block rounded-[10px] border border-indigo-500/30 bg-indigo-500/10 px-6 py-2">
+          <p className="font-sans text-[12px] text-indigo-300">Amount to Pay</p>
+          <p className="font-display text-[32px] font-bold text-white">₹{fare}</p>
+          <p className="font-sans text-[11px] text-ink-muted">{routeName}</p>
+        </div>
+
+        {/* QR Code */}
+        <div className="mt-5 flex flex-col items-center gap-2">
+          <div className="rounded-[14px] border-2 border-indigo-500/40 bg-white p-3">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(successUrl)}&color=0a122a&bgcolor=ffffff`}
+              alt="Payment QR Code"
+              width={180}
+              height={180}
+              className="rounded-[6px]"
+            />
+          </div>
+          <p className="font-sans text-[11px] text-ink-muted">
+            📷 Scan with camera → see Payment Successful page
+          </p>
+        </div>
+
+        {/* UPI logos strip */}
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <span className="rounded-md bg-white/10 px-3 py-1 font-sans text-[11px] font-semibold text-white/70">PhonePe</span>
+          <span className="rounded-md bg-white/10 px-3 py-1 font-sans text-[11px] font-semibold text-white/70">GPay</span>
+          <span className="rounded-md bg-white/10 px-3 py-1 font-sans text-[11px] font-semibold text-white/70">Paytm</span>
+          <span className="rounded-md bg-white/10 px-3 py-1 font-sans text-[11px] font-semibold text-white/70">BHIM</span>
+        </div>
+
+        {/* I've Paid button */}
+        <Button
+          variant="blue"
+          size="full"
+          className="mt-6"
+          onClick={handlePaid}
+          disabled={paying}
+        >
+          {paying ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="size-4 animate-spin" />
+              Confirming payment...
+            </span>
+          ) : (
+            "✅ I've Paid — Get My Ticket"
+          )}
+        </Button>
+
+        <p className="mt-3 font-sans text-[11px] text-ink-muted">
+          After scanning & paying, click the button above
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Booking success modal with QR ────────────────────────────────────────────
 
 function BookingSuccessModal({
   ticket,
@@ -400,7 +488,7 @@ function BookingSuccessModal({
         </p>
 
         <div className="mt-5 rounded-[10px] border border-white/10 bg-white/5 p-4 text-left">
-          <Row label="Ticket ID (Full)" value={ticket.id} />
+          <Row label="Ticket ID" value={ticket.id} />
           <Row label="Fare Charged" value={`₹${ticket.fare_charged}`} />
           <Row label="Status" value={ticket.status.toUpperCase()} />
           <Row
@@ -429,6 +517,8 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block min-w-0">
@@ -438,88 +528,27 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function StopDropdown({
+function SelectRow({
   icon,
   value,
   onChange,
   placeholder,
-  stops,
-  hasError = false,
 }: {
   icon: React.ReactNode;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
-  stops: string[];
-  hasError?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  const filtered = stops.filter((s) => s.toLowerCase().includes(value.toLowerCase()));
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
   return (
-    <div ref={ref} className="relative w-full min-w-0">
-      <div
-        className={`flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border bg-navy-field-alt px-3 transition-colors ${hasError ? "border-rose-500 shadow-[0_0_0_2px_rgba(244,63,94,0.25)]" : "border-navy-line"}`}
-      >
-        {icon}
-        <input
-          value={value}
-          onChange={(e) => {
-            onChange(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent font-sans text-[13px] text-ink placeholder:text-ink-muted/80 focus:outline-none"
-        />
-        {value ? (
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              onChange("");
-              setOpen(false);
-            }}
-            className="shrink-0 rounded-full p-0.5 text-ink-muted hover:text-ink transition-colors"
-            aria-label="Clear"
-          >
-            <X className="size-3.5" strokeWidth={1.5} />
-          </button>
-        ) : (
-          <ChevronDown className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.5} />
-        )}
-      </div>
-
-      {open && filtered.length > 0 && (
-        <div className="absolute left-0 right-0 top-[52px] z-50 max-h-[200px] overflow-y-auto rounded-[10px] border border-navy-line bg-[rgba(10,18,42,0.97)] shadow-lg">
-          {filtered.map((stop) => (
-            <button
-              key={stop}
-              type="button"
-              onMouseDown={() => {
-                onChange(stop);
-                setOpen(false);
-              }}
-              className="flex w-full items-center gap-2 px-4 py-2.5 text-left font-sans text-[13px] text-ink hover:bg-navy-accent/20"
-            >
-              <MapPin className="size-3 shrink-0 text-navy-icon" strokeWidth={1.5} />
-              {stop}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="flex h-12 w-full min-w-0 items-center gap-2 rounded-[10px] border border-navy-line bg-navy-field-alt px-3">
+      {icon}
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="min-w-0 flex-1 bg-transparent font-sans text-[13px] text-ink placeholder:text-ink-muted/80 focus:outline-none"
+      />
+      <ChevronDown className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.5} />
     </div>
   );
 }
