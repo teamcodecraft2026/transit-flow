@@ -16,6 +16,7 @@ import { Button } from "@/components/Button";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/auth/AuthProvider";
+import { getApplicationStatus, type ApplicationStatusResponse } from "@/lib/api";
 
 export const Route = createFileRoute("/pink-card")({
   head: () => ({
@@ -234,8 +235,20 @@ function PinkCardPage() {
   const [statusScreen, setStatusScreen] = useState<StatusScreen | null>(null);
   const [threeReady, setThreeReady] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [cardStatus, setCardStatus] = useState<ApplicationStatusResponse | null>(null);
 
   useThreeJS(() => setThreeReady(true));
+
+  // Load card status on mount to show personalized card if eligible
+  useEffect(() => {
+    const appId = getPinkCardApplicationId();
+    if (!appId) return;
+    getApplicationStatus(appId)
+      .then((res) => {
+        if (res.status === "eligible") setCardStatus(res);
+      })
+      .catch(() => {/* ignore */});
+  }, []);
 
   const checks = [
     { icon: UserRound, title: t("pc.w1"), body: t("pc.w1sub") },
@@ -384,7 +397,10 @@ function PinkCardPage() {
             </Reveal>
 
             <Reveal delay={150} className="flex justify-center">
-              <PinkCard3D />
+              <PinkCard3D
+                holderName={cardStatus?.full_name ?? null}
+                cardNumber={cardStatus?.card_number ?? null}
+              />
             </Reveal>
           </div>
         </section>
@@ -435,8 +451,18 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PinkCard3D() {
+function PinkCard3D({
+  holderName,
+  cardNumber,
+}: {
+  holderName: string | null;
+  cardNumber: string | null;
+}) {
   const cardRef = useRef<HTMLDivElement>(null);
+  // Format card number as XXXXX XXXXX (two groups of 5)
+  const formattedCard = cardNumber
+    ? `${cardNumber.slice(0, 5)} ${cardNumber.slice(5)}`
+    : null;
   const rafRef = useRef<number>(0);
   const currentRotRef = useRef({ x: 0, y: 0 });
   const targetRotRef = useRef({ x: 0, y: 0 });
@@ -548,25 +574,59 @@ function PinkCard3D() {
             >
               {/* Top row - already in image */}
               <div />
-              {/* Middle - PINK CARD text */}
+              {/* Middle - PINK CARD text or holder name + card number */}
               <div style={{ marginTop: "-35px", marginLeft: "-8px" }}>
-                <p
-                  style={{
-                    fontFamily: "sans-serif",
-                    fontSize: "43px",
-                    fontWeight: "550",
-                    color: "rgba(255,255,255,0.90)",
-                    letterSpacing: "0.005em",
-                    lineHeight: 1,
-                    textShadow: "0 1px 6px rgba(0,0,0,0.15)",
-                    margin: 0,
-                    display: "inline-block",  
-                    transform: "scaleX(0.85)",     
-                    transformOrigin: "left center",
-                  }}
-                >
-                  PINK CARD
-                </p>
+                {holderName && formattedCard ? (
+                  <>
+                    <p
+                      style={{
+                        fontFamily: "sans-serif",
+                        fontSize: "22px",
+                        fontWeight: "600",
+                        color: "rgba(255,255,255,0.95)",
+                        letterSpacing: "0.04em",
+                        lineHeight: 1,
+                        textShadow: "0 1px 6px rgba(0,0,0,0.15)",
+                        margin: 0,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {holderName}
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: "16px",
+                        fontWeight: "500",
+                        color: "rgba(255,255,255,0.75)",
+                        letterSpacing: "0.15em",
+                        lineHeight: 1,
+                        textShadow: "0 1px 4px rgba(0,0,0,0.15)",
+                        margin: "8px 0 0 0",
+                      }}
+                    >
+                      {formattedCard}
+                    </p>
+                  </>
+                ) : (
+                  <p
+                    style={{
+                      fontFamily: "sans-serif",
+                      fontSize: "43px",
+                      fontWeight: "550",
+                      color: "rgba(255,255,255,0.90)",
+                      letterSpacing: "0.005em",
+                      lineHeight: 1,
+                      textShadow: "0 1px 6px rgba(0,0,0,0.15)",
+                      margin: 0,
+                      display: "inline-block",
+                      transform: "scaleX(0.85)",
+                      transformOrigin: "left center",
+                    }}
+                  >
+                    PINK CARD
+                  </p>
+                )}
               </div>
               {/* Bottom row - already in image */}
               <div />
