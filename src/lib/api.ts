@@ -178,6 +178,8 @@ export interface ApplicationStatusResponse {
   manual_reason?: string | null;
   is_officer_override?: boolean;
   override_reason?: string | null;
+  card_number?: string | null;
+  full_name?: string | null;
 }
 
 export async function getApplicationStatus(
