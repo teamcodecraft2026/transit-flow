@@ -519,20 +519,56 @@ function PinkCard3D() {
             overflow: "hidden",
           }}
         >
-          <img
-            src="/pink-card-visual.png"
-            alt="Pink Card"
-            draggable={false}
-            style={{
-              display: "block",
-              width: "420px",
-              aspectRatio: "1.586",
-              objectFit: "cover",
-              borderRadius: "16px",
-              userSelect: "none",
-              pointerEvents: "none",
-            }}
-          />
+         <div style={{ position: "relative", width: "420px", aspectRatio: "1.586" }}>
+            <img
+              src="/pink-card-visual.png"
+              alt="Pink Card"
+              draggable={false}
+              style={{
+                display: "block",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "16px",
+                userSelect: "none",
+                pointerEvents: "none",
+              }}
+            />
+            {/* Text overlay */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                padding: "28px 32px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                pointerEvents: "none",
+              }}
+            >
+              {/* Top row - already in image */}
+              <div />
+              {/* Middle - PINK CARD text */}
+              <div>
+                <p
+                  style={{
+                    fontFamily: "sans-serif",
+                    fontSize: "38px",
+                    fontWeight: "800",
+                    color: "rgba(255,255,255,0.95)",
+                    letterSpacing: "0.04em",
+                    lineHeight: 1,
+                    textShadow: "0 2px 12px rgba(0,0,0,0.25)",
+                    margin: 0,
+                  }}
+                >
+                  PINK CARD
+                </p>
+              </div>
+              {/* Bottom row - already in image */}
+              <div />
+            </div>
+          </div>
         </div>
       </div>
       <div className="relative mt-6 h-14 w-[78%]">
