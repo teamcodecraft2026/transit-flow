@@ -29,7 +29,7 @@ export function LanguageToggle({ className }: { className?: string }) {
             locale === code ? "text-canvas" : "text-ink/70 hover:text-ink",
           )}
         >
-          {code === "en" ? "EN" : ""}
+          {code === "en" ? "EN" : "বা"}
         </button>
       ))}
     </div>
