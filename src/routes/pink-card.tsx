@@ -552,7 +552,7 @@ function PinkCard3D() {
               <div style={{ marginTop: "-35px", marginLeft: "-8px" }}>
                 <p
                   style={{
-                    fontFamily: "sans-serif",
+                    fontFamily: "Nunito Sans",
                     fontSize: "43px",
                     fontWeight: "550",
                     color: "rgba(255,255,255,0.90)",
