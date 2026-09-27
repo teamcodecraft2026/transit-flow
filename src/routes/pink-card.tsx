@@ -549,16 +549,16 @@ function PinkCard3D() {
               {/* Top row - already in image */}
               <div />
               {/* Middle - PINK CARD text */}
-              <div>
+              <div style={{ marginTop: "8px" }}>
                 <p
                   style={{
                     fontFamily: "sans-serif",
                     fontSize: "38px",
-                    fontWeight: "800",
-                    color: "rgba(255,255,255,0.95)",
-                    letterSpacing: "0.04em",
+                    fontWeight: "500",
+                    color: "rgba(255,255,255,0.90)",
+                    letterSpacing: "0.06em",
                     lineHeight: 1,
-                    textShadow: "0 2px 12px rgba(0,0,0,0.25)",
+                    textShadow: "0 1px 6px rgba(0,0,0,0.15)",
                     margin: 0,
                   }}
                 >
