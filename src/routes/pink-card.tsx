@@ -554,7 +554,7 @@ function PinkCard3D() {
                   style={{
                     fontFamily: "sans-serif",
                     fontSize: "43px",
-                    fontWeight: "600",
+                    fontWeight: "550",
                     color: "rgba(255,255,255,0.90)",
                     letterSpacing: "0.005em",
                     lineHeight: 1,
