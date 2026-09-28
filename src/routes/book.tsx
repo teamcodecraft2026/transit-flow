@@ -128,7 +128,7 @@ function BookPage() {
         const applicationId = localStorage.getItem(key);
         if (applicationId) {
           const status = await getApplicationStatus(applicationId);
-          isPinkCard = status.eligible === true;
+          isPinkCard = status.status === "eligible";
         }
       } catch {
         /* if check fails, fall through to payment */
