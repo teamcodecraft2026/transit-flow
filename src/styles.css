@@ -62,6 +62,13 @@
   --ease-micro: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── Instrument Serif for numerals only (0–9) ─────────────────────── */
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: local("Instrument Serif"), local("InstrumentSerif");
+  unicode-range: U+0030-0039; /* 0–9 */
+}
+
 /* shadcn compatibility layer (kept so ui/* primitives still resolve) */
 @theme inline {
   --color-background: var(--color-canvas);
