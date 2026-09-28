@@ -41,7 +41,7 @@ export const Route = createFileRoute("/pink-card")({
   component: PinkCardPage,
 });
 
-let revealHasRun = false;
+// let revealHasRun = false;
 
 function getPinkCardApplicationId(): string | null {
   try {
@@ -60,181 +60,181 @@ function getPinkCardApplicationId(): string | null {
 
 type StatusScreen = "already-applied" | "not-applied";
 
-function useThreeJS(onReady: () => void) {
-  useEffect(() => {
-    if ((window as any).THREE) {
-      onReady();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-    script.async = true;
-    script.onload = onReady;
-    document.head.appendChild(script);
-  }, []);
-}
+// function useThreeJS(onReady: () => void) {
+//   useEffect(() => {
+//     if ((window as any).THREE) {
+//       onReady();
+//       return;
+//     }
+//     const script = document.createElement("script");
+//     script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+//     script.async = true;
+//     script.onload = onReady;
+//     document.head.appendChild(script);
+//   }, []);
+// }
 
-function RevealEffect({ onDone }: { onDone: () => void }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+// function RevealEffect({ onDone }: { onDone: () => void }) {
+//   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    if (revealHasRun) {
-      onDone();
-      return;
-    }
-    revealHasRun = true;
+//   useEffect(() => {
+//     if (revealHasRun) {
+//       onDone();
+//       return;
+//     }
+//     revealHasRun = true;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      onDone();
-      return;
-    }
+//     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+//       onDone();
+//       return;
+//     }
 
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      onDone();
-      return;
-    }
+//     const canvas = canvasRef.current;
+//     if (!canvas) {
+//       onDone();
+//       return;
+//     }
 
-    const THREE = (window as any).THREE;
-    if (!THREE) {
-      onDone();
-      return;
-    }
+//     const THREE = (window as any).THREE;
+//     if (!THREE) {
+//       onDone();
+//       return;
+//     }
 
-    const W = window.innerWidth;
-    const H = window.innerHeight;
+//     const W = window.innerWidth;
+//     const H = window.innerHeight;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(W, H);
+//     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+//     renderer.setClearColor(0x000000, 0);
+//     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+//     renderer.setSize(W, H);
 
-    const camera = new THREE.PerspectiveCamera(75, W / H, 0.1, 1000);
-    camera.position.z = 75;
+//     const camera = new THREE.PerspectiveCamera(75, W / H, 0.1, 1000);
+//     camera.position.z = 75;
 
-    const scene = new THREE.Scene();
+//     const scene = new THREE.Scene();
 
-    const vFOV = (75 * Math.PI) / 180;
-    const wHeight = 2 * Math.tan(vFOV / 2) * 75;
-    const wWidth = wHeight * (W / H);
+//     const vFOV = (75 * Math.PI) / 180;
+//     const wHeight = 2 * Math.tan(vFOV / 2) * 75;
+//     const wWidth = wHeight * (W / H);
 
-    const OBJ_SIZE = 8;
-    const THICKNESS = 3;
-    const nx = Math.round(wWidth / OBJ_SIZE) + 1;
-    const ny = Math.round(wHeight / OBJ_SIZE) + 1;
+//     const OBJ_SIZE = 8;
+//     const THICKNESS = 3;
+//     const nx = Math.round(wWidth / OBJ_SIZE) + 1;
+//     const ny = Math.round(wHeight / OBJ_SIZE) + 1;
 
-    scene.add(new THREE.AmbientLight(0x808080));
-    const pointLight = new THREE.PointLight(0xffffff);
-    pointLight.position.z = 100;
-    scene.add(pointLight);
+//     scene.add(new THREE.AmbientLight(0x808080));
+//     const pointLight = new THREE.PointLight(0xffffff);
+//     pointLight.position.z = 100;
+//     scene.add(pointLight);
 
-    const CUBE_COLOR = 0xb5405e;
-    const geometry = new THREE.BoxGeometry(OBJ_SIZE, OBJ_SIZE, THICKNESS);
-    const meshes: any[] = [];
+//     const CUBE_COLOR = 0xb5405e;
+//     const geometry = new THREE.BoxGeometry(OBJ_SIZE, OBJ_SIZE, THICKNESS);
+//     const meshes: any[] = [];
 
-    for (let i = 0; i < nx; i++) {
-      for (let j = 0; j < ny; j++) {
-        const mat = new THREE.MeshLambertMaterial({
-          color: CUBE_COLOR,
-          transparent: true,
-          opacity: 1,
-        });
-        const mesh = new THREE.Mesh(geometry, mat);
-        mesh.position.set(-wWidth / 2 + i * OBJ_SIZE, -wHeight / 2 + j * OBJ_SIZE, 0);
-        scene.add(mesh);
-        meshes.push(mesh);
+//     for (let i = 0; i < nx; i++) {
+//       for (let j = 0; j < ny; j++) {
+//         const mat = new THREE.MeshLambertMaterial({
+//           color: CUBE_COLOR,
+//           transparent: true,
+//           opacity: 1,
+//         });
+//         const mesh = new THREE.Mesh(geometry, mat);
+//         mesh.position.set(-wWidth / 2 + i * OBJ_SIZE, -wHeight / 2 + j * OBJ_SIZE, 0);
+//         scene.add(mesh);
+//         meshes.push(mesh);
 
-        const delay = 1 + Math.random() * 1;
-        const rotDuration = 2.0;
-        const flyDelay = delay + 0.5;
-        const flyDuration = 2.0;
-        const rx = (Math.random() - 0.5) * 2 * Math.PI;
-        const ry = (Math.random() - 0.5) * 2 * Math.PI;
-        const rz = (Math.random() - 0.5) * 2 * Math.PI;
-        (mesh as any)._anim = { delay, rotDuration, flyDelay, flyDuration, rx, ry, rz };
-      }
-    }
+//         const delay = 1 + Math.random() * 1;
+//         const rotDuration = 2.0;
+//         const flyDelay = delay + 0.5;
+//         const flyDuration = 2.0;
+//         const rx = (Math.random() - 0.5) * 2 * Math.PI;
+//         const ry = (Math.random() - 0.5) * 2 * Math.PI;
+//         const rz = (Math.random() - 0.5) * 2 * Math.PI;
+//         (mesh as any)._anim = { delay, rotDuration, flyDelay, flyDuration, rx, ry, rz };
+//       }
+//     }
 
-    let startTime: number | null = null;
-    let rafId: number;
-    let finished = false;
+//     let startTime: number | null = null;
+//     let rafId: number;
+//     let finished = false;
 
-    function easeOutQuad(t: number) {
-      return t * (2 - t);
-    }
-    function linear(t: number) {
-      return t;
-    }
+//     function easeOutQuad(t: number) {
+//       return t * (2 - t);
+//     }
+//     function linear(t: number) {
+//       return t;
+//     }
 
-    function animate(ts: number) {
-      if (finished) return;
-      rafId = requestAnimationFrame(animate);
-      if (startTime === null) startTime = ts;
-      const elapsed = (ts - startTime) / 1000;
-      let allDone = true;
+//     function animate(ts: number) {
+//       if (finished) return;
+//       rafId = requestAnimationFrame(animate);
+//       if (startTime === null) startTime = ts;
+//       const elapsed = (ts - startTime) / 1000;
+//       let allDone = true;
 
-      for (const mesh of meshes) {
-        const a = mesh._anim;
-        if (elapsed >= a.delay) {
-          const tRot = Math.min((elapsed - a.delay) / a.rotDuration, 1);
-          mesh.rotation.x = a.rx * linear(tRot);
-          mesh.rotation.y = a.ry * linear(tRot);
-          mesh.rotation.z = a.rz * linear(tRot);
-          if (tRot < 1) allDone = false;
-        } else {
-          allDone = false;
-        }
+//       for (const mesh of meshes) {
+//         const a = mesh._anim;
+//         if (elapsed >= a.delay) {
+//           const tRot = Math.min((elapsed - a.delay) / a.rotDuration, 1);
+//           mesh.rotation.x = a.rx * linear(tRot);
+//           mesh.rotation.y = a.ry * linear(tRot);
+//           mesh.rotation.z = a.rz * linear(tRot);
+//           if (tRot < 1) allDone = false;
+//         } else {
+//           allDone = false;
+//         }
 
-        if (elapsed >= a.flyDelay) {
-          const tFly = Math.min((elapsed - a.flyDelay) / a.flyDuration, 1);
-          mesh.position.z = 80 * easeOutQuad(tFly);
-          mesh.material.opacity = 1 - tFly;
-          if (tFly < 1) allDone = false;
-        } else {
-          allDone = false;
-        }
-      }
+//         if (elapsed >= a.flyDelay) {
+//           const tFly = Math.min((elapsed - a.flyDelay) / a.flyDuration, 1);
+//           mesh.position.z = 80 * easeOutQuad(tFly);
+//           mesh.material.opacity = 1 - tFly;
+//           if (tFly < 1) allDone = false;
+//         } else {
+//           allDone = false;
+//         }
+//       }
 
-      renderer.render(scene, camera);
+//       renderer.render(scene, camera);
 
-      if (allDone) {
-        finished = true;
-        cancelAnimationFrame(rafId);
-        setTimeout(() => onDone(), 80);
-      }
-    }
+//       if (allDone) {
+//         finished = true;
+//         cancelAnimationFrame(rafId);
+//         setTimeout(() => onDone(), 80);
+//       }
+//     }
 
-    rafId = requestAnimationFrame(animate);
+//     rafId = requestAnimationFrame(animate);
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      renderer.dispose();
-      revealHasRun = false;
-    };
-  }, []);
+//     return () => {
+//       cancelAnimationFrame(rafId);
+//       renderer.dispose();
+//       revealHasRun = false;
+//     };
+//   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 9999,
-        pointerEvents: "none",
-      }}
-    />
-  );
-}
+//   return (
+//     <canvas
+//       ref={canvasRef}
+//       style={{
+//         position: "fixed",
+//         inset: 0,
+//         width: "100%",
+//         height: "100%",
+//         zIndex: 9999,
+//         pointerEvents: "none",
+//       }}
+//     />
+//   );
+// }
 
 function PinkCardPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { requireAuth } = useAuth();
   const [statusScreen, setStatusScreen] = useState<StatusScreen | null>(null);
-  const [threeReady, setThreeReady] = useState(false);
-  const [revealed, setRevealed] = useState(false);
+  // const [threeReady, setThreeReady] = useState(false);
+  // const [revealed, setRevealed] = useState(false);
   const [cardStatus, setCardStatus] = useState<ApplicationStatusResponse | null>(null);
 
   useThreeJS(() => setThreeReady(true));
