@@ -26,6 +26,7 @@ import {
   searchTrips,
   bookTicket,
   fetchAllStops,
+  getApplicationStatus,
   type Trip,
   type Ticket as TicketType,
 } from "@/lib/api";
@@ -114,15 +115,33 @@ function BookPage() {
     }
   }
 
-    function handleSelectTrip(trip: Trip) {
+      function handleSelectTrip(trip: Trip) {
     requireAuth(async () => {
-      if (trip.base_fare === 0) {
+      // Check Pink Card eligibility from localStorage
+      let isPinkCard = false;
+      try {
+        const raw = localStorage.getItem("pt.user");
+        const user = raw ? (JSON.parse(raw) as { id: string }) : null;
+        const key = user?.id
+          ? `pt.pinkCardApplicationId.${user.id}`
+          : "pt.pinkCardApplicationId.guest";
+        const applicationId = localStorage.getItem(key);
+        if (applicationId) {
+          const status = await getApplicationStatus(applicationId);
+          isPinkCard = status.eligible === true;
+        }
+      } catch {
+        /* if check fails, fall through to payment */
+      }
+
+      if (isPinkCard) {
+        // Pink Card: book directly with ₹0, skip payment modal
         setBookError(null);
         setBooking(trip.trip_id);
         try {
           const res = await bookTicket(trip.trip_id, trip.base_fare);
           setBookedTicket(res.ticket);
-          setPinkCardApplied(res.pink_card_applied ?? res.ticket.type === "pink_card");
+          setPinkCardApplied(true);
         } catch (err: unknown) {
           setBookError(err instanceof Error ? err.message : "Booking failed. Please try again.");
         } finally {
@@ -130,6 +149,8 @@ function BookPage() {
         }
         return;
       }
+
+      // Not Pink Card: show payment modal with fare
       setPendingPayment({
         trip_id: trip.trip_id,
         fare: trip.base_fare,
@@ -137,7 +158,6 @@ function BookPage() {
       });
     });
   }
-
   async function handleConfirmPayment() {
     if (!pendingPayment) return;
     const { trip_id, fare } = pendingPayment;
