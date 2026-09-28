@@ -336,18 +336,7 @@ function PinkCardPage() {
 
   return (
     <>
-      /* {!threeReady && !revealed && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: "#0b0a10",
-            pointerEvents: "none",
-          }}
-        />
-      )}*/
-      /*{threeReady && !revealed && <RevealEffect onDone={() => setRevealed(true)} />} */
+    
 
       <PageShell theme="rose" backHome>
         <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden pt-[88px]">
