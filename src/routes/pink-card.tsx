@@ -233,11 +233,7 @@ function PinkCardPage() {
   const navigate = useNavigate();
   const { requireAuth } = useAuth();
   const [statusScreen, setStatusScreen] = useState<StatusScreen | null>(null);
-  // const [threeReady, setThreeReady] = useState(false);
-  // const [revealed, setRevealed] = useState(false);
   const [cardStatus, setCardStatus] = useState<ApplicationStatusResponse | null>(null);
-
-  useThreeJS(() => setThreeReady(true));
 
   // Load card status on mount to show personalized card if eligible
   useEffect(() => {
@@ -336,19 +332,6 @@ function PinkCardPage() {
 
   return (
     <>
-
-      /* {!threeReady && !revealed && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: "#0b0a10",
-            pointerEvents: "none",
-          }}
-        />
-      )}*/
-      /*{threeReady && !revealed && <RevealEffect onDone={() => setRevealed(true)} />} */
 
       <PageShell theme="rose" backHome>
         <section className="relative -mt-[88px] flex min-h-[100svh] items-center overflow-hidden pt-[88px]">
