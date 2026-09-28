@@ -14,7 +14,7 @@ import { PageShell } from "@/components/PageShell";
 import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/Button";
 import { useI18n } from "@/i18n/LanguageProvider";
-//import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/auth/AuthProvider";
 import { getApplicationStatus, type ApplicationStatusResponse } from "@/lib/api";
 
