@@ -181,7 +181,7 @@ function TripsPage() {
                                 : "border border-navy-bright/70 text-ink",
                             )}
                           >
-                            {ticket.fare_charged === 0 ? t("trips.free") : `₹${ticket.fare_charged}`}
+                            {ticket.fare_charged === 0 ? t("trips.free") : "₹" + ticket.fare_charged}
                           </span>
                           <span
                             className={cn(
