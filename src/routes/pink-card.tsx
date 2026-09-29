@@ -517,7 +517,7 @@ function PinkCard3D({
 
   return (
     <div className="relative flex w-full max-w-[420px] flex-col items-center">
-      <div style={{ perspective: "1000px", transformStyle: "preserve-3d" }}>
+      <div style={{ perspective: "1000px", transformStyle: "preserve-3d", width: "100%" }}>
         <div
           ref={cardRef}
           style={{
@@ -529,7 +529,7 @@ function PinkCard3D({
             overflow: "hidden",
           }}
         >
-         <div style={{ position: "relative", width: "420px", aspectRatio: "1.586" }}>
+         <div style={{ position: "relative", width: "100%", maxWidth: "420px", margin: "0 auto", aspectRatio: "1.586", containerType: "inline-size" }}>
             <img
               src="/pink-card-visual.png"
               alt="Pink Card"
@@ -549,7 +549,7 @@ function PinkCard3D({
               style={{
                 position: "absolute",
                 inset: 0,
-                padding: "28px 32px",
+                padding: "6.67cqw 7.62cqw",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -559,13 +559,13 @@ function PinkCard3D({
               {/* Top row - already in image */}
               <div />
               {/* Middle - PINK CARD text or holder name + card number */}
-              <div style={{ marginTop: "-35px", marginLeft: "-8px" }}>
+              <div style={{ marginTop: "-8.33cqw", marginLeft: "-1.9cqw" }}>
                 {holderName && formattedCard ? (
                   <>
                     <p
                       style={{
                         fontFamily: "sans-serif",
-                        fontSize: "22px",
+                        fontSize: "5.24cqw",
                         fontWeight: "600",
                         color: "rgba(255,255,255,0.95)",
                         letterSpacing: "0.04em",
@@ -580,13 +580,13 @@ function PinkCard3D({
                     <p
                       style={{
                         fontFamily: "monospace",
-                        fontSize: "16px",
+                        fontSize: "3.81cqw",
                         fontWeight: "500",
                         color: "rgba(255,255,255,0.75)",
                         letterSpacing: "0.15em",
                         lineHeight: 1,
                         textShadow: "0 1px 4px rgba(0,0,0,0.15)",
-                        margin: "8px 0 0 0",
+                        margin: "1.9cqw 0 0 0",
                       }}
                     >
                       {formattedCard}
@@ -596,7 +596,7 @@ function PinkCard3D({
                   <p
                     style={{
                       fontFamily: "sans-serif",
-                      fontSize: "43px",
+                      fontSize: "10.24cqw",
                       fontWeight: "550",
                       color: "rgba(255,255,255,0.90)",
                       letterSpacing: "0.005em",
