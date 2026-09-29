@@ -317,7 +317,7 @@ function BookPage() {
               </div>
             ) : searched && trips.length === 0 ? (
               <p className="mt-4 font-sans text-[13px] text-ink-muted">
-                {t("book.noBuses")}
+                No buses found for that route. Try different origins/destinations.
               </p>
             ) : trips.length > 0 ? (
               <>
@@ -362,7 +362,7 @@ function BookPage() {
                       {trip.stops && trip.stops.length > 0 && (
                         <div className="mt-4 border-t border-navy-line pt-4">
                           <p className="mb-3 font-sans text-[11px] uppercase tracking-wider text-ink-muted">
-                            {t("book.routeStops")}
+                            Route Stops
                           </p>
                           <div className="flex flex-wrap items-center gap-2">
                             {trip.stops.map((stop, idx) => (
@@ -456,14 +456,14 @@ function PaymentModal({
 
         <div className="flex items-center justify-center gap-2">
           <ScanLine className="size-6 text-indigo-400" strokeWidth={1.5} />
-          <h2 className="font-display text-[22px] text-ink">{t("book.payTitle2")}</h2>
+          <h2 className="font-display text-[22px] text-ink">Pay to Book</h2>
         </div>
         <p className="mt-1 font-sans text-[12px] text-ink-muted">
           Scan QR with any phone camera to pay
         </p>
 
         <div className="mt-4 inline-block rounded-[10px] border border-indigo-500/30 bg-indigo-500/10 px-6 py-2">
-          <p className="font-sans text-[12px] text-indigo-300">{t("book.amountToPay")}</p>
+          <p className="font-sans text-[12px] text-indigo-300">Amount to Pay</p>
           <p className="font-display text-[32px] font-bold text-white">₹{fare}</p>
           <p className="font-sans text-[11px] text-ink-muted">{routeName}</p>
         </div>
@@ -479,7 +479,7 @@ function PaymentModal({
             />
           </div>
           <p className="font-sans text-[11px] text-ink-muted">
-            {t("book.scanHint")}
+            📷 Scan with camera → see Payment Successful page
           </p>
         </div>
 
@@ -503,12 +503,12 @@ function PaymentModal({
               Confirming payment...
             </span>
           ) : (
-            t("book.paidBtn")
+            "✅ I've Paid — Get My Ticket"
           )}
         </Button>
 
         <p className="mt-3 font-sans text-[11px] text-ink-muted">
-          {t("book.afterScan")}
+          After scanning & paying, click the button above
         </p>
       </div>
     </div>
@@ -542,11 +542,11 @@ function BookingSuccessModal({
         </button>
 
         <CheckCircle2 className="mx-auto size-10 text-green-400" strokeWidth={1.5} />
-        <h2 className="mt-3 font-display text-[24px] text-ink">{t("book.ticketBooked")}</h2>
+        <h2 className="mt-3 font-display text-[24px] text-ink">Ticket Booked!</h2>
 
         {pinkCardApplied && (
           <span className="mt-2 inline-block rounded-full bg-rose-glow px-4 py-1 font-sans text-[12px] font-semibold text-white">
-            {t("book.pinkApplied")}
+            Pink Card Applied — ₹0 Fare
           </span>
         )}
 
@@ -559,15 +559,15 @@ function BookingSuccessModal({
         </div>
 
         <p className="mt-4 font-sans text-[12px] text-ink-muted">
-          {t("book.showQr")}
+          Show this QR to the conductor when boarding.
         </p>
 
         <div className="mt-5 rounded-[10px] border border-white/10 bg-white/5 p-4 text-left">
-          <Row label={t("book.ticketId")} value={ticket.id} />
-          <Row label={t("book.fareCharged")} value={"₹" + ticket.fare_charged} />
-          <Row label={t("book.status")} value={ticket.status.toUpperCase()} />
+          <Row label="Ticket ID (Full)" value={ticket.id} />
+          <Row label="Fare Charged" value={`₹${ticket.fare_charged}`} />
+          <Row label="Status" value={ticket.status.toUpperCase()} />
           <Row
-            label={t("book.issued")}
+            label="Issued"
             value={new Date(ticket.issued_at).toLocaleString("en-IN", {
               dateStyle: "medium",
               timeStyle: "short",
@@ -576,7 +576,7 @@ function BookingSuccessModal({
         </div>
 
         <Button variant="blue" size="full" className="mt-6" onClick={onClose}>
-          {t("book.done")}
+          Done
         </Button>
       </div>
     </div>
