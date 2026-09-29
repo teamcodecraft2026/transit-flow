@@ -142,7 +142,7 @@ function TripsPage() {
                   <p className="font-sans text-[14px] text-ink-muted">
                     {tab === "upcoming"
                       ? t("trips.emptyUpcoming")
-                      : t("trips.emptyPast")
+                      : t("trips.emptyPast")}
                   </p>
                 </div>
               ) : (
