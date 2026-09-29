@@ -95,14 +95,14 @@ function TripsPage() {
             <div className="mt-16 flex flex-col items-center gap-6 text-center">
               <Ticket className="size-14 text-navy-icon opacity-60" strokeWidth={1.25} />
               <p className="font-sans text-[15px] text-ink-muted">
-                Sign in to view your ticket history.
+                {t("trips.signIn")}
               </p>
               <button
                 type="button"
                 onClick={() => requireAuth()}
                 className="rounded-[10px] border border-navy-accent/70 px-6 py-3 font-sans text-[14px] text-ink transition-colors hover:bg-navy-accent/20"
               >
-                Sign In
+                {t("trips.signInBtn")}
               </button>
             </div>
           ) : (
@@ -120,7 +120,7 @@ function TripsPage() {
                         : "text-ink-muted hover:text-ink",
                     )}
                   >
-                    {key === "upcoming" ? "Upcoming" : "Past"}
+                    {key === "upcoming" ? t("trips.upcoming") : t("trips.past")}
                     <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 font-sans text-[12px]">
                       {key === "upcoming" ? upcoming.length : past.length}
                     </span>
@@ -141,8 +141,8 @@ function TripsPage() {
                   <Bus className="size-12 text-navy-icon opacity-40" strokeWidth={1.25} />
                   <p className="font-sans text-[14px] text-ink-muted">
                     {tab === "upcoming"
-                      ? "No upcoming trips. Book a ticket to get started."
-                      : "No past trips yet."}
+                      ? t("trips.emptyUpcoming")
+                      : t("trips.emptyPast")
                   </p>
                 </div>
               ) : (
@@ -181,7 +181,7 @@ function TripsPage() {
                                 : "border border-navy-bright/70 text-ink",
                             )}
                           >
-                            {ticket.fare_charged === 0 ? " Free" : `${ticket.fare_charged}`}
+                            {ticket.fare_charged === 0 ? t("trips.free") : `₹${ticket.fare_charged}`}
                           </span>
                           <span
                             className={cn(
@@ -207,13 +207,13 @@ function TripsPage() {
                           />
                           <div>
                             <p className="font-sans text-[12px] text-ink-muted">
-                              Show this QR when boarding
+                              {t("trips.showQr")}
                             </p>
                             <p className="mt-1 font-sans text-[11px] text-ink-muted/60">
                               ID: {ticket.ticket_id.slice(0, 8).toUpperCase()}
                             </p>
                             <p className="mt-1 font-sans text-[11px] text-navy-icon">
-                              Tap to enlarge QR
+                              {t("trips.tapQr")}
                             </p>
                           </div>
                         </div>
@@ -221,7 +221,7 @@ function TripsPage() {
 
                       {ticket.scanned_at && (
                         <p className="mt-3 font-sans text-[11.5px] text-ink-muted/60">
-                          Scanned: {formatDate(ticket.scanned_at)} {formatTime(ticket.scanned_at)}
+                          {t("trips.scanned")}: {formatDate(ticket.scanned_at)} {formatTime(ticket.scanned_at)}
                         </p>
                       )}
                     </li>
@@ -265,7 +265,7 @@ function TripsPage() {
             </div>
 
             <p className="mt-4 font-sans text-[12px] text-ink-muted">
-              Show this QR to the conductor when boarding.
+              {t("trips.showQrModal")}
             </p>
             <p className="mt-1 font-sans text-[11px] text-ink-muted/50">
               ID: {expandedTicket.ticket_id.slice(0, 8).toUpperCase()}
@@ -273,7 +273,7 @@ function TripsPage() {
 
             {expandedTicket.fare_charged === 0 && (
               <span className="mt-3 inline-block rounded-full bg-rose-glow px-4 py-1 font-sans text-[12px] font-semibold text-white">
-                Pink Card Free Travel
+                {t("trips.pinkFree")}
               </span>
             )}
           </div>
