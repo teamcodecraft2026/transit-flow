@@ -25,13 +25,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   // Read persisted choice after hydration so SSR markup stays stable.
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved === "en" || saved === "bn") setLocaleState(saved);
+    if (saved === "en" || saved === "bn") {
+      setLocaleState(saved);
+      document.documentElement.setAttribute("data-locale", saved);
+    }
   }, []);
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     window.localStorage.setItem(STORAGE_KEY, next);
     document.documentElement.lang = next;
+    document.documentElement.setAttribute("data-locale", next);
   }, []);
 
   const t = useCallback<LanguageContextValue["t"]>(
