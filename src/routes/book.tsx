@@ -86,7 +86,7 @@ function BookPage() {
 
   useEffect(() => {
     fetchAllStops()
-      .then((stops) => setAllStops(stops))
+      .then((res) => setAllStops(res.stops))
       .catch(console.error);
   }, []);
 
