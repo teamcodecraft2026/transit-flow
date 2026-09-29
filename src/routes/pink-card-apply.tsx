@@ -619,7 +619,7 @@ function PinkCardApplyPage() {
                           <select
                             value={form.state}
                             onChange={(e) => set("state", e.target.value)}
-                            className="min-w-0 flex-1 bg-transparent font-display text-[15px] text-white focus:outline-none [&>option]:bg-[#0a0a14] [&>option]:text-white"
+                            className="min-w-0 flex-1 appearance-none bg-transparent font-display text-[15px] text-white focus:outline-none [&>option]:bg-[#0a0a14] [&>option]:text-white"
                           >
                             <option value="">Select state</option>
                             {STATES.map((s) => (
