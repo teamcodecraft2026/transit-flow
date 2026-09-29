@@ -12,8 +12,8 @@
  */
 
 @theme {
-  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
-  --font-sans: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "TF Numerals", "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-sans: "TF Numerals", "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* Canvas + surfaces */
   --color-canvas: #010009;
@@ -64,15 +64,18 @@
 
 /* ── Bengali font swap ─────────────────────────────────────────────── */
 :root[data-locale="bn"] {
-  --font-display: "Hind Siliguri", Georgia, serif;
-  --font-sans: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "TF Numerals", "Hind Siliguri", Georgia, serif;
+  --font-sans: "TF Numerals", "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── Instrument Serif for numerals only (0–9) ─────────────────────── */
 @font-face {
-  font-family: "Cormorant Garamond";
-  src: local("Instrument Serif"), local("InstrumentSerif");
-  unicode-range: U+0030-0039; /* 0–9 */
+  font-family: "TF Numerals";
+  src: url("/fonts/instrument-serif-digits.woff2") format("woff2");
+  font-weight: 100 900; /* stops the browser faking bold on digits */
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039; /* 0–9 only */
 }
 
 /* shadcn compatibility layer (kept so ui/* primitives still resolve) */
