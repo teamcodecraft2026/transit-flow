@@ -666,7 +666,7 @@ function StopDropdown({
       </div>
 
       {open && filtered.length > 0 && (
-        <div className="absolute left-0 right-0 top-[52px] z-50 max-h-[200px] overflow-y-auto rounded-[10px] border border-navy-line bg-[rgba(10,18,42,0.97)] shadow-lg">
+        <div className="absolute left-0 right-0 top-[52px] z-50 max-h-[400px] overflow-y-scroll rounded-[10px] border border-navy-line bg-[rgba(10,18,42,0.97)] shadow-lg [scrollbar-width:thin] [scrollbar-color:#334155_transparent]">
           {filtered.map((stop) => (
             <button
               key={stop}
