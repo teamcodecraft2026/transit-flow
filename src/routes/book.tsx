@@ -564,7 +564,7 @@ function BookingSuccessModal({
 
         <div className="mt-5 rounded-[10px] border border-white/10 bg-white/5 p-4 text-left">
           <Row label={t("book.ticketId")} value={ticket.id} />
-          <Row label={t("book.fareCharged")} value={`₹${ticket.fare_charged}`} />
+          <Row label={t("book.fareCharged")} value={"₹" + ticket.fare_charged} />
           <Row label={t("book.status")} value={ticket.status.toUpperCase()} />
           <Row
             label={t("book.issued")}
