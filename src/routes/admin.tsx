@@ -1,4 +1,4 @@
-﻿import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { getAIAdminSummary, type AIAdminSummary } from "@/lib/api";
 import {
@@ -498,7 +498,6 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <p className="mt-4 font-sans text-[11.5px] text-white/30">{stats.cost_note}</p>
               </div>
 
-              {/* Revenue by Route table */}
               <div className="mt-6 rounded-[14px] border border-white/10 bg-white/[0.03] p-6">
                 <div className="flex items-center justify-between">
                   <h2 className="font-sans text-[15px] font-semibold text-white">
@@ -622,7 +621,6 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </main>
 
-      {/* Route Details Slide-in Panel */}
       {selectedRoute && (
         <RouteDetailsPanel
           routeName={selectedRoute}
@@ -633,8 +631,6 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     </div>
   );
 }
-
-//  Route Details Slide-in Panel
 
 function RouteDetailsPanel({
   routeName,
@@ -682,23 +678,10 @@ function RouteDetailsPanel({
 
   function exportCSV() {
     const headers = [
-      "Passenger Name",
-      "Phone",
-      "Source",
-      "Destination",
-      "Bus",
-      "Date",
-      "Time",
-      "Fare",
-      "Type",
-      "Status",
+      "Passenger Name","Phone","Source","Destination","Bus","Date","Time","Fare","Type","Status",
     ];
     const rows = displayed.map((p) => [
-      p.passenger_name,
-      p.passenger_phone,
-      p.origin,
-      p.destination,
-      p.bus_number,
+      p.passenger_name, p.passenger_phone, p.origin, p.destination, p.bus_number,
       p.issued_at ? formatDate(p.issued_at) : "",
       p.departure_time ? formatTime(p.departure_time) : "",
       p.is_pink_card ? "Free" : `${p.fare_charged}`,
@@ -717,19 +700,11 @@ function RouteDetailsPanel({
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[4px]" onClick={onClose} />
-
-      {/* Panel */}
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[900px] flex-col bg-[#0d0f1a] shadow-[8px_0_40px_rgba(0,0,0,0.6)]">
-        {/* Panel Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex items-center gap-2 font-sans text-[13px] text-white/50 transition-colors hover:text-white"
-            >
+            <button type="button" onClick={onClose} className="flex items-center gap-2 font-sans text-[13px] text-white/50 transition-colors hover:text-white">
               <ArrowLeft className="size-4" strokeWidth={1.5} />
               Back
             </button>
@@ -739,11 +714,7 @@ function RouteDetailsPanel({
               {range === "today" ? "Today" : range === "week" ? "This Week" : "All Time"}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-white/40 transition-colors hover:text-white"
-          >
+          <button type="button" onClick={onClose} className="text-white/40 transition-colors hover:text-white">
             <X className="size-5" strokeWidth={1.5} />
           </button>
         </div>
@@ -760,152 +731,69 @@ function RouteDetailsPanel({
             </div>
           ) : data ? (
             <>
-              {/* Summary Stat Cards */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <StatMini
-                  label="Total Revenue"
-                  value={`${data.summary.total_revenue.toLocaleString("en-IN")}`}
-                  color="text-emerald-400"
-                />
-                <StatMini
-                  label="Total Passengers"
-                  value={data.summary.total_passengers.toString()}
-                  color="text-indigo-400"
-                />
-                <StatMini
-                  label="Pink Card"
-                  value={` ${data.summary.pink_card_count}`}
-                  color="text-rose-400"
-                />
-                <StatMini
-                  label="Paid"
-                  value={` ${data.summary.paid_count}`}
-                  color="text-blue-400"
-                />
+                <StatMini label="Total Revenue" value={`${data.summary.total_revenue.toLocaleString("en-IN")}`} color="text-emerald-400" />
+                <StatMini label="Total Passengers" value={data.summary.total_passengers.toString()} color="text-indigo-400" />
+                <StatMini label="Pink Card" value={` ${data.summary.pink_card_count}`} color="text-rose-400" />
+                <StatMini label="Paid" value={` ${data.summary.paid_count}`} color="text-blue-400" />
               </div>
 
-              {/* Tabs + Export */}
               <div className="mt-6 flex items-center justify-between">
                 <div className="flex gap-1 rounded-[8px] border border-white/10 bg-white/[0.03] p-1">
                   {(["all", "pink"] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setTab(t)}
-                      className={cn(
-                        "rounded-[6px] px-4 py-1.5 font-sans text-[12.5px] transition-colors",
-                        tab === t ? "bg-indigo-600 text-white" : "text-white/50 hover:text-white",
-                      )}
-                    >
-                      {t === "all"
-                        ? `All (${passengers.length})`
-                        : ` Pink Card (${passengers.filter((p) => p.is_pink_card).length})`}
+                    <button key={t} type="button" onClick={() => setTab(t)}
+                      className={cn("rounded-[6px] px-4 py-1.5 font-sans text-[12.5px] transition-colors",
+                        tab === t ? "bg-indigo-600 text-white" : "text-white/50 hover:text-white")}>
+                      {t === "all" ? `All (${passengers.length})` : ` Pink Card (${passengers.filter((p) => p.is_pink_card).length})`}
                     </button>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={exportCSV}
-                  className="flex items-center gap-2 rounded-[8px] border border-white/15 px-3 py-2 font-sans text-[12px] text-white/50 transition-colors hover:text-white"
-                >
+                <button type="button" onClick={exportCSV}
+                  className="flex items-center gap-2 rounded-[8px] border border-white/15 px-3 py-2 font-sans text-[12px] text-white/50 transition-colors hover:text-white">
                   <Download className="size-3.5" strokeWidth={1.5} />
                   Export CSV
                 </button>
               </div>
 
-              {/* Passengers Table */}
               <div className="mt-4 overflow-x-auto rounded-[10px] border border-white/10">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/10 bg-white/[0.02]">
-                      {[
-                        "Passenger",
-                        "Source  Dest",
-                        "Bus",
-                        "Date & Time",
-                        "Fare",
-                        "Type",
-                        "Status",
-                      ].map((h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40"
-                        >
-                          {h}
-                        </th>
+                      {["Passenger","Source  Dest","Bus","Date & Time","Fare","Type","Status"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {displayed.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={7}
-                          className="py-12 text-center font-sans text-[13px] text-white/30"
-                        >
-                          No passengers found.
-                        </td>
-                      </tr>
+                      <tr><td colSpan={7} className="py-12 text-center font-sans text-[13px] text-white/30">No passengers found.</td></tr>
                     ) : (
                       displayed.map((p, i) => (
-                        <tr
-                          key={p.ticket_id}
-                          className={cn(
-                            "border-b border-white/[0.05] transition-colors hover:bg-white/[0.03]",
-                            i === displayed.length - 1 && "border-0",
-                          )}
-                        >
+                        <tr key={p.ticket_id} className={cn("border-b border-white/[0.05] transition-colors hover:bg-white/[0.03]", i === displayed.length - 1 && "border-0")}>
                           <td className="px-4 py-3">
-                            <p className="font-sans text-[13px] font-medium text-white">
-                              {p.passenger_name}
-                            </p>
-                            <p className="font-sans text-[11px] text-white/40">
-                              {p.passenger_phone}
-                            </p>
+                            <p className="font-sans text-[13px] font-medium text-white">{p.passenger_name}</p>
+                            <p className="font-sans text-[11px] text-white/40">{p.passenger_phone}</p>
                           </td>
-                          <td className="px-4 py-3 font-sans text-[12.5px] text-white/70">
-                            {p.origin} {p.destination}
-                          </td>
-                          <td className="px-4 py-3 font-sans text-[12.5px] text-white/70">
-                            {p.bus_number}
-                          </td>
+                          <td className="px-4 py-3 font-sans text-[12.5px] text-white/70">{p.origin} {p.destination}</td>
+                          <td className="px-4 py-3 font-sans text-[12.5px] text-white/70">{p.bus_number}</td>
                           <td className="px-4 py-3">
-                            <p className="font-sans text-[12px] text-white/70">
-                              {p.issued_at ? formatDate(p.issued_at) : ""}
-                            </p>
-                            <p className="font-sans text-[11px] text-white/40">
-                              {p.departure_time ? formatTime(p.departure_time) : ""}
-                            </p>
+                            <p className="font-sans text-[12px] text-white/70">{p.issued_at ? formatDate(p.issued_at) : ""}</p>
+                            <p className="font-sans text-[11px] text-white/40">{p.departure_time ? formatTime(p.departure_time) : ""}</p>
                           </td>
                           <td className="px-4 py-3 font-sans text-[13px]">
-                            {p.is_pink_card ? (
-                              <span className="text-rose-400">Free</span>
-                            ) : (
-                              <span className="text-emerald-400">{p.fare_charged}</span>
-                            )}
+                            {p.is_pink_card ? <span className="text-rose-400">Free</span> : <span className="text-emerald-400">{p.fare_charged}</span>}
                           </td>
                           <td className="px-4 py-3">
                             {p.is_pink_card ? (
-                              <span className="rounded-full bg-rose-500/20 px-2 py-0.5 font-sans text-[11px] text-rose-300">
-                                Pink Card
-                              </span>
+                              <span className="rounded-full bg-rose-500/20 px-2 py-0.5 font-sans text-[11px] text-rose-300">Pink Card</span>
                             ) : (
-                              <span className="rounded-full bg-blue-500/20 px-2 py-0.5 font-sans text-[11px] text-blue-300">
-                                Paid
-                              </span>
+                              <span className="rounded-full bg-blue-500/20 px-2 py-0.5 font-sans text-[11px] text-blue-300">Paid</span>
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <span
-                              className={cn(
-                                "rounded-full px-2 py-0.5 font-sans text-[11px] uppercase",
-                                p.status === "scanned"
-                                  ? "bg-emerald-500/20 text-emerald-300"
-                                  : p.status === "issued"
-                                    ? "bg-indigo-500/20 text-indigo-300"
-                                    : "bg-red-500/20 text-red-300",
-                              )}
-                            >
+                            <span className={cn("rounded-full px-2 py-0.5 font-sans text-[11px] uppercase",
+                              p.status === "scanned" ? "bg-emerald-500/20 text-emerald-300" :
+                              p.status === "issued" ? "bg-indigo-500/20 text-indigo-300" : "bg-red-500/20 text-red-300")}>
                               {p.status}
                             </span>
                           </td>
@@ -923,8 +811,6 @@ function RouteDetailsPanel({
   );
 }
 
-//  Small stat card for panel
-
 function StatMini({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div className="rounded-[10px] border border-white/10 bg-white/[0.03] px-4 py-3">
@@ -937,20 +823,42 @@ function StatMini({ label, value, color }: { label: string; value: string; color
 function AIForecastSection() {
   const [data, setData] = useState<AIAdminSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    getAIAdminSummary()
+  function load() {
+    setLoading(true);
+    setError(null);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 90000);
+    fetch("https://bus-aiml.onrender.com/admin/summary", { signal: controller.signal })
+      .then((r) => r.json())
       .then(setData)
-      .finally(() => setLoading(false));
-  }, []);
+      .catch(() => setError("AI Forecast is waking up — please click Retry in 30 seconds."))
+      .finally(() => { clearTimeout(timeout); setLoading(false); });
+  }
+
+  useEffect(() => { load(); }, []);
 
   if (loading)
     return (
       <div className="mt-6 rounded-[14px] border border-white/10 bg-white/[0.03] p-6">
-        <h2 className="font-sans text-[15px] font-semibold text-white"> AI Demand Forecast</h2>
+        <h2 className="font-sans text-[15px] font-semibold text-white">🤖 AI Demand Forecast</h2>
+        <p className="mt-1 font-sans text-[12px] text-white/40">Waking up ML server, please wait up to 60 seconds...</p>
         <div className="mt-4 flex justify-center">
           <Loader2 className="size-6 animate-spin text-indigo-400" />
         </div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="mt-6 rounded-[14px] border border-yellow-500/30 bg-yellow-500/5 p-6">
+        <h2 className="font-sans text-[15px] font-semibold text-white">🤖 AI Demand Forecast</h2>
+        <p className="mt-2 font-sans text-[13px] text-yellow-400">{error}</p>
+        <button type="button" onClick={load}
+          className="mt-3 rounded-[8px] bg-indigo-600 px-4 py-2 font-sans text-[13px] text-white hover:opacity-90">
+          Retry
+        </button>
       </div>
     );
 
@@ -958,27 +866,27 @@ function AIForecastSection() {
 
   return (
     <div className="mt-6 rounded-[14px] border border-indigo-500/30 bg-indigo-500/5 p-6">
-      <h2 className="font-sans text-[15px] font-semibold text-white"> AI Demand Forecast</h2>
+      <h2 className="font-sans text-[15px] font-semibold text-white">🤖 AI Demand Forecast</h2>
       <p className="mt-1 font-sans text-[12px] text-white/40">
-        Powered by ML model Predicted load and fleet recommendation
+        Powered by ML model · Predicted load and fleet recommendation
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className="rounded-[10px] border border-white/10 bg-white/[0.03] p-4">
           <p className="font-sans text-[11px] text-white/40">Est. Daily Revenue</p>
           <p className="mt-1 font-sans text-[22px] font-bold text-emerald-400">
-            {data.total_estimated_revenue.toLocaleString("en-IN")}
+            ₹{data.total_estimated_revenue.toLocaleString("en-IN")}
           </p>
         </div>
         <div className="rounded-[10px] border border-white/10 bg-white/[0.03] p-4">
           <p className="font-sans text-[11px] text-white/40">Est. Daily Cost</p>
           <p className="mt-1 font-sans text-[22px] font-bold text-red-400">
-            {data.total_estimated_cost.toLocaleString("en-IN")}
+            ₹{data.total_estimated_cost.toLocaleString("en-IN")}
           </p>
         </div>
         <div className="rounded-[10px] border border-white/10 bg-white/[0.03] p-4">
           <p className="font-sans text-[11px] text-white/40">Est. Profit</p>
           <p className="mt-1 font-sans text-[22px] font-bold text-indigo-400">
-            {data.estimated_profit.toLocaleString("en-IN")}
+            ₹{data.estimated_profit.toLocaleString("en-IN")}
           </p>
         </div>
       </div>
@@ -986,44 +894,20 @@ function AIForecastSection() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-white/10">
-              {[
-                "Route",
-                "Avg Load",
-                "Peak Load",
-                "Buses Needed",
-                "Daily Revenue",
-                "Daily Cost",
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="pb-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40"
-                >
-                  {h}
-                </th>
+              {["Route","Avg Load","Peak Load","Buses Needed","Daily Revenue","Daily Cost"].map((h) => (
+                <th key={h} className="pb-3 text-left font-sans text-[11px] uppercase tracking-wide text-white/40">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {data.route_stats.map((row) => (
               <tr key={row.route_id} className="border-b border-white/[0.06]">
-                <td className="py-3 font-sans text-[13px] font-medium text-white">
-                  {row.route_id}
-                </td>
-                <td className="py-3 font-sans text-[13px] text-white/70">
-                  {row.avg_predicted_load}
-                </td>
-                <td className="py-3 font-sans text-[13px] text-white/70">
-                  {row.peak_predicted_load}
-                </td>
-                <td className="py-3 font-sans text-[13px] text-indigo-400">
-                  {row.recommended_buses} buses
-                </td>
-                <td className="py-3 font-sans text-[13px] text-emerald-400">
-                  {row.estimated_daily_revenue.toLocaleString("en-IN")}
-                </td>
-                <td className="py-3 font-sans text-[13px] text-red-400">
-                  {row.estimated_daily_cost.toLocaleString("en-IN")}
-                </td>
+                <td className="py-3 font-sans text-[13px] font-medium text-white">{row.route_id}</td>
+                <td className="py-3 font-sans text-[13px] text-white/70">{row.avg_predicted_load}</td>
+                <td className="py-3 font-sans text-[13px] text-white/70">{row.peak_predicted_load}</td>
+                <td className="py-3 font-sans text-[13px] text-indigo-400">{row.recommended_buses} buses</td>
+                <td className="py-3 font-sans text-[13px] text-emerald-400">₹{row.estimated_daily_revenue.toLocaleString("en-IN")}</td>
+                <td className="py-3 font-sans text-[13px] text-red-400">₹{row.estimated_daily_cost.toLocaleString("en-IN")}</td>
               </tr>
             ))}
           </tbody>
@@ -1033,33 +917,17 @@ function AIForecastSection() {
   );
 }
 
-function KpiCard({
-  icon,
-  label,
-  value,
-  sub,
-  trend,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sub: string;
-  trend?: "up" | "down";
+function KpiCard({ icon, label, value, sub, trend, color }: {
+  icon: React.ReactNode; label: string; value: string; sub: string; trend?: "up" | "down";
   color: "indigo" | "violet" | "rose" | "emerald";
 }) {
   const bg = {
-    indigo: "bg-indigo-500/15 text-indigo-400",
-    violet: "bg-violet-500/15 text-violet-400",
-    rose: "bg-rose-500/15 text-rose-400",
-    emerald: "bg-emerald-500/15 text-emerald-400",
+    indigo: "bg-indigo-500/15 text-indigo-400", violet: "bg-violet-500/15 text-violet-400",
+    rose: "bg-rose-500/15 text-rose-400", emerald: "bg-emerald-500/15 text-emerald-400",
   }[color];
-
   return (
     <div className="rounded-[14px] border border-white/10 bg-white/[0.03] p-5">
-      <div className={cn("inline-flex size-9 items-center justify-center rounded-[8px]", bg)}>
-        {icon}
-      </div>
+      <div className={cn("inline-flex size-9 items-center justify-center rounded-[8px]", bg)}>{icon}</div>
       <p className="mt-4 font-sans text-[26px] font-bold text-white">{value}</p>
       <p className="mt-0.5 font-sans text-[12px] text-white/40">{label}</p>
       <p className="mt-3 flex items-center gap-1 font-sans text-[11.5px] text-white/30">
@@ -1071,45 +939,20 @@ function KpiCard({
   );
 }
 
-function BarItem({
-  label,
-  value,
-  max,
-  color,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  color: string;
-}) {
+function BarItem({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
-  const HEIGHT = 120;
-
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="font-sans text-[13px] font-semibold text-white">
-        {value.toLocaleString("en-IN")}
-      </p>
-      <div className="flex w-16 items-end" style={{ height: HEIGHT }}>
-        <div
-          className={cn("w-full rounded-t-[6px] transition-all duration-700", color)}
-          style={{ height: `${pct}%` }}
-        />
+      <p className="font-sans text-[13px] font-semibold text-white">{value.toLocaleString("en-IN")}</p>
+      <div className="flex w-16 items-end" style={{ height: 120 }}>
+        <div className={cn("w-full rounded-t-[6px] transition-all duration-700", color)} style={{ height: `${pct}%` }} />
       </div>
       <p className="font-sans text-[11px] text-white/40">{label}</p>
     </div>
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-}) {
+function SummaryCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 rounded-[12px] border border-white/10 bg-white/[0.03] px-4 py-3">
       {icon}
